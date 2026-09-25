@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>브로드시스템 행거장 3D 설계 & 주문</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0a0a1a; color: #e0e0e0; overflow-x: hidden; }
+  
+  header {
+    background: linear-gradient(135deg, #1a1a3e 0%, #0d0d2b 100%);
+    padding: 15px 30px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid #4a90e2;
+    box-shadow: 0 4px 20px rgba(74,144,226,0.3);
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 44px; height: 44px; background: linear-gradient(135deg,#4a90e2,#7b2ff7); border-radius: 10px; display:flex;align-items:center;justify-content:center; font-size:22px; }
+  .logo h1 { font-size: 20px; color: #fff; font-weight: 700; }
+  .logo p { font-size: 11px; color: #4a90e2; }
+  .header-btns { display:flex; gap:10px; }
+  .btn { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: linear-gradient(135deg,#4a90e2,#7b2ff7); color:#fff; }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(74,144,226,0.5); }
+  .btn-danger { background: #e24a4a; color:#fff; }
+  .btn-danger:hover { background:#c03a3a; }
+  .btn-success { background: linear-gradient(135deg,#2ecc71,#27ae60); color:#fff; }
+  .btn-success:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(46,204,113,0.4); }
+  .btn-outline { background:transparent; color:#4a90e2; border:2px solid #4a90e2; }
+  .btn-outline:hover { background:#4a90e2; color:#fff; }
+
+  .main { display: grid; grid-template-columns: 280px 1fr 320px; height: calc(100vh - 74px); }
+
+  /* LEFT PANEL */
+  .left-panel { background:#0f0f2a; border-right:1px solid #2a2a4a; overflow-y:auto; padding:15px; }
+  .panel-title { font-size:13px; color:#4a90e2; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #2a2a4a; }
+  
+  .module-category { margin-bottom:15px; }
+  .category-label { font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .module-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .module-card {
+    background: #1a1a3e; border:1px solid #2a2a4a; border-radius:10px; padding:10px;
+    cursor:pointer; transition:all 0.2s; text-align:center;
+  }
+  .module-card:hover { border-color:#4a90e2; background:#202050; transform:translateY(-2px); }
+  .module-card.selected { border-color:#7b2ff7; background:#1e1050; box-shadow:0 0 15px rgba(123,47,247,0.3); }
+  .module-card .icon { font-size:28px; margin-bottom:6px; }
+  .module-card .name { font-size:11px; font-weight:600; color:#ccc; }
+  .module-card .price { font-size:11px; color:#4a90e2; margin-top:3px; }
+  .module-card .size { font-size:10px; color:#666; }
+
+  .settings-box { background:#1a1a3e; border-radius:10px; padding:12px; margin-bottom:12px; }
+  .settings-box label { font-size:11px; color:#888; display:block; margin-bottom:4px; margin-top:8px; }
+  .settings-box input, .settings-box select {
+    width:100%; background:#0a0a1a; border:1px solid #3a3a5a; border-radius:6px;
+    color:#e0e0e0; padding:7px 10px; font-size:12px;
+  }
+  .color-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .color-dot { width:24px; height:24px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:all 0.2s; }
+  .color-dot.active { border-color:#fff; transform:scale(1.2); }
+
+  /* 3D CANVAS */
+  .canvas-area { position:relative; background:#050510; }
+  #threeCanvas { display:block; width:100%; height:100%; }
+  .canvas-overlay {
+    position:absolute; top:15px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
+    border:1px solid #2a2a4a; border-radius:30px; padding:8px 20px;
+    display:flex; gap:20px; align-items:center;
+  }
+  .canvas-overlay span { font-size:12px; color:#888; }
+  .canvas-overlay strong { color:#4a90e2; }
+  
+  .controls-hint {
+    position:absolute; bottom:15px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,0.6); border-radius:20px; padding:6px 16px;
+    font-size:11px; color:#666; white-space:nowrap;
+  }
+  .canvas-tools {
+    position:absolute; top:15px; right:15px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .tool-btn {
+    width:40px; height:40px; border-radius:10px; border:1px solid #2a2a4a;
+    background:rgba(10,10,26,0.9); color:#ccc; cursor:pointer; font-size:18px;
+    display:flex; align-items:center; justify-content:center; transition:all 0.2s;
+  }
+  .tool-btn:hover { border-color:#4a90e2; color:#4a90e2; }
+  .tool-btn.active { background:#4a90e2; color:#fff; border-color:#4a90e2; }
+
+  /* GRID FLOOR controls */
+  .grid-controls {
+    position:absolute; bottom:15px; right:15px;
+    background:rgba(10,10,26,0.9); border:1px solid #2a2a4a; border-radius:12px; padding:12px;
+  }
+  .grid-controls p { font-size:11px; color:#666; margin-bottom:8px; }
+  .grid-btn-row { display:flex; gap:6px; }
+  .grid-btn { padding:5px 10px; border-radius:6px; border:1px solid #3a3a5a; background:#1a1a3e; color:#ccc; cursor:pointer; font-size:12px; }
+  .grid-btn:hover { border-color:#4a90e2; color:#4a90e2; }
+
+  /* RIGHT PANEL */
+  .right-panel { background:#0f0f2a; border-left:1px solid #2a2a4a; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:12px; }
+  
+  .room-config { background:#1a1a3e; border-radius:10px; padding:12px; }
+  .room-config label { font-size:11px; color:#888; display:block; margin-bottom:4px; margin-top:8px; }
+  .room-config input { width:100%; background:#0a0a1a; border:1px solid #3a3a5a; border-radius:6px; color:#e0e0e0; padding:7px 10px; font-size:12px; }
+  .dim-row { display:flex; gap:8px; }
+  .dim-row > div { flex:1; }
+
+  .placed-list { background:#1a1a3e; border-radius:10px; padding:12px; flex:1; }
+  .placed-item {
+    display:flex; align-items:center; gap:8px; padding:8px; border-radius:8px;
+    background:#0f0f2a; margin-bottom:6px; border:1px solid #2a2a4a;
+  }
+  .placed-item .item-color { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+  .placed-item .item-info { flex:1; }
+  .placed-item .item-name { font-size:11px; font-weight:600; color:#ccc; }
+  .placed-item .item-detail { font-size:10px; color:#666; }
+  .placed-item .item-price { font-size:11px; color:#2ecc71; font-weight:600; }
+  .placed-item .remove-btn { background:none; border:none; color:#e24a4a; cursor:pointer; font-size:16px; }
+
+  .quote-box { background:linear-gradient(135deg,#1a1a3e,#0d0d2b); border:1px solid #2a2a4a; border-radius:10px; padding:15px; }
+  .quote-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #1a1a3a; }
+  .quote-row:last-child { border-bottom:none; }
+  .quote-row .label { font-size:12px; color:#888; }
+  .quote-row .value { font-size:13px; color:#e0e0e0; font-weight:600; }
+  .quote-total { display:flex; justify-content:space-between; align-items:center; padding-top:10px; margin-top:5px; }
+  .quote-total .label { font-size:14px; color:#ccc; font-weight:700; }
+  .quote-total .value { font-size:18px; color:#4a90e2; font-weight:700; }
+
+  /* ORDER MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; z-index:1000; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:#0f0f2a; border:1px solid #2a2a4a; border-radius:16px; width:520px; max-height:85vh; overflow-y:auto; }
+  .modal-header { padding:20px 25px 15px; border-bottom:1px solid #2a2a4a; display:flex; justify-content:space-between; align-items:center; }
+  .modal-header h2 { font-size:18px; color:#fff; }
+  .modal-close { background:none; border:none; color:#888; font-size:24px; cursor:pointer; }
+  .modal-body { padding:20px 25px; }
+  .form-group { margin-bottom:15px; }
+  .form-group label { display:block; font-size:12px; color:#888; margin-bottom:6px; }
+  .form-group input, .form-group textarea, .form-group select {
+    width:100%; background:#1a1a3e; border:1px solid #3a3a5a; border-radius:8px;
+    color:#e0e0e0; padding:10px 14px; font-size:13px;
+  }
+  .form-group textarea { height:80px; resize:vertical; }
+  .order-summary { background:#1a1a3e; border-radius:10px; padding:15px; margin-bottom:15px; }
+  .order-summary h3 { font-size:13px; color:#4a90e2; margin-bottom:10px; }
+  .summary-item { display:flex; justify-content:space-between; font-size:12px; padding:4px 0; color:#ccc; }
+
+  /* ORDERS LIST MODAL */
+  .orders-modal { width:700px; }
+  .order-card { background:#1a1a3e; border-radius:10px; padding:15px; margin-bottom:10px; border:1px solid #2a2a4a; }
+  .order-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .order-id { font-size:12px; color:#4a90e2; font-weight:600; }
+  .order-status { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .status-pending { background:#3a2a00; color:#f39c12; }
+  .status-confirmed { background:#0a2a1a; color:#2ecc71; }
+  .order-customer { font-size:13px; color:#ccc; }
+  .order-items-list { font-size:11px; color:#888; margin-top:6px; }
+  .order-total-row { display:flex; justify-content:space-between; margin-top:8px; padding-top:8px; border-top:1px solid #2a2a4a; }
+  .order-total-row span { font-size:13px; color:#4a90e2; font-weight:700; }
+
+  .empty-state { text-align:center; padding:30px; color:#555; }
+  .empty-state .icon { font-size:40px; margin-bottom:10px; }
+
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:#0a0a1a; }
+  ::-webkit-scrollbar-thumb { background:#2a2a4a; border-radius:3px; }
+
+  .badge { display:inline-block; background:#e24a4a; color:#fff; border-radius:10px; font-size:10px; padding:1px 6px; margin-left:6px; }
+
+  @media (max-width:1100px) {
+    .main { grid-template-columns: 240px 1fr 280px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏗️</div>
+    <div>
+      <h1>브로드시스템 행거장</h1>
+      <p>3D 모듈 설계 & 주문 시스템</p>
+    </div>
+  </div>
+  <div class="header-btns">
+    <button class="btn btn-outline" onclick="showOrders()">📋 주문내역 <span class="badge" id="orderBadge">0</span></button>
+    <button class="btn btn-success" onclick="showOrderModal()">🛒 주문하기</button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- LEFT: 모듈 선택 -->
+  <div class="left-panel">
+    <div class="panel-title">🧩 모듈 선택</div>
+
+    <div class="module-category">
+      <div class="category-label">행거 프레임</div>
+      <div class="module-grid">
+        <div class="module-card" onclick="selectModule('hanger_single')" id="mod_hanger_single">
+          <div class="icon">🪝</div>
+          <div class="name">단열 행거</div>
+          <div class="size">W900</div>
+          <div class="price">₩45,000</div>
+        </div>
+        <div class="module-card" onclick="selectModule('hanger_double')" id="mod_hanger_double">
+          <div class="icon">🔗</div>
+          <div class="name">2단 행거</div>
+          <div class="size">W900×2단</div>
+          <div class="price">₩72,000</div>
+        </div>
+        <div class="module-card" onclick="selectModule('hanger_wide')" id="mod_hanger_wide">
+          <div class="icon">📐</div>
+          <div class="name">와이드 행거</div>
+          <div class="size">W1200</div>
+          <div class="price">₩58,000</div>
+        </div>
+        <div class="module-card" onclick="selectModule('hanger_corner')" id="mod_hanger_corner">
+          <div class="icon">📍</div>
+          <div class="name">코너 행거</div>
+          <div class="size">L자형</div>
+          <div class="price">₩89,000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="module-category">
+      <div class="category-label">선반 & 서랍</div>
+      <div class="module-grid">
+        <div class="module-card" onclick="selectModule('shelf_single')" id="mod_shelf_single">
+          <div class="icon">🗄️</div>
+          <div class="name">단선반</div>
+          <div class="size">W600</div>
+          <div class="price">₩28,000</div>
+        </div>
+        <div class="module-card" onclick="selectModule('drawer_2')" id="mod_drawer_2">
+          <div class="icon">🪣</div>
+          <div class="name">2단 서랍</div>
+          <div class="size">W500</div>
+          <div class="price">₩65,000</div>
+        </div>
+        <div class="module-card" onclick="selectModule('shoe_rack')" id="mod_shoe_rack">
+          <div class="icon">👟</div>
+          <div class="name">신발장</div>
+          <div class="size">W600×3단</div>
+          <div class="price">₩52,000</div>
+        </div>
+        <div class="module-card" onclick="selectModule('top_shelf')" id="mod_top_shelf">
+          <div class="icon">📦</div>
+          <div class="name">상단선반</div>
+          <div class="size">W900</div>
+          <div class="price">₩35,000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="module-category">
+      <div class="category-label">보조 액세서리</div>
+      <div class="module-grid">
+        <div class="module-card" onclick="selectModule('mirror')" id="mod_mirror">
+          <div class="icon">🪞</div>
+          <div class="name">전신거울</div>
+          <div class="size">W400×H1700</div>
+          <div class="price">₩95,000</div>
+        </div>
+        <div class="module-card" onclick="selectModule('led_bar')" id="mod_led_bar">
+          <div class="icon">💡</div>
+          <div class="name">LED 조명바</div>
+          <div class="size">W900</div>
+          <div class="price">₩22,000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-box">
+      <div class="panel-title" style="margin-bottom:8px;">🎨 색상 선택</div>
+      <div class="color-row" id="colorRow">
+        <div class="color-dot active" style="background:#c0c0c0" data-color="#c0c0c0" onclick="selectColor('#c0c0c0',this)" title="실버"></div>
+        <div class="color-dot" style="background:#1a1a1a" data-color="#1a1a1a" onclick="selectColor('#1a1a1a',this)" title="블랙"></div>
+        <div class="color-dot" style="background:#f5f0eb" data-color="#f5f0eb" onclick="selectColor('#f5f0eb',this)" title="아이보리"></div>
+        <div class="color-dot" style="background:#8b6f47" data-color="#8b6f47" onclick="selectColor('#8b6f47',this)" title="우드"></div>
+        <div class="color-dot" style="background:#4a90e2" data-color="#4a90e2" onclick="selectColor('#4a90e2',this)" title="블루"></div>
+        <div class="color-dot" style="background:#2ecc71" data-color="#2ecc71" onclick="selectColor('#2ecc71',this)" title="그린"></div>
+      </div>
+      <label>높이 조절 (cm)</label>
+      <input type="range" id="heightSlider" min="180" max="280" value="240" oninput="updateHeight(this.value)" style="width:100%;accent-color:#4a90e2;">
+      <div style="text-align:center;font-size:12px;color:#4a90e2;" id="heightVal">240 cm</div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;margin-top:5px;" onclick="addModule()">➕ 배치하기</button>
+  </div>
+
+  <!-- CENTER: 3D Canvas -->
+  <div class="canvas-area">
+    <canvas id="threeCanvas"></canvas>
+    <div class="canvas-overlay">
+      <span>공간: <strong id="roomInfo">W3000 × D2000 × H2400</strong></span>
+      <span>|</span>
+      <span>배치: <strong id="placedCount">0</strong>개</span>
+      <span>|</span>
+      <span>면적: <strong id="usedArea">0%</strong></span>
+    </div>
+    <div class="canvas-tools">
+      <div class="tool-btn active" id="toolMove" onclick="setTool('move')" title="이동">✋</div>
+      <div class="tool-btn" id="toolPlace" onclick="setTool('place')" title="배치">📌</div>
+      <div class="tool-btn" id="toolDelete" onclick="setTool('delete')" title="삭제">🗑️</div>
+      <div class="tool-btn" onclick="resetCamera()" title="뷰 초기화">🔄</div>
+    </div>
+    <div class="controls-hint">🖱️ 드래그: 회전 | 스크롤: 줌 | 우클릭: 이동 | 📌배치모드: 바닥 클릭</div>
+    <div class="grid-controls">
+      <p>📐 그리드 스냅</p>
+      <div class="grid-btn-row">
+        <div class="grid-btn" onclick="setSnap(30)">30</div>
+        <div class="grid-btn" onclick="setSnap(60)">60</div>
+        <div class="grid-btn" onclick="setSnap(90)">90</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: 설정 & 견적 -->
+  <div class="right-panel">
+    <div class="panel-title" style="padding:0;">📏 공간 설정</div>
+    <div class="room-config">
+      <div class="dim-row">
+        <div>
+          <label>폭 (mm)</label>
+          <input type="number" id="roomW" value="3000" min="1000" max="8000" step="100" oninput="updateRoom()">
+        </div>
+        <div>
+          <label>깊이 (mm)</label>
+          <input type="number" id="roomD" value="2000" min="500" max="5000" step="100" oninput="updateRoom()">
+        </div>
+      </div>
+      <label>높이 (mm)</label>
+      <input type="number" id="roomH" value="2400" min="1800" max="3000" step="100" oninput="updateRoom()">
+    </div>
+
+    <div class="panel-title" style="padding:0;">📦 배치된 모듈</div>
+    <div class="placed-list" id="placedList">
+      <div class="empty-state">
+        <div class="icon">🏗️</div>
+        <div>왼쪽에서 모듈을 선택 후<br>배치하기 버튼을 누르세요</div>
+      </div>
+    </div>
+
+    <div class="panel-title" style="padding:0;">💰 견적서</div>
+    <div class="quote-box">
+      <div class="quote-row"><span class="label">모듈 소계</span><span class="value" id="quoteModule">₩0</span></div>
+      <div class="quote-row"><span class="label">설치비 (10%)</span><span class="value" id="quoteInstall">₩0</span></div>
+      <div class="quote-row"><span class="label">배송비</span><span class="value" id="quoteDelivery">₩50,000</span></div>
+      <div class="quote-total">
+        <span class="label">총 합계</span>
+        <span class="value" id="quoteTotal">₩50,000</span>
+      </div>
+    </div>
+    <button class="btn btn-success" style="width:100%;" onclick="showOrderModal()">🛒 이 설계로 주문하기</button>
+  </div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📋 주문서 작성</h2>
+      <button class="modal-close" onclick="closeModal('orderModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="order-summary">
+        <h3>설계 요약</h3>
+        <div id="orderSummaryItems"></div>
+        <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid #2a2a4a;margin-top:8px;">
+          <span style="font-size:13px;color:#ccc;font-weight:700;">총 금액</span>
+          <span style="font-size:14px;color:#4a90e2;font-weight:700;" id="orderTotalDisplay">₩0</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>고객명 *</label>
+        <input type="text" id="custName" placeholder="홍길동">
+      </div>
+      <div class="form-group">
+        <label>연락처 *</label>
+        <input type="tel" id="custPhone" placeholder="010-0000-0000">
+      </div>
+      <div class="form-group">
+        <label>이메일</label>
+        <input type="email" id="custEmail" placeholder="example@email.com">
+      </div>
+      <div class="form-group">
+        <label>설치 주소 *</label>
+        <input type="text" id="custAddr" placeholder="서울시 강남구 ...">
+      </div>
+      <div class="form-group">
+        <label>희망 설치일</label>
+        <input type="date" id="custDate">
+      </div>
+      <div class="form-group">
+        <label>특이사항</label>
+        <textarea id="custNote" placeholder="기타 요청사항을 입력하세요..."></textarea>
+      </div>
+      <button class="btn btn-success" style="width:100%;padding:14px;" onclick="submitOrder()">✅ 주문 확정</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS LIST MODAL -->
+<div class="modal-overlay" id="ordersModal">
+  <div class="modal orders-modal">
+    <div class="modal-header">
+      <h2>📋 전체 주문내역</h2>
+      <button class="modal-close" onclick="closeModal('ordersModal')">✕</button>
+    </div>
+    <div class="modal-body" id="ordersListBody">
+      <div class="empty-state"><div class="icon">📭</div><div>주문내역이 없습니다</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== FIREBASE =====
+const firebaseConfig = {"apiKey":"AIzaSyAA9XxN-Pw0vbLT0f8-mI2bV0FgEx18iIU","authDomain":"appbuilder-4e83c.firebaseapp.com","projectId":"appbuilder-4e83c","storageBucket":"appbuilder-4e83c.firebasestorage.app","messagingSenderId":"1038242551917","appId":"1:1038242551917:web:4d59995638762401dd0764"};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const COLLECTION = "apps/app-3d-muh0cxp3/items";
+
+// ===== MODULE DATA =====
+const MODULE_DATA = {
+  hanger_single: { name:'단열 행거', price:45000, color_hex:'#c0c0c0', w:0.9, h:1.8, d:0.45, type:'hanger' },
+  hanger_double: { name:'2단 행거', price:72000, color_hex:'#c0c0c0', w:0.9, h:1.8, d:0.45, type:'hanger2' },
+  hanger_wide:   { name:'와이드 행거', price:58000, color_hex:'#c0c0c0', w:1.2, h:1.8, d:0.55, type:'hanger' },
+  hanger_corner: { name:'코너 행거', price:89000, color_hex:'#c0c0c0', w:1.0, h:1.8, d:1.0, type:'corner' },
+  shelf_single:  { name:'단선반', price:28000, color_hex:'#c0c0c0', w:0.6, h:0.4, d:0.4, type:'shelf' },
+  drawer_2:      { name:'2단 서랍', price:65000, color_hex:'#c0c0c0', w:0.5, h:0.8, d:0.5, type:'drawer' },
+  shoe_rack:     { name:'신발장', price:52000, color_hex:'#c0c0c0', w:0.6, h:1.0, d:0.35, type:'shoe' },
+  top_shelf:     { name:'상단선반', price:35000, color_hex:'#c0c0c0', w:0.9, h:0.3, d:0.4, type:'shelf' },
+  mirror:        { name:'전신거울', price:95000, color_hex:'#a0c8f0', w:0.4, h:1.7, d:0.05, type:'mirror' },
+  led_bar:       { name:'LED 조명바', price:22000, color_hex:'#ffffc0', w:0.9, h:0.05, d:0.05, type:'led' },
+};
+
+let selectedModule = null;
+let selectedColor = '#c0c0c0';
+let selectedHeight = 240;
+let placedModules = [];
+let currentTool = 'move';
+let snapSize = 30;
+let orders = [];
+
+// ===== THREE.JS SETUP =====
+const canvas = document.getElementById('threeCanvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setPixelRatio(window.devicePixelRatio);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050510);
+scene.fog = new THREE.Fog(0x050510, 20, 50);
+
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+camera.position.set(4, 4, 6);
+camera.lookAt(0, 0, 0);
+
+// LIGHTS
+const ambient = new THREE.AmbientLight(0x334466, 1.5);
+scene.add(ambient);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+dirLight.position.set(5, 10, 5);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.width = 2048;
+dirLight.shadow.mapSize.height = 2048;
+scene.add(dirLight);
+const pointLight = new THREE.PointLight(0x4a90e2, 1, 15);
+pointLight.position.set(-3, 3, -3);
+scene.add(pointLight);
+
+// ROOM
+let roomGroup = new THREE.Group();
+scene.add(roomGroup);
+let roomW = 3.0, roomD = 2.0, roomH = 2.4;
+
+function buildRoom() {
+  while(roomGroup.children.length > 0) roomGroup.remove(roomGroup.children[0]);
+
+  // Floor
+  const floorGeo = new THREE.PlaneGeometry(roomW, roomD);
+  const floorMat = new THREE.MeshLambertMaterial({ color: 0x1a1a2e });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI/2;
+  floor.receiveShadow = true;
+  floor.name = 'floor';
+  roomGroup.add(floor);
+
+  // Grid
+  const gridHelper = new THREE.GridHelper(Math.max(roomW,roomD)*1.5, 30, 0x2a2a4a, 0x1a1a3e);
+  roomGroup.add(gridHelper);
+
+  // Walls
+  const wallMat = new THREE.MeshLambertMaterial({ color: 0x0d0d25, transparent: true, opacity: 0.7, side: THREE.BackSide });
+  // Back wall
+  const bwGeo = new THREE.PlaneGeometry(roomW, roomH);
+  const bw = new THREE.Mesh(bwGeo, wallMat);
+  bw.position.set(0, roomH/2, -roomD/2);
+  roomGroup.add(bw);
+  // Left wall
+  const lwGeo = new THREE.PlaneGeometry(roomD, roomH);
+  const lw = new THREE.Mesh(lwGeo, wallMat);
+  lw.position.set(-roomW/2, roomH/2, 0);
+  lw.rotation.y = Math.PI/2;
+  roomGroup.add(lw);
+
+  // Wall edges
+  const edgeMat = new THREE.LineBasicMaterial({ color: 0x3a3a6a });
+  const edges = [
+    [[-roomW/2,0,-roomD/2],[roomW/2,0,-roomD/2]],
+    [[-roomW/2,0,roomD/2],[roomW/2,0,roomD/2]],
+    [[-roomW/2,0,-roomD/2],[-roomW/2,0,roomD/2]],
+    [[roomW/2,0,-roomD/2],[roomW/2,0,roomD/2]],
+    [[-roomW/2,roomH,-roomD/2],[roomW/2,roomH,-roomD/2]],
+    [[-roomW/2,0,-roomD/2],[-roomW/2,roomH,-roomD/2]],
+    [[roomW/2,0,-roomD/2],[roomW/2,roomH,-roomD/2]],
+    [[-roomW/2,roomH,-roomD/2],[-roomW/2,roomH,roomD/2]],
+    [[-roomW/2,0,roomD/2],[-roomW/2,roomH,roomD/2]],
+  ];
+  edges.forEach(([a,b]) => {
+    const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a), new THREE.Vector3(...b)]);
+    roomGroup.add(new THREE.Line(geo, edgeMat));
+  });
+
+  // Dimensions text (visual markers)
+  updateRoomInfoDisplay();
+}
+buildRoom();
+
+function updateRoomInfoDisplay() {
+  document.getElementById('roomInfo').textContent = `W${roomW*1000|0} × D${roomD*1000|0} × H${roomH*1000|0}`;
+}
+
+// ===== 3D MODULE BUILDER =====
+function build3DModule(key, colorHex, heightScale) {
+  const data = MODULE_DATA[key];
+  const group = new THREE.Group();
+  const color = new THREE.Color(colorHex);
+  const h = data.h * (heightScale/240);
+
+  const frameMat = new THREE.MeshLambertMaterial({ color });
+  const poleMat  = new THREE.MeshLambertMaterial({ color: new THREE.Color(colorHex).offsetHSL(0,0,-0.1) });
+
+  if(data.type === 'hanger' || data.type === 'hanger2') {
+    // Vertical poles
+    const poleGeo = new THREE.CylinderGeometry(0.02,0.02,h,8);
+    const p1 = new THREE.Mesh(poleGeo, poleMat); p1.position.set(-data.w/2+0.02, h/2, 0); p1.castShadow=true;
+    const p2 = new THREE.Mesh(poleGeo, poleMat); p2.position.set(data.w/2-0.02, h/2, 0); p2.castShadow=true;
+    group.add(p1,p2);
+    // Top bar
+    const topGeo = new THREE.CylinderGeometry(0.02,0.02,data.w,8); topGeo.applyMatrix4(new THREE.Matrix4().makeRotationZ(Math.PI/2));
+    const topBar = new THREE.Mesh(topGeo, frameMat); topBar.position.set(0,h,0); topBar.castShadow=true;
+    group.add(topBar);
+    // Hang rod
+    const rodGeo = new THREE.CylinderGeometry(0.015,0.015,data.w*0.85,8); rodGeo.applyMatrix4(new THREE.Matrix4().makeRotationZ(Math.PI/2));
+    const rod = new THREE.Mesh(rodGeo, poleMat); rod.position.set(0, h*0.7, 0); rod.castShadow=true;
+    group.add(rod);
+    if(data.type === 'hanger2') {
+      const rod2 = new THREE.Mesh(rodGeo.clone(), poleMat); rod2.position.set(0, h*0.35, 0); rod2.castShadow=true;
+      group.add(rod2);
+    }
+    // Base
+    const baseGeo = new THREE.BoxGeometry(data.w, 0.03, data.d);
+    const base = new THREE.Mesh(baseGeo, frameMat); base.position.set(0,0.015,0); base.castShadow=true;
+    group.add(base);
+
+  } else if(data.type === 'corner') {
+    // L-shaped corner
+    const bGeo1 = new THREE.BoxGeometry(data.w, 0.03, data.d*0.5);
+    const b1 = new THREE.Mesh(bGeo1, frameMat); b1.position.set(0,0.015,-data.d*0.25); b1.castShadow=true;
+    const bGeo2 = new THREE.BoxGeometry(data.w*0.5, 0.03, data.d);
+    const b2 = new THREE.Mesh(bGeo2, frameMat); b2.position.set(-data.w*0.25,0.015,0); b2.castShadow=true;
+    group.add(b1,b2);
+    const pGeo = new THREE.CylinderGeometry(0.02,0.02,h,8);
+    [[-data.w/2+0.02,h/2,-data.d/2+0.02],[data.w/2-0.02,h/2,-data.d/2+0.02],
+     [-data.w/2+0.02,h/2,data.d/2-0.02]].forEach(pos => {
+      const p = new THREE.Mesh(pGeo.clone(), poleMat); p.position.set(...pos); p.castShadow=true; group.add(p);
+    });
+    const rodGeo = new THREE.CylinderGeometry(0.015,0.015,data.w,8); rodGeo.applyMatrix4(new THREE.Matrix4().makeRotationZ(Math.PI/2));
+    const rod = new THREE.Mesh(rodGeo, poleMat); rod.position.set(0,h*0.7,-data.d*0.25); rod.castShadow=true;
+    group.add(rod);
+
+  } else if(data.type === 'shelf') {
+    const sGeo = new THREE.BoxGeometry(data.w, 0.03, data.d);
+    const shelf = new THREE.Mesh(sGeo, frameMat); shelf.position.set(0,0.015,0); shelf.castShadow=true;
+    const leftGeo = new THREE.BoxGeometry(0.03, h, data.d);
+    const sl = new THREE.Mesh(leftGeo, frameMat); sl.position.set(-data.w/2,h/2,0); sl.castShadow=true;
+    const sr = new THREE.Mesh(leftGeo.clone(), frameMat); sr.position.set(data.w/2,h/2,0); sr.castShadow=true;
+    group.add(shelf,sl,sr);
+
+  } else if(data.type === 'drawer') {
+    const bodyGeo = new THREE.BoxGeometry(data.w, h, data.d);
+    const body = new THREE.Mesh(bodyGeo, new THREE.MeshLambertMaterial({color:color,transparent:true,opacity:0.9}));
+    body.position.set(0,h/2,0); body.castShadow=true;
+    group.add(body);
+    // Drawer lines
+    const lineMat = new THREE.LineBasicMaterial({color:0x888888});
+    for(let i=1;i<3;i++) {
+      const y = h*i/3;
+      const geo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-data.w/2+0.01,y,data.d/2+0.001),
+        new THREE.Vector3(data.w/2-0.01,y,data.d/2+0.001)
+      ]);
+      group.add(new THREE.Line(geo,lineMat));
+    }
+    // Handles
+    const hMat = new THREE.MeshLambertMaterial({color:0x888888});
+    for(let i=0;i<2;i++) {
+      const hGeo = new THREE.CylinderGeometry(0.01,0.01,0.08,8);
+      hGeo.applyMatrix4(new THREE.Matrix4().makeRotationZ(Math.PI/2));
+      const handle = new THREE.Mesh(hGeo,hMat);
+      handle.position.set(0, h*(i+0.5)/3, data.d/2+0.02);
+      group.add(handle);
+    }
+
+  } else if(data.type === 'shoe') {
+    const bodyGeo = new THREE.BoxGeometry(data.w, h, data.d);
+    const body = new THREE.Mesh(bodyGeo, new THREE.MeshLambertMaterial({color:color,transparent:true,opacity:0.85}));
+    body.position.set(0,h/2,0); body.castShadow=true;
+    group.add(body);
+    const lineMat = new THREE.LineBasicMaterial({color:0x666666});
+    for(let i=1;i<3;i++) {
+      const y = h*i/3;
+      const geo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-data.w/2+0.01,y,data.d/2+0.001),
+        new THREE.Vector3(data.w/2-0.01,y,data.d/2+0.001)
+      ]);
+      group.add(new THREE.Line(geo,lineMat));
+    }
+
+  } else if(data.type === 'mirror') {
+    const frameGeo = new THREE.BoxGeometry(data.w+0.04, h+0.04, 0.04);
+    const frame = new THREE.Mesh(frameGeo, new THREE.MeshLambertMaterial({color:0x888866}));
+    frame.position.set(0,h/2,0); frame.castShadow=true;
+    const glassGeo = new THREE.BoxGeometry(data.w, h, 0.01);
+    const glass = new THREE.Mesh(glassGeo, new THREE.MeshLambertMaterial({color:0xa0c8f0,transparent:true,opacity:0.6}));
+    glass.position.set(0,h/2,0.025);
+    group.add(frame, glass);
+
+  } else if(data.type === 'led') {
+    const barGeo = new THREE.BoxGeometry(data.w, 0.04, 0.04);
+    const bar = new THREE.Mesh(barGeo, new THREE.MeshLambertMaterial({color:0x888888}));
+    bar.position.set(0,0.02,0);
+    const glowGeo = new THREE.BoxGeometry(data.w*0.95, 0.02, 0.02);
+    const glow = new THREE.Mesh(glowGeo, new THREE.MeshLambertMaterial({color:0xffffaa,emissive:0xffff44,emissiveIntensity:1}));
+    glow.position.set(0,0.01,0.015);
+    group.add(bar,glow);
+  }
+
+  return group;
+}
+
+// Placed objects in scene
+let placedObjects = []; // {id, mesh, data}
+
+function addModule() {
+  if(!selectedModule) { alert('먼저 모듈을 선택해주세요!'); return; }
+  const data = MODULE_DATA[selectedModule];
+  const id = Date.now().toString();
+  const mesh = build3DModule(selectedModule, selectedColor, selectedHeight);
+  // Place at center initially
+  const x = (Math.random()-0.5)*(roomW-data.w);
+  const z = (Math.random()-0.5)*(roomD-data.d);
+  mesh.position.set(x, 0, z);
+  scene.add(mesh);
+
+  const item = {
+    id, key: selectedModule, color: selectedColor, height: selectedHeight,
+    mesh, name: data.name, price: data.price,
+    x: Math.round(x*1000), z: Math.round(z*1000)
+  };
+  placedObjects.push(item);
+  placedModules.push(item);
+  renderPlacedList();
+  updateQuote();
+}
+
+function removeModule(id) {
+  const idx = placedObjects.findIndex(o=>o.id===id);
+  if(idx>=0) {
+    scene.remove(placedObjects[idx].mesh);
+    placedObjects.splice(idx,1);
+  }
+  const idx2 = placedModules.findIndex(o=>o.id===id);
+  if(idx2>=0) placedModules.splice(idx2,1);
+  renderPlacedList();
+  updateQuote();
+}
+
+function renderPlacedList() {
+  const list = document.getElementById('placedList');
+  if(placedModules.length===0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">🏗️</div><div>왼쪽에서 모듈을 선택 후<br>배치하기 버튼을 누르세요</div></div>';
+    return;
+  }
+  list.innerHTML = placedModules.map(m=>`
+    <div class="placed-item">
+      <div class="item-color" style="background:${m.color}"></div>
+      <div class="item-info">
+        <div class="item-name">${m.name}</div>
+        <div class="item-detail">H${m.height}cm | ${m.color}</div>
+      </div>
+      <div class="item-price">₩${m.price.toLocaleString()}</div>
+      <button class="remove-btn" onclick="removeModule('${m.id}')">✕</button>
+    </div>
+  `).join('');
+  document.getElementById('placedCount').textContent = placedModules.length;
+  document.getElementById('usedArea').textContent = Math.min(100, Math.round(placedModules.length*12)) + '%';
+}
+
+function updateQuote() {
+  const sub = placedModules.reduce((s,m)=>s+m.price,0);
+  const install = Math.round(sub*0.1);
+  const delivery = 50000;
+  const total = sub+install+delivery;
+  document.getElementById('quoteModule').textContent = `₩${sub.toLocaleString()}`;
+  document.getElementById('quoteInstall').textContent = `₩${install.toLocaleString()}`;
+  document.getElementById('quoteTotal').textContent = `₩${total.toLocaleString()}`;
+}
+
+// ===== MODULE SELECTION =====
+function selectModule(key) {
+  selectedModule = key;
+  document.querySelectorAll('.module-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('mod_'+key).classList.add('selected');
+}
+
+function selectColor(hex, el) {
+  selectedColor = hex;
+  document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function updateHeight(val) {
+  selectedHeight = parseInt(val);
+  document.getElementById('heightVal').textContent = val+' cm';
+}
+
+// ===== ROOM UPDATE =====
+function updateRoom() {
+  roomW = (parseInt(document.getElementById('roomW').value)||3000)/1000;
+  roomD = (parseInt(document.getElementById('roomD').value)||2000)/1000;
+  roomH = (parseInt(document.getElementById('roomH').value)||2400)/1000;
+  buildRoom();
+}
+
+// ===== TOOL =====
+function setTool(t) {
+  currentTool = t;
+  document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
+  if(t==='move') document.getElementById('toolMove').classList.add('active');
+  else if(t==='place') document.getElementById('toolPlace').classList.add('active');
+  else if(t==='delete') document.getElementById('toolDelete').classList.add('active');
+}
+
+function setSnap(v) { snapSize = v; }
+
+// ===== CAMERA CONTROLS =====
+let isDragging = false, isRightDrag = false;
+let prevMouse = {x:0,y:0};
+let theta = Math.PI/4, phi = Math.PI/3.5, radius = 7;
+let target = new THREE.Vector3(0,1,0);
+
+function resetCamera() {
+  theta = Math.PI/4; phi = Math.PI/3.5; radius = 7;
+  target.set(0,1,0);
+  updateCameraPos();
+}
+
+function updateCameraPos() {
+  camera.position.x = target.x + radius*Math.sin(phi)*Math.sin(theta);
+  camera.position.y = target.y + radius*Math.cos(phi);
+  camera.position.z = target.z + radius*Math.sin(phi)*Math.cos(theta);
+  camera.lookAt(target);
+}
+updateCameraPos();
+
+canvas.addEventListener('mousedown', e => {
+  if(e.button===2) isRightDrag=true;
+  else isDragging=true;
+  prevMouse={x:e.clientX,y:e.clientY};
+});
+canvas.addEventListener('contextmenu', e=>e.preventDefault());
+window.addEventListener('mouseup', ()=>{ isDragging=false; isRightDrag=false; });
+window.addEventListener('mousemove', e => {
+  const dx=e.clientX-prevMouse.x, dy=e.clientY-prevMouse.y;
+  prevMouse={x:e.clientX,y:e.clientY};
+  if(isDragging) {
+    theta -= dx*0.005;
+    phi = Math.max(0.1, Math.min(Math.PI/2-0.05, phi+dy*0.005));
+    updateCameraPos();
+  } else if(isRightDrag) {
+    const right = new THREE.Vector3().crossVectors(camera.getWorldDirection(new THREE.Vector3()), camera.up).normalize();
+    target.addScaledVector(right, -dx*0.005);
+    target.y += dy*0.005;
+    updateCameraPos();
+  }
+});
+canvas.addEventListener('wheel', e => {
+  radius = Math.max(2, Math.min(20, radius+e.deltaY*0.01));
+  updateCameraPos();
+  e.preventDefault();
+}, {passive:false});
+
+// Place on floor click
+canvas.addEventListener('click', e => {
+  if(currentTool !== 'place' && currentTool !== 'delete') return;
+  const rect = canvas.getBoundingClientRect();
+  const mouse = new THREE.Vector2(
+    ((e.clientX-rect.left)/rect.width)*2-1,
+    -((e.clientY-rect.top)/rect.height)*2+1
+  );
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(mouse, camera);
+
+  if(currentTool === 'place') {
+    const floorMesh = roomGroup.children.find(c=>c.name==='floor');
+    if(floorMesh) {
+      const hits = raycaster.intersectObject(floorMesh);
+      if(hits.length>0 && selectedModule) {
+        const pt = hits[0].point;
+        const snap = snapSize/1000;
+        const sx = Math.round(pt.x/snap)*snap;
+        const sz = Math.round(pt.z/snap)*snap;
+        const data = MODULE_DATA[selectedModule];
+        const id = Date.now().toString();
+        const mesh = build3DModule(selectedModule, selectedColor, selectedHeight);
+        mesh.position.set(sx,0,sz);
+        scene.add(mesh);
+        const item = {id, key:selectedModule, color:selectedColor, height:selectedHeight, mesh, name:data.name, price:data.price, x:Math.round(sx*1000), z:Math.round(sz*1000)};
+        placedObjects.push(item);
+        placedModules.push(item);
+        renderPlacedList();
+        updateQuote();
+      }
+    }
+  } else if(currentTool==='delete') {
+    const meshes = placedObjects.map(o=>o.mesh);
+    let minDist = Infinity, closest = null;
+    placedObjects.forEach(o => {
+      const hits = raycaster.intersectObject(o.mesh, true);
+      if(hits.length>0 && hits[0].distance < minDist) {
+        minDist = hits[0].distance;
+        closest = o;
+      }
+    });
+    if(closest) removeModule(closest.id);
+  }
+});
+
+// ===== RESIZE =====
+function resize() {
+  const area = canvas.parentElement;
+  const w = area.clientWidth, h = area.clientHeight;
+  renderer.setSize(w,h);
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ===== ANIMATE =====
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+
+// ===== ORDER MODAL =====
+function showOrderModal() {
+  if(placedModules.length===0) { alert('먼저 모듈을 배치해주세요!'); return; }
+  const sub = placedModules.reduce((s,m)=>s+m.price,0);
+  const install = Math.round(sub*0.1);
+  const total = sub+install+50000;
+  const summary = document.getElementById('orderSummaryItems');
+  summary.innerHTML = placedModules.map(m=>`
+    <div class="summary-item"><span>${m.name} (H${m.height}cm)</span><span>₩${m.price.toLocaleString()}</span></div>
+  `).join('') + `
+    <div class="summary-item"><span>설치비 (10%)</span><span>₩${install.toLocaleString()}</span></div>
+    <div class="summary-item"><span>배송비</span><span>₩50,000</span></div>
+  `;
+  document.getElementById('orderTotalDisplay').textContent = `₩${total.toLocaleString()}`;
+  document.getElementById('orderModal').classList.add('show');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+async function submitOrder() {
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const addr = document.getElementById('custAddr').value.trim();
+  if(!name||!phone||!addr) { alert('필수 항목(이름, 연락처, 주소)을 입력해주세요.'); return; }
+
+  const sub = placedModules.reduce((s,m)=>s+m.price,0);
+  const total = sub+Math.round(sub*0.1)+50000;
+
+  const orderData = {
+    customer: { name, phone, email: document.getElementById('custEmail').value, address: addr, date: document.getElementById('custDate').value, note: document.getElementById('custNote').value },
+    room: { w: roomW*1000, d: roomD*1000, h: roomH*1000 },
+    modules: placedModules.map(m=>({key:m.key,name:m.name,color:m.color,height:m.height,price:m.price,x:m.x,z:m.z})),
+    total,
+    status: 'pending',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    await db.collection(COLLECTION).add(orderData);
+    closeModal('orderModal');
+    alert(`✅ 주문이 완료되었습니다!\n고객명: ${name}\n총금액: ₩${total.toLocaleString()}\n\n담당자가 곧 연락드리겠습니다.`);
+    // Clear
+    placedObjects.forEach(o=>scene.remove(o.mesh));
+    placedObjects=[];
+    placedModules=[];
+    renderPlacedList();
+    updateQuote();
+    ['custName','custPhone','custEmail','custAddr','custDate','custNote'].forEach(id=>document.getElementById(id).value='');
+  } catch(e) {
+    alert('주문 저장 중 오류가 발생했습니다: '+e.message);
+  }
+}
+
+// ===== ORDERS LIST =====
+function showOrders() {
+  document.getElementById('ordersModal').classList.add('show');
+  loadOrders();
+}
+
+function loadOrders() {
+  db.collection(COLLECTION).orderBy('createdAt','desc').get().then(snap=>{
+    const body = document.getElementById('ordersListBody');
+    if(snap.empty) {
+      body.innerHTML='<div class="empty-state"><div class="icon">📭</div><div>주문내역이 없습니다</div></div>';
+      document.getElementById('orderBadge').textContent='0';
+      return;
+    }
+    document.getElementById('orderBadge').textContent=snap.size;
+    body.innerHTML = snap.docs.map(doc=>{
+      const d = doc.data();
+      const dt = d.createdAt ? new Date(d.createdAt.toDate()).toLocaleDateString('ko') : '-';
+      const statusClass = d.status==='confirmed'?'status-confirmed':'status-pending';
+      const statusText = d.status==='confirmed'?'확정':'검토중';
+      return `
+        <div class="order-card">
+          <div class="order-card-header">
+            <span class="order-id">📋 #${doc.id.slice(-6).toUpperCase()}</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span style="font-size:11px;color:#666">${dt}</span>
+              <span class="order-status ${statusClass}">${statusText}</span>
+              <button class="btn btn-outline" style="padding:3px 10px;font-size:11px;" onclick="confirmOrder('${doc.id}',this)">확정</button>
+              <button class="btn btn-danger" style="padding:3px 10px;font-size:11px;" onclick="deleteOrder('${doc.id}',this)">삭제</button>
+            </div>
+          </div>
+          <div class="order-customer">👤 ${d.customer?.name||'-'} | 📞 ${d.customer?.phone||'-'}</div>
+          <div class="order-customer" style="font-size:12px;color:#888;margin-top:3px;">📍 ${d.customer?.address||'-'}</div>
+          <div class="order-items-list">🧩 ${(d.modules||[]).map(m=>m.name).join(', ')}</div>
+          <div class="order-total-row">
+            <span style="font-size:12px;color:#888">공간: W${d.room?.w}×D${d.room?.d}×H${d.room?.h}</span>
+            <span>₩${(d.total||0).toLocaleString()}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }).catch(e=>{
+    document.getElementById('ordersListBody').innerHTML='<div class="empty-state">오류: '+e.message+'</div>';
+  });
+}
+
+function confirmOrder(id, btn) {
+  db.collection(COLLECTION).doc(id).update({status:'confirmed'}).then(()=>{
+    btn.closest('.order-card').querySelector('.order-status').className='order-status status-confirmed';
+    btn.closest('.order-card').querySelector('.order-status').textContent='확정';
+  });
+}
+
+function deleteOrder(id, btn) {
+  if(!confirm('이 주문을 삭제하시겠습니까?')) return;
+  db.collection(COLLECTION).doc(id).delete().then(()=>{
+    btn.closest('.order-card').remove();
+    loadOrders();
+  });
+}
+
+// Init badge
+db.collection(COLLECTION).onSnapshot(snap=>{
+  document.getElementById('orderBadge').textContent = snap.size;
+});
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click', e=>{ if(e.target===el) el.classList.remove('show'); });
+});
+</script>
+</body>
+</html>
