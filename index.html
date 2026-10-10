@@ -3,629 +3,381 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>보르네오 브로드 시스템 드레스룸</title>
-<meta name="description" content="10cm 단위로 맞추는 무타공 시스템 드레스룸. 내 방 크기에 직접 배치해 보고 수량과 금액을 바로 확인하세요.">
+<title>드레스룸 스토어 | 벽에 구멍 없는 보르네오 브로드 시스템 드레스룸</title>
+<meta name="description" content="천장과 바닥에 고정하는 무타공 시스템 드레스룸. 방 크기를 넣고 직접 배치한 그대로 주문하면 전문 시공팀이 찾아가 설치해요.">
+<meta property="og:image" content="img/hero.jpg">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="store.css">
 <style>
-:root{color-scheme:light;
---bg:#FFFFFF;--ivory:#F6F2EA;--ivory2:#EFEAE0;--ink:#1F1D1A;--ink2:#6B655E;--ink3:#9A948B;--line:#E4DFD6;--line2:#D3CCC0;
---pill:#3A3734;--walnut:#5C4A3E;--price:#D9412E;--ok:#2F6B4F;
-font-family:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
--webkit-text-size-adjust:100%;text-size-adjust:100%}
-*,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:110px;overflow-x:hidden}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom,0px)}
-img{display:block;max-width:100%}
-button,input,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--walnut);outline-offset:2px}
-.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
-[hidden]{display:none!important}
+/* hero */
+.hero{padding:56px 0 88px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:56px;align-items:center}
+.hero h1{font-size:56px;line-height:1.16;font-weight:800;letter-spacing:-.04em;margin:0 0 22px}
+.hero h1 span{display:block}
+.hero .lead{font-size:18px;color:var(--ink2);margin:0 0 30px;max-width:30em}
+.hero .cta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14.5px;color:var(--ink2)}
+.checks li{display:flex;align-items:center;gap:7px}
+.checks svg{color:var(--walnut2);flex:none}
+.hero-img{position:relative}
+.hero-img img{width:100%;aspect-ratio:780/577;object-fit:cover;border-radius:18px;box-shadow:0 30px 60px -30px rgba(40,30,20,.45)}
+.pricecard{position:absolute;left:-28px;bottom:-26px;background:var(--paper);border-radius:14px;padding:16px 20px;box-shadow:0 16px 40px -14px rgba(40,30,20,.35);min-width:230px}
+.pricecard small{display:block;color:var(--ink3);font-size:12.5px}
+.pricecard strong{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.pricecard strong em{font-style:normal;font-size:15px;font-weight:700;color:var(--ink2);margin-left:2px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:44px;border-top:1px solid var(--line2)}
+.stats div{padding:18px 4px 0}
+.stats b{display:block;font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.2}
+.stats span{font-size:13.5px;color:var(--ink2)}
 
-/* header */
-.hd{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.96);backdrop-filter:saturate(1.2) blur(6px);border-bottom:1px solid var(--line)}
-.hd .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:16px}
-.brand{display:flex;align-items:baseline;gap:10px;text-decoration:none;color:var(--ink)}
-.brand b{font-size:21px;font-weight:800;letter-spacing:.06em}
-.brand span{font-size:13px;color:var(--ink2)}
-.hd-r{display:flex;align-items:center;gap:6px}
-.icobtn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:19px;background:#fff;cursor:pointer;font-size:14px;text-decoration:none;color:var(--ink)}
-.icobtn:hover{border-color:var(--ink2)}
-.icobtn .cnt{min-width:20px;height:20px;border-radius:10px;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:inline-grid;place-items:center;padding:0 6px}
+/* brand */
+.brand{background:var(--walnut);color:#EFE7DC;padding:80px 0}
+.brand .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:56px;align-items:center}
+.brand .since{font-size:13px;letter-spacing:.24em;color:#C9B8A6;font-weight:700}
+.brand h2{font-size:36px;line-height:1.3;font-weight:800;letter-spacing:-.03em;margin:10px 0 14px;color:#fff}
+.brand p{margin:0;color:#D9CDBF}
+.awards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.awards div{border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:22px 18px;text-align:center}
+.awards b{display:block;font-size:34px;font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1.2}
+.awards span{font-size:13.5px;color:#D9CDBF}
 
-/* product top */
-.crumb{font-size:13px;color:var(--ink3);padding:18px 0 12px}
-.crumb a{color:inherit;text-decoration:none}
-.prod{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"gal buy" "lm buy";column-gap:48px;row-gap:28px;align-items:start;padding-bottom:56px}
-.gal{grid-area:gal}.buy{grid-area:buy}.lmore{grid-area:lm;display:flex;flex-direction:column;gap:28px}
-.lm-h{font-size:16px;font-weight:700;margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.lm-h small{font-weight:500;font-size:13px;color:var(--ink3)}
-.pick{display:grid;grid-template-columns:84px minmax(0,1fr) minmax(0,1.15fr);gap:14px;background:var(--ivory);border-radius:8px;padding:14px;align-items:stretch}
-.pick figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
-.pick img{width:100%;height:150px;object-fit:cover;border-radius:5px;background:#fff}
-.pick figcaption{font-size:12.5px;color:var(--ink2);text-align:center}
-.pick .txt{display:flex;flex-direction:column;justify-content:center;gap:6px}
-.pick .txt b{font-size:17px;font-weight:800;letter-spacing:-.01em}
-.pick .txt p{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.55}
-.svc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0}
-.svc li{border:1px solid var(--line);border-radius:8px;padding:14px 12px;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--ink2);line-height:1.4}
-.svc li svg{color:var(--walnut)}
-.svc li b{display:block;color:var(--ink);font-size:14px}
-.lay{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.lay button{padding:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;cursor:pointer;text-align:left}
-.lay button:hover{border-color:var(--ink2)}
-.lay img{width:100%;aspect-ratio:4/3;object-fit:cover}
-.lay span{display:block;padding:9px 11px 11px;font-size:13px;color:var(--ink2);line-height:1.4}
-.lay span b{display:block;color:var(--ink);font-size:14.5px}
-.gal-main{position:relative;aspect-ratio:4/3;background:var(--ivory);border-radius:6px;overflow:hidden}
-.gal-main img{width:100%;height:100%;object-fit:cover}
-.gal-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.88);cursor:pointer;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.gal-nav.prev{left:12px}.gal-nav.next{right:12px}
-.gal-count{position:absolute;right:12px;bottom:12px;background:rgba(31,29,26,.7);color:#fff;font-size:12px;padding:3px 9px;border-radius:12px}
-.thumbs{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:10px}
-.thumbs button{padding:0;border:2px solid transparent;border-radius:4px;overflow:hidden;cursor:pointer;background:var(--ivory);aspect-ratio:4/3}
-.thumbs button img{width:100%;height:100%;object-fit:cover}
-.thumbs button[aria-current="true"]{border-color:var(--ink)}
+/* reasons */
+.reasons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.rc{background:var(--paper);border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.rc img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.rc div{padding:20px 22px 24px}
+.rc i{font-style:normal;font-size:12.5px;font-weight:800;color:var(--walnut2)}
+.rc h3{font-size:19px;font-weight:800;margin:4px 0 8px;letter-spacing:-.02em}
+.rc p{margin:0;color:var(--ink2);font-size:14.5px}
 
-.buy h1{font-size:26px;line-height:1.35;font-weight:700;letter-spacing:-.02em;margin:0 0 10px}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px;padding:0;list-style:none}
-.tags li{font-size:12.5px;padding:3px 10px;border-radius:13px;background:var(--ivory);color:var(--walnut);font-weight:600}
-.price{display:flex;align-items:baseline;gap:8px;padding-bottom:18px;border-bottom:1px solid var(--line)}
-.price strong{font-size:30px;font-weight:800;letter-spacing:-.02em}
-.price span{color:var(--ink2);font-size:14px}
-.info{display:grid;grid-template-columns:88px 1fr;gap:8px 12px;margin:16px 0 20px;font-size:14px}
-.info dt{color:var(--ink3)}
-.info dd{margin:0}
-.info dd small{display:block;color:var(--ink3);font-size:12.5px}
-
-.optgrp{border-top:1px solid var(--line);padding:16px 0}
-.optgrp>h2{font-size:14.5px;font-weight:700;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.optgrp>h2 em{font-style:normal;font-weight:500;color:var(--ink2);font-size:13.5px}
-.sws{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px 4px}
-.sw{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;padding:0;border:0;background:none;cursor:pointer;font-size:11.5px;letter-spacing:-.03em;white-space:nowrap;color:var(--ink2)}
-.sw i{width:40px;height:40px;border-radius:50%;border:1px solid rgba(0,0,0,.14);display:block;background-size:cover;box-shadow:0 0 0 3px #fff}
+/* colors */
+#colors{background:var(--ivory)}
+.colorbox{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:44px;align-items:center}
+.cprev{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px}
+.cprev img{width:100%;height:420px;object-fit:cover;border-radius:14px;background:#fff}
+.cpick h3{font-size:14.5px;font-weight:700;margin:0 0 12px;display:flex;justify-content:space-between}
+.cpick h3 em{font-style:normal;font-weight:500;color:var(--ink2)}
+.sws{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px 4px;margin-bottom:26px}
+.sws.p3{grid-template-columns:repeat(8,minmax(0,1fr))}
+.sw{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0;border:0;background:none;cursor:pointer;font-size:12px;letter-spacing:-.03em;white-space:nowrap;color:var(--ink2);min-width:0}
+.sw i{width:44px;height:44px;border-radius:50%;border:1px solid rgba(0,0,0,.14);display:block;box-shadow:0 0 0 3px var(--ivory)}
 .sw[aria-pressed="true"]{color:var(--ink);font-weight:700}
-.sw[aria-pressed="true"] i{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink)}
+.sw[aria-pressed="true"] i{box-shadow:0 0 0 2px var(--ivory),0 0 0 4px var(--ink)}
+.cname{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+.cdesc{color:var(--ink2);margin:0 0 22px;min-height:3.2em}
 
-.qty-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
-.step{display:inline-flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden;height:40px}
-.step button{width:40px;border:0;background:var(--ivory);cursor:pointer;font-size:18px;line-height:1}
-.step button:disabled{opacity:.4;cursor:default}
-.step input{width:60px;border:0;border-left:1px solid var(--line2);border-right:1px solid var(--line2);text-align:center;font-size:16px;font-weight:600;-moz-appearance:textfield}
-.step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.lenin{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--ink2)}
-.lenin input{width:96px;height:40px;border:1px solid var(--line2);border-radius:4px;padding:0 10px;font-size:16px;text-align:right}
-.hint{font-size:13px;color:var(--ink2);margin:8px 0 0}
-.hint.warn{color:var(--price)}
-.plan-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:12px 14px;border-radius:6px;background:var(--ivory);font-size:13.5px}
-.plan-cta b{display:block;font-size:14px}
-.from-plan{margin-top:10px;padding:10px 12px;border:1px dashed var(--line2);border-radius:6px;font-size:13px;color:var(--ink2)}
-.from-plan b{color:var(--ink)}
-.sel{width:100%;height:44px;border:1px solid var(--line2);border-radius:4px;padding:0 12px;background:#fff;font-size:15px}
-.optlines{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
-.optlines li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:var(--ivory);border-radius:6px;padding:10px 12px;font-size:14px}
-.optlines li small{display:block;color:var(--ink3);font-size:12px}
-.optlines .step{height:34px;background:#fff}
-.optlines .step button{width:32px;font-size:16px}
-.optlines .step input{width:42px;font-size:15px}
-.optlines .x{border:0;background:none;cursor:pointer;color:var(--ink3);font-size:18px;width:28px;height:28px}
+/* sets */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.filters button{height:40px;padding:0 18px;border-radius:20px;border:1px solid var(--line2);background:var(--paper);cursor:pointer;font-size:14.5px}
+.filters button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.sets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.setc{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.setc .ph{position:relative}
+.setc img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.setc .tag{position:absolute;left:12px;top:12px;background:rgba(28,26,23,.82);color:#fff;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:12px}
+.setc .bd{padding:18px 20px 20px;display:flex;flex-direction:column;gap:6px;flex:1}
+.setc h3{font-size:19px;font-weight:800;margin:0;letter-spacing:-.02em}
+.setc .mods{font-size:13.5px;color:var(--ink2);margin:0}
+.setc .size{font-size:13.5px;color:var(--ink3);margin:0}
+.setc .pr{margin:10px 0 14px;font-size:24px;font-weight:800;letter-spacing:-.02em}
+.setc .pr small{font-size:13px;font-weight:500;color:var(--ink3);margin-left:4px}
+.setc .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto}
 
-.sum{background:var(--ivory);border-radius:8px;padding:16px 18px;margin-top:4px}
-.sum ul{list-style:none;margin:0;padding:0}
-.sum li{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:4px 0}
-.sum li span:first-child{color:var(--ink2)}
-.sum .tot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line2);margin-top:10px;padding-top:12px}
-.sum .tot b{font-size:15px}
-.sum .tot strong{font-size:28px;font-weight:800;color:var(--price);letter-spacing:-.02em}
-.sum .tot strong small{font-size:16px;font-weight:700}
-.sum .note{font-size:12.5px;color:var(--ink3);margin:6px 0 0}
-.btns{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-top:14px}
-.btn{height:54px;border-radius:4px;font-size:16px;font-weight:700;cursor:pointer;border:1px solid var(--ink);background:#fff;color:var(--ink)}
-.btn.dark{background:var(--ink);color:#fff}
-.btn:hover{filter:brightness(.96)}
-.consult{display:flex;justify-content:center;gap:16px;margin-top:12px;font-size:13.5px;color:var(--ink2)}
-.consult a{color:var(--ink);font-weight:600}
+/* modules */
+.mods-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.mc{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;grid-template-columns:58px 1fr;gap:16px;align-items:center}
+.mc svg{width:58px;height:86px;color:var(--ink2)}
+.mc h3{margin:0 0 4px;font-size:17px;font-weight:800}
+.mc p{margin:0;font-size:13.5px;color:var(--ink2)}
+.spec{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 28px;padding:0;list-style:none}
+.spec li{background:var(--ivory);border-radius:20px;padding:6px 14px;font-size:14px}
+.spec b{font-weight:800}
+.optt{margin-top:44px}
+.optt h3{font-size:20px;font-weight:800;margin:0 0 14px}
+.ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;list-style:none;margin:0;padding:0}
+.ogrid li{display:flex;justify-content:space-between;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px}
+.ogrid li small{display:block;color:var(--ink3);font-size:12.5px}
+.ogrid li span:last-child{white-space:nowrap;font-weight:700}
 
-/* tabs */
-.tabs{position:sticky;top:60px;z-index:20;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.tabs .wrap{display:flex}
-.tabs a{flex:1;text-align:center;padding:14px 4px;font-size:15px;color:var(--ink2);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
-.tabs a[aria-current="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
-section.blk{padding:64px 0;border-bottom:8px solid var(--ivory)}
-.blk-h{text-align:center;margin:0 auto 32px;max-width:640px}
-.blk-h .pill{display:inline-block;background:var(--pill);color:#fff;border-radius:6px;padding:6px 18px;font-size:15px;font-weight:700;margin-bottom:14px}
-.blk-h h2{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.35;margin:0 0 10px}
-.blk-h p{color:var(--ink2);margin:0}
+/* planner intro */
+#planner{background:var(--ink);color:#EDE7DE}
+#planner .sh h2{color:#fff}#planner .sh p{color:#CFC6BA}#planner .kick{color:#C9B8A6}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;list-style:none;padding:0;margin:0 0 36px;counter-reset:s}
+.steps li{border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:24px;counter-increment:s}
+.steps li::before{content:"0" counter(s);display:block;font-size:13px;font-weight:800;color:#C9B8A6;margin-bottom:10px}
+.steps b{display:block;font-size:19px;color:#fff;margin-bottom:6px}
+.steps span{font-size:14.5px;color:#CFC6BA}
+#planner .btn.dark{background:#fff;color:var(--ink);border-color:#fff}
+#planner .btn{color:#fff;border-color:rgba(255,255,255,.5)}
+
+/* delivery */
+.dgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.dc{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:26px}
+.dc h3{font-size:19px;font-weight:800;margin:0 0 10px}
+.dc ul{margin:0;padding-left:18px;color:var(--ink2);font-size:14.5px}
+.dc li{margin:5px 0}
+table.t{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+table.t th,table.t td{padding:8px 0;border-bottom:1px solid var(--line);text-align:left;font-weight:500}
+table.t td{text-align:right;font-weight:700}
+.order{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;list-style:none;margin:56px 0 0;padding:0;counter-reset:o}
+.order li{background:var(--ivory);border-radius:14px;padding:20px;counter-increment:o}
+.order li::before{content:counter(o);display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font-size:13px;font-weight:800;margin-bottom:10px}
+.order b{display:block;font-size:16.5px;margin-bottom:4px}
+.order span{font-size:14px;color:var(--ink2)}
 
 /* detail */
+#detail{background:var(--paper);padding-bottom:72px}
 .detail{max-width:780px;margin:0 auto;position:relative}
-.detail.fold{max-height:2600px;overflow:hidden}
-.detail.fold::after{content:"";position:absolute;left:0;right:0;bottom:0;height:220px;background:linear-gradient(rgba(255,255,255,0),#fff)}
+.detail.fold{max-height:1700px;overflow:hidden}
+.detail.fold::after{content:"";position:absolute;left:0;right:0;bottom:0;height:240px;background:linear-gradient(rgba(255,255,255,0),#fff)}
 .detail img{width:100%;height:auto}
-.more{display:flex;justify-content:center;margin-top:20px}
-.more button{height:52px;width:min(420px,100%);border:1px solid var(--ink);background:#fff;border-radius:4px;font-size:15.5px;font-weight:700;cursor:pointer}
+.more{display:flex;justify-content:center;margin-top:22px}
 
-/* planner */
-.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:900px;margin:0 auto 24px;padding:0;list-style:none;counter-reset:s}
-.steps3 li{background:var(--ivory);border-radius:8px;padding:14px 16px;font-size:14px;counter-increment:s}
-.steps3 li::before{content:counter(s);display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--pill);color:#fff;font-size:12px;font-weight:700;margin-right:8px}
-.steps3 b{font-weight:700}
-.pframe{width:100%;height:1150px;border:1px solid var(--line);border-radius:8px;background:#ECEDEB;display:block}
-
-/* guide */
-.guide{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
-.guide h3{font-size:20px;font-weight:800;margin:0 0 14px;letter-spacing:-.01em}
-.guide ul.dot{margin:0;padding-left:18px;color:var(--ink2);font-size:14.5px}
-.guide ul.dot li{margin:6px 0}
-.guide ul.dot b{color:var(--ink)}
-.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;list-style:none;padding:0;margin:0 0 10px}
-.flow li{text-align:center;font-size:13.5px;font-weight:600;padding:14px 4px;background:var(--ivory);border-radius:6px;position:relative}
-.flow li small{display:block;font-weight:400;color:var(--ink3);font-size:11.5px}
-.flow-band{display:grid;grid-template-columns:3fr 3fr;gap:8px;font-size:13px;font-weight:700;text-align:center}
-.flow-band span{padding:6px;border-radius:14px;background:var(--ivory2);color:var(--ink2)}
-.flow-band span.no{background:#FBE3DF;color:var(--price)}
-table.t{width:100%;border-collapse:collapse;font-size:14.5px}
-table.t th,table.t td{border:1px solid var(--line2);padding:10px 14px;text-align:left}
-table.t th{background:var(--ivory);font-weight:600;width:42%}
-.cs{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.cs>div{background:var(--ivory);border-radius:10px;padding:22px 24px}
-.cs .tel{font-size:32px;font-weight:800;letter-spacing:.01em;color:var(--ink);text-decoration:none;display:block;margin:4px 0 6px}
-.cs p{margin:0;color:var(--ink2);font-size:14px}
-.cs ol{margin:8px 0 0;padding-left:20px;color:var(--ink2);font-size:14px}
-
-footer{padding:36px 0 120px;color:var(--ink3);font-size:12.5px;text-align:center}
-
-/* drawer / modal */
-dialog{border:0;padding:0;border-radius:12px;max-width:min(560px,calc(100vw - 32px));width:100%;max-height:calc(100vh - 48px);box-shadow:0 20px 60px rgba(0,0,0,.25)}
-dialog::backdrop{background:rgba(20,18,16,.45)}
-.dlg-h{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line)}
-.dlg-h h2{font-size:18px;margin:0}
-.dlg-h button{border:0;background:none;font-size:22px;cursor:pointer;width:36px;height:36px}
-.dlg-b{padding:18px 22px;overflow:auto;max-height:calc(100vh - 220px)}
-.dlg-f{padding:14px 22px 20px;border-top:1px solid var(--line);display:grid;gap:8px}
-.citem{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:14px}
-.citem header{display:flex;justify-content:space-between;gap:10px;font-weight:700;margin-bottom:4px}
-.citem p{margin:2px 0;color:var(--ink2);font-size:13px}
-.citem button{border:0;background:none;color:var(--ink3);cursor:pointer;font-size:13px;text-decoration:underline;padding:0}
-pre.req{white-space:pre-wrap;word-break:keep-all;background:var(--ivory);border-radius:8px;padding:14px 16px;font:inherit;font-size:13.5px;line-height:1.65;margin:0}
-.empty{color:var(--ink3);text-align:center;padding:24px 0;margin:0}
-
-#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;font-size:14px;padding:10px 16px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;z-index:60;text-align:center}
-#toast.on{opacity:1}
-
-.mbar{display:none}
-@media (max-width:980px){
-  .prod{grid-template-columns:minmax(0,1fr);gap:24px}
-  .prod{grid-template-areas:"gal" "buy" "lm";grid-template-rows:auto}
-  .flow{grid-template-columns:repeat(3,1fr)}
-  .flow-band{display:none}
+.mcta{display:none}
+@media (max-width:1000px){
+  .hero .wrap,.brand .wrap,.colorbox{grid-template-columns:minmax(0,1fr)}
+  .hero h1{font-size:44px}
+  .hero-img{order:-1}
+  .pricecard{left:16px;bottom:-22px}
+  .reasons,.sets,.mods-grid,.dgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .order{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media (max-width:720px){
-  .wrap{padding:0 16px}
-  .brand span{display:none}
-  .buy h1{font-size:22px}
-  .price strong{font-size:26px}
-  .thumbs{grid-template-columns:repeat(7,1fr);gap:5px}
-  .sws{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 4px}
-  .pick{grid-template-columns:84px minmax(0,1fr)}
-  .pick .txt{grid-column:1/-1}
-  .svc{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .lm-h{flex-direction:column;align-items:flex-start;gap:2px}
-  .tabs a{font-size:14px}
-  section.blk{padding:44px 0}
-  .blk-h h2{font-size:23px}
-  .steps3{grid-template-columns:1fr}
-  .pframe{height:1500px}
-  .cs{grid-template-columns:1fr}
-  .info{grid-template-columns:76px 1fr}
-  .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));gap:10px;align-items:center}
-  .mbar div{flex:1;min-width:0}
-  .mbar small{display:block;font-size:12px;color:var(--ink3)}
-  .mbar strong{font-size:19px;color:var(--price);font-weight:800}
-  .mbar button{height:46px;padding:0 22px;border-radius:4px;border:0;background:var(--ink);color:#fff;font-weight:700;font-size:15px}
-  .lenin input,.step input,.sel{font-size:16px}
+@media (max-width:600px){
+  .hero{padding:20px 0 48px}
+  .hero h1{font-size:34px}
+  .hero .lead{font-size:16px}
+  .hero .cta .btn{flex:1}
+  .stats b{font-size:23px}
+  .brand{padding:60px 0}.brand h2{font-size:27px}
+  .awards b{font-size:24px}.awards div{padding:16px 8px}
+  .reasons,.sets,.mods-grid,.dgrid,.steps{grid-template-columns:minmax(0,1fr)}
+  .order{grid-template-columns:minmax(0,1fr)}
+  .cprev img{height:260px}.cprev{grid-template-columns:84px minmax(0,1fr)}
+  .sws{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 4px}
+  .mcta{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(251,250,247,.97);border-top:1px solid var(--line)}
+  .mcta .btn{flex:1;height:48px}
 }
-@media (prefers-reduced-motion:reduce){#toast{transition:none}}
 </style>
 </head>
 <body>
 <header class="hd">
   <div class="wrap">
-    <a class="brand" href="#top"><b>BORNEO</b><span>브로드 시스템 드레스룸</span></a>
+    <a class="logo" href="#top"><b>드레스룸 스토어</b><small>BORNEO BROAD SYSTEM</small></a>
+    <nav class="nav" aria-label="메뉴"><a href="#sets">추천 세트</a><a href="#colors">컬러</a><a href="#modules">칸 구성</a><a href="#delivery">배송·설치</a><a href="#detail">상세정보</a></nav>
     <div class="hd-r">
-      <a class="icobtn" href="tel:16617131" aria-label="고객센터 전화 1661-7131">상담 1661-7131</a>
-      <button class="icobtn" id="cartBtn" aria-label="장바구니 열기">장바구니 <span class="cnt" id="cartCnt">0</span></button>
+      <a class="pillbtn hide-s" href="planner.html">배치 플래너</a>
+      <a class="pillbtn dark" href="cart.html" aria-label="장바구니">장바구니 <span class="n" data-cart-count>0</span></a>
     </div>
   </div>
 </header>
 
 <main id="top">
-  <div class="wrap">
-    <nav class="crumb" aria-label="현재 위치"><a href="#top">홈</a> › <a href="#top">드레스룸</a> › 시스템 드레스룸</nav>
-    <div class="prod">
-      <div class="gal" aria-label="상품 사진">
-        <div class="gal-main">
-          <img id="galImg" src="img/g1.jpg" alt="" width="960" height="720">
-          <button class="gal-nav prev" id="galPrev" aria-label="이전 사진"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7"/></svg></button>
-          <button class="gal-nav next" id="galNext" aria-label="다음 사진"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 5l7 7-7 7"/></svg></button>
-          <span class="gal-count" id="galCount">1 / 7</span>
-        </div>
-        <div class="thumbs" id="thumbs"></div>
-      </div>
-
-      <div class="buy" id="buy">
-        <h1>보르네오 브로드 시스템 드레스룸<br>10cm 단위 맞춤 주문</h1>
-        <ul class="tags"><li>무타공 시공</li><li>전문 시공팀 무료 설치</li><li>수도권 무료배송</li><li>알루미늄 프레임</li></ul>
-        <div class="price"><strong id="unitPrice">12,000원</strong><span>/ 설치 길이 10cm당 1개</span></div>
-        <dl class="info">
-          <dt>시공</dt><dd>전문 시공팀 방문 설치<small>천장과 바닥을 고정하는 무타공 방식</small></dd>
-          <dt>배송 기간</dt><dd>실측 확인 후 수도권 5~7일, 지방 7~14일<small>영업일 기준, 주말·공휴일 제외</small></dd>
-          <dt>최소 구매</dt><dd>설치 길이 240cm (24개)<small>240cm 미만은 추가비용이 붙어요</small></dd>
-        </dl>
-
-        <div class="optgrp">
-          <h2>기둥 색상 <em id="pillarName"></em></h2>
-          <div class="sws" id="pillarSw" role="group" aria-label="기둥 색상"></div>
-        </div>
-        <div class="optgrp">
-          <h2>선반 색상 <em id="shelfName"></em></h2>
-          <div class="sws" id="shelfSw" role="group" aria-label="선반 색상"></div>
-        </div>
-        <div class="optgrp">
-          <h2>수량 <em>설치 길이 10cm당 1개, 반올림</em></h2>
-          <div class="qty-row">
-            <div class="step"><button id="qMinus" aria-label="1개 줄이기">−</button><input id="qty" type="number" inputmode="numeric" min="1" max="999" value="24" aria-label="수량(개)"><button id="qPlus" aria-label="1개 늘리기">+</button></div>
-            <label class="lenin">총 설치 길이<input id="len" type="number" inputmode="decimal" min="1" step="0.1" placeholder="예: 389.7" aria-label="총 설치 길이 cm">cm</label>
-          </div>
-          <p class="hint" id="qtyHint"></p>
-          <div id="fromPlan" class="from-plan" hidden></div>
-          <div class="plan-cta"><div><b>길이를 모르겠다면</b>방 크기만 넣고 직접 배치하면 수량과 옵션이 계산돼요.</div><a class="icobtn" href="#planner">배치 설계하기</a></div>
-        </div>
-        <div class="optgrp">
-          <h2>추가 옵션 <em>선택</em></h2>
-          <select class="sel" id="optSel" aria-label="추가 옵션 선택"><option value="">추가 옵션을 선택해 주세요</option></select>
-          <ul class="optlines" id="optLines"></ul>
-        </div>
-        <div class="optgrp">
-          <h2>배송 지역</h2>
-          <select class="sel" id="region" aria-label="배송 지역"></select>
-          <p class="hint">제주도와 도서산간 지역은 배송할 수 없어요.</p>
-        </div>
-
-        <div class="sum" aria-live="polite">
-          <ul id="sumList"></ul>
-          <div class="tot"><b>총 상품 금액</b><strong id="total">0<small>원</small></strong></div>
-          <p class="note" id="sumNote"></p>
-        </div>
-        <div class="btns"><button class="btn" id="addCart">장바구니</button><button class="btn dark" id="buyNow">구매하기</button></div>
-        <div class="consult"><span>구매가 어렵다면</span><a href="tel:16617131">전화 상담</a><a href="#cs">카카오톡 상담</a></div>
-      </div>
-
-      <div class="lmore">
-        <div>
-          <h2 class="lm-h">선택한 색상 <small>색상을 고르면 바로 바뀌어요</small></h2>
-          <div class="pick">
-            <figure><img id="pickP" src="img/p-white.jpg" alt="" width="150" height="308"><figcaption id="pickPN">기둥</figcaption></figure>
-            <figure><img id="pickS" src="img/c-white.jpg" alt="" width="300" height="330"><figcaption id="pickSN">선반</figcaption></figure>
-            <div class="txt"><b id="pickT"></b><p id="pickD"></p></div>
-          </div>
-        </div>
-        <div>
-          <h2 class="lm-h">배치 유형으로 시작하기 <small>누르면 배치 설계에 놓여요</small></h2>
-          <div class="lay">
-            <button data-g="일자형"><img src="img/g4-s.jpg" alt="" width="160" height="120"><span><b>일자형</b>벽 한 면에 깔끔하게</span></button>
-            <button data-g="ㄱ자형"><img src="img/g5-s.jpg" alt="" width="160" height="120"><span><b>ㄱ자형</b>코너까지 넓게</span></button>
-            <button data-g="ㄷ자형"><img src="img/g6-s.jpg" alt="" width="160" height="120"><span><b>ㄷ자형</b>세 면을 모두</span></button>
-          </div>
-        </div>
-        <div>
-          <h2 class="lm-h">편리하고 정확한 시공 서비스</h2>
-          <ul class="svc"><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h11v9H2zM13 10h4l3 3v3h-7"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg><span>수도권 배송비<b>무료 배송</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l7-7M14 4l6 6-3 3-6-6zM9 9l-3 3"/></svg><span>전문 시공팀<b>무료 설치</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15l9-9 6 6-9 9H3z"/><path d="M8 10l2 2M11 7l2 2M5 13l2 2"/></svg><span>전문가<b>방문 실측 서비스</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span>실측 확정 후<b>빠른 시공</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>벽 손상 없는<b>무타공 시공</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><span>1:1 맞춤<b>입체 도면 설계</b></span></li></ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <nav class="tabs" aria-label="상품 정보 메뉴">
+  <section class="hero" aria-labelledby="heroTitle">
     <div class="wrap">
-      <a href="#detail" data-tab="detail" aria-current="true">상세정보</a>
-      <a href="#planner" data-tab="planner">배치 설계</a>
-      <a href="#guide" data-tab="guide">구매안내</a>
-      <a href="#cs" data-tab="cs">상담·문의</a>
-    </div>
-  </nav>
-
-  <section class="blk" id="detail" aria-label="상세정보">
-    <div class="wrap">
-      <div class="detail fold" id="detailImgs"></div>
-      <div class="more"><button id="moreBtn" aria-expanded="false" aria-controls="detailImgs">상세정보 펼쳐보기</button></div>
+      <div>
+        <h1 id="heroTitle"><span>벽에 구멍 하나 없이,</span><span>천장까지 꼭 맞는</span><span>시스템 드레스룸</span></h1>
+        <p class="lead">방 치수를 넣고 칸을 배치해 보세요. 배치한 그대로 주문하면 전문 시공팀이 찾아가 천장과 바닥에 고정해 설치해요.</p>
+        <div class="cta"><a class="btn dark" href="planner.html">배치 플래너 시작하기</a><a class="btn" href="#sets">추천 세트 보기</a></div>
+        <ul class="checks">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>전문 시공팀 무료 설치</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>서울·수도권 무료 배송</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>E0 등급 18T 보드</li>
+        </ul>
+        <div class="stats">
+          <div><b>0개</b><span>벽에 뚫는 구멍</span></div>
+          <div><b>30~90cm</b><span>칸마다 고르는 선반 폭</span></div>
+          <div><b>24가지</b><span>기둥과 선반 컬러 조합</span></div>
+        </div>
+      </div>
+      <div class="hero-img">
+        <img src="img/hero.jpg" alt="블랙 기둥과 월넛 선반으로 꾸민 ㄱ자형 시스템 드레스룸" width="780" height="577">
+        <div class="pricecard"><small>설치 길이 1m 기준</small><strong id="heroPrice">120,000<em>원부터</em></strong></div>
+      </div>
     </div>
   </section>
 
-  <section class="blk" id="planner" aria-labelledby="plannerTitle">
+  <section class="brand" aria-labelledby="brandTitle">
     <div class="wrap">
-      <div class="blk-h">
-        <span class="pill">배치 설계</span>
-        <h2 id="plannerTitle">우리 집 공간에 직접 배치해 보세요</h2>
-        <p>배치한 길이로 수량을 계산하고, 그대로 주문에 담을 수 있어요.</p>
+      <div>
+        <span class="since">SINCE 1966</span>
+        <h2 id="brandTitle">보르네오가 직접 만들고<br>설치까지 책임져요</h2>
+        <p>수십 년간 대한민국 가구의 기준이 되어 온 보르네오. 맞춤가구를 만드는 기술로 공간에 꼭 맞는 드레스룸을 설계하고, 전문 시공팀이 직접 설치해요.</p>
       </div>
-      <ol class="steps3">
-        <li><b>방 크기</b>와 층고를 입력해요</li>
-        <li>칸을 추가하고 <b>끌어서 배치</b>해요</li>
-        <li><b>이 배치로 주문 담기</b>를 눌러요</li>
+      <div class="awards">
+        <div><b>6회 수상</b><span>고객감동 경영대상</span></div>
+        <div><b>10년 연속</b><span>한국산업 브랜드파워 1위</span></div>
+        <div><b>4년 연속</b><span>대한민국 소비자대상</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="why" aria-labelledby="whyTitle">
+    <div class="wrap">
+      <div class="sh"><span class="kick">왜 브로드인가요</span><h2 id="whyTitle">구조와 소재까지 고려한<br>완성도 높은 드레스룸</h2></div>
+      <div class="reasons">
+        <article class="rc"><img src="img/r1.jpg" alt="블랙 기둥이 천장과 바닥에 고정된 드레스룸" width="640" height="480" loading="lazy"><div><i>01</i><h3>벽 손상 없는 무타공 시공</h3><p>천장과 바닥을 고정하는 방식이라 안정감 있고 튼튼해요. 설치 후에도 위치를 바꾸거나 늘리고 나눌 수 있어요.</p></div></article>
+        <article class="rc"><img src="img/r2.jpg" alt="화이트 알루미늄 기둥과 행거봉" width="640" height="480" loading="lazy"><div><i>02</i><h3>뛰어난 내구성, 알루미늄 프레임</h3><p>강도 높고 견고한 알루미늄 프레임이라 오래 써도 변형이 적어요.</p></div></article>
+        <article class="rc"><img src="img/r3.jpg" alt="두께 18mm 선반 단면" width="640" height="480" loading="lazy"><div><i>03</i><h3>E0 등급 18T 자재</h3><p>포름알데히드 걱정을 줄인 E0 등급 18mm 목재 선반이라, 물건을 올려도 휨이 적어요.</p></div></article>
+        <article class="rc"><img src="img/r4.jpg" alt="선반 높이를 바꾼 전후 비교" width="640" height="480" loading="lazy"><div><i>04</i><h3>원하는 대로 선반 높낮이 조절</h3><p>키 큰 물건이나 긴 옷에 맞춰 선반 높이를 바꿀 수 있어요.</p></div></article>
+        <article class="rc"><img src="img/r5.jpg" alt="전신경장 도어" width="640" height="480" loading="lazy"><div><i>05</i><h3>독일 헤펠레 경첩 전신경장</h3><p>댐핑 기능이 들어간 경첩이라 거울 문이 소음과 진동 없이 부드럽게 닫혀요.</p></div></article>
+        <article class="rc"><img src="img/r6.jpg" alt="월넛 서랍장" width="640" height="480" loading="lazy"><div><i>06</i><h3>댐핑 레일 서랍장과 아일랜드</h3><p>서랍이 닫힐 때 부드럽게 닫혀 소음과 진동을 줄이고 안전하게 쓸 수 있어요.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="colors" aria-labelledby="colorTitle">
+    <div class="wrap">
+      <div class="sh"><span class="kick">컬러</span><h2 id="colorTitle">방 분위기에 맞춘 24가지 컬러 조합</h2><p>기둥 3가지와 선반 8가지를 골라 조합해요. 누르면 실제 소재 사진이 바뀌어요.</p></div>
+      <div class="colorbox">
+        <div class="cprev"><img id="cpP" src="img/p-white.jpg" alt="" width="150" height="308"><img id="cpS" src="img/c-white.jpg" alt="" width="300" height="330"></div>
+        <div class="cpick">
+          <h3>기둥 <em id="cpPN"></em></h3>
+          <div class="sws p3" id="pSw" role="group" aria-label="기둥 색상"></div>
+          <h3>선반 <em id="cpSN"></em></h3>
+          <div class="sws" id="sSw" role="group" aria-label="선반 색상"></div>
+          <p class="cname" id="cName"></p>
+          <p class="cdesc" id="cDesc"></p>
+          <a class="btn dark" id="cGo" href="planner.html">이 색으로 배치해 보기</a>
+          <p class="note">모니터와 조명에 따라 실제 색과 다르게 보일 수 있어요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sets" aria-labelledby="setTitle">
+    <div class="wrap">
+      <div class="sh"><span class="kick">추천 세트</span><h2 id="setTitle">벽 모양별 추천 세트</h2><p>마음에 드는 세트를 플래너에서 열어 내 방 크기에 맞게 고친 뒤 주문하세요. 바로 장바구니에 담을 수도 있어요.</p></div>
+      <div class="filters" id="setFilter" role="group" aria-label="세트 분류"></div>
+      <div class="sets" id="setList"></div>
+      <p class="note">치수는 선반 끝 캡을 포함한 크기예요. 설치할 때 벽과 2cm씩 띄우니, 벽 길이가 세트보다 4cm 이상 길어야 해요. 금액은 화이트 기둥, 화이트 선반 기준이에요.</p>
+    </div>
+  </section>
+
+  <section id="modules" style="background:var(--ivory)" aria-labelledby="modTitle">
+    <div class="wrap">
+      <div class="sh"><span class="kick">칸 구성</span><h2 id="modTitle">공간과 수납에 맞는 칸</h2><p>칸을 골라 이어 붙이면 하나의 드레스룸이 돼요. 선반 폭은 칸마다 정할 수 있어요.</p></div>
+      <ul class="spec"><li>깊이 <b>40cm</b></li><li>선반 폭 <b>30~90cm</b></li><li>선반 두께 <b>18mm</b></li><li>층고 <b>270cm 미만</b> 설치</li></ul>
+      <div class="mods-grid" id="modGrid"></div>
+      <div class="optt"><h3>추가 옵션</h3><ul class="ogrid" id="optGrid"></ul><p class="note">가격이 정해지지 않은 옵션은 상담할 때 안내해 드려요.</p></div>
+      <div style="margin-top:28px"><a class="btn dark" href="planner.html">플래너에서 조합하기</a></div>
+    </div>
+  </section>
+
+  <section id="planner" aria-labelledby="planTitle">
+    <div class="wrap">
+      <div class="sh"><span class="kick">배치 플래너</span><h2 id="planTitle">주문 전에 내 방에 먼저 놓아 보세요</h2><p>평면도와 3D로 바로 확인하고, 배치한 그대로 장바구니에 담아요.</p></div>
+      <ol class="steps">
+        <li><b>방 크기 입력</b><span>가로, 세로, 층고를 cm로 넣어요.</span></li>
+        <li><b>칸 배치</b><span>끌면 벽과 옆 칸에 자석처럼 붙어요. 화살표로 선반 폭을 늘리고 줄여요.</span></li>
+        <li><b>그대로 주문</b><span>구성과 색상이 장바구니에 담기고 금액이 계산돼요.</span></li>
       </ol>
-      <iframe class="pframe" id="pframe" title="드레스룸 배치 플래너" src="planner.html?embed=1" loading="eager"></iframe>
+      <div style="display:flex;flex-wrap:wrap;gap:10px"><a class="btn dark" href="planner.html">배치 플래너 시작하기</a><a class="btn" href="#sets">추천 세트에서 시작하기</a></div>
     </div>
   </section>
 
-  <section class="blk" id="guide" aria-labelledby="guideTitle">
+  <section id="delivery" aria-labelledby="delTitle">
     <div class="wrap">
-      <div class="blk-h"><span class="pill">구매안내</span><h2 id="guideTitle">주문 전에 꼭 확인해 주세요</h2></div>
-      <div class="guide">
-        <div>
-          <h3>주문 프로세스</h3>
-          <ol class="flow">
-            <li>주문결제</li><li>해피콜<small>1~2일 이내</small></li><li>유선 실측</li><li>발주서 확정</li><li>상품 제작</li><li>방문 시공</li>
-          </ol>
-          <div class="flow-band"><span>취소·환불 가능</span><span class="no">취소·환불 불가</span></div>
-          <ul class="dot"><li>시공 때 기사님이 연락 후 방문해요. 모르는 번호여도 꼭 전화를 받아 주세요.</li></ul>
-        </div>
-        <div>
-          <h3>설치 길이별 추가비용</h3>
-          <table class="t" id="feeTable"></table>
-          <ul class="dot">
-            <li>주문 개수는 설치 길이 10cm당 1개예요. 배송비와 추가비용은 별도예요.</li>
-            <li><b>천장 높이가 250cm 이상</b>이면 추가요금이 생길 수 있고, <b>270cm 이상은 시공할 수 없어요.</b></li>
-            <li>ㄱ자·ㄴ자처럼 하나로 이어지는 설치는 추가비용이 없어요. 벽면 두 곳에 따로 설치하는 경우(ㅣㅣ자)에는 추가비용이 생겨요.</li>
-            <li>현장에서 조립·시공하는 제품이라, 설치할 공간을 미리 비워 두셔야 해요. 폐가구는 수거하지 않아요.</li>
-          </ul>
-        </div>
-        <div>
-          <h3>배송비</h3>
-          <table class="t" id="shipTable"></table>
-          <ul class="dot">
-            <li>배송 불가 지역: 제주도, 도서산간 등 기타 섬·외곽 지역</li>
-            <li>2층 이상인데 엘리베이터를 쓰기 어렵거나 입구가 좁으면 양중비가 생기거나 사다리차가 필요해요. 사다리차 비용은 고객님이 부담해요.</li>
-            <li>시공일은 정할 수 있지만 시간 지정은 어려워요. 가구 특성상 묶음배송이 안 되고 품목별로 배송비가 붙어요.</li>
-          </ul>
-        </div>
-        <div>
-          <h3>교환·반품·A/S</h3>
-          <ul class="dot">
-            <li>취소와 교환은 <b>제작에 들어가기 전까지만</b> 고객센터로 접수할 수 있어요.</li>
-            <li>맞춤 가구라 제작에 들어간 뒤에는 교환과 취소가 안 돼요.</li>
-            <li>제품 하자는 설치 후 1년 동안 무상으로 A/S해 드려요. 고객 과실이나 1년 이후에는 유상이에요.</li>
-          </ul>
-        </div>
-        <div>
-          <h3>사용 시 주의사항</h3>
-          <ul class="dot">
-            <li>기둥을 세게 흔들거나 매달리면 넘어질 수 있어요. 선반을 밟고 올라가지 마세요.</li>
-            <li>선반 하나에 15~20kg까지 올릴 수 있어요. 책처럼 무거운 물건은 선반이 처질 수 있어요.</li>
-            <li>서랍장은 선반 아래쪽에 두고, 서랍은 하나씩 열어 쓰세요. 무거운 물건은 아래 서랍에 넣어 주세요.</li>
-          </ul>
-        </div>
+      <div class="sh"><span class="kick">배송·설치</span><h2 id="delTitle">실측부터 설치까지 한 번에</h2></div>
+      <div class="dgrid">
+        <div class="dc"><h3>전문 시공팀 무료 설치</h3><ul><li>실측 확인 후 기사님이 방문해 조립·설치해요.</li><li>설치할 공간은 미리 비워 주세요. 폐가구는 수거하지 않아요.</li><li>배송 기간: 실측 확인 후 수도권 5~7일, 지방 7~14일 (영업일 기준)</li><li>시공일은 정할 수 있지만 시간 지정은 어려워요.</li></ul></div>
+        <div class="dc"><h3>지역별 배송비</h3><table class="t" id="shipTable"></table><p class="note" style="margin-top:10px">제주도와 도서산간 지역은 배송할 수 없어요.</p></div>
+        <div class="dc"><h3>설치 전 확인</h3><ul><li>천장 높이 250cm 이상은 추가요금이 생길 수 있고, <b>270cm 이상은 시공할 수 없어요.</b></li><li>설치 길이가 240cm보다 짧으면 추가비용이 붙어요.</li></ul><table class="t" id="feeTable"></table><ul style="margin-top:10px"><li>벽면 두 곳에 따로 설치하면 추가비용이 생겨요.</li><li>2층 이상인데 엘리베이터를 쓰기 어려우면 양중비나 사다리차 비용이 생겨요.</li></ul></div>
       </div>
+      <ol class="order" aria-label="주문 절차">
+        <li><b>구성 고르기</b><span>추천 세트를 담거나 플래너에서 직접 배치해요.</span></li>
+        <li><b>주문 요청</b><span>장바구니에서 주문 요청서를 만들어 상담으로 보내요.</span></li>
+        <li><b>해피콜과 실측</b><span>1~2일 안에 연락드리고 실측으로 구성을 확정해요. 여기까지는 취소할 수 있어요.</span></li>
+        <li><b>제작과 방문 설치</b><span>발주서 확정 후 제작해 기사님이 설치해요. 제작 후에는 취소가 안 돼요.</span></li>
+      </ol>
     </div>
   </section>
 
-  <section class="blk" id="cs" aria-labelledby="csTitle">
+  <section id="detail" aria-label="상세정보">
     <div class="wrap">
-      <div class="blk-h"><span class="pill">상담·문의</span><h2 id="csTitle">구매가 어렵다면 상담으로 안내받으세요</h2><p>공간 스케치와 아래 내용을 함께 보내 주시면 빠르게 상담해 드려요.</p></div>
-      <div class="cs">
-        <div>
-          <p>고객센터 대표번호</p>
-          <a class="tel" href="tel:16617131">1661-7131</a>
-          <p>평일 09:00~17:00, 점심 12:00~13:00, 공휴일 휴무</p>
-          <p style="margin-top:14px">카카오톡에서 <b>보루네오가구</b>를 검색한 뒤 <b>(주)클란</b> 채널을 추가하면 1:1 채팅 상담을 받을 수 있어요.</p>
-        </div>
-        <div>
-          <p>상담할 때 알려 주세요</p>
-          <ol><li>지역</li><li>설치 형태 (일자, ㄱ자, ㄷ자)</li><li>블라인드나 커튼 설치 여부</li><li>시스템 에어컨, 화재 감지기 위치</li><li>추가 옵션이나 요청 사항</li><li>엘리베이터 유무</li><li>천장 높이</li></ol>
-        </div>
-      </div>
+      <div class="sh c"><span class="kick">상세정보</span><h2>브로드 시스템 드레스룸 자세히 보기</h2></div>
+      <div class="detail fold" id="detailImgs"></div>
+      <div class="more"><button class="btn" id="moreBtn" aria-expanded="false" aria-controls="detailImgs" style="min-width:min(420px,100%)">상세정보 펼쳐보기</button></div>
     </div>
   </section>
 </main>
-<footer>사진은 연출용이며, 실제 설치 시에는 천장 고정이 필요해요. 치수 오차 범위 ±5%</footer>
 
-<div class="mbar"><div><small>총 상품 금액</small><strong id="mTotal">0원</strong></div><button id="mBuy">구매하기</button></div>
-
-<dialog id="cartDlg" aria-labelledby="cartTitle">
-  <div class="dlg-h"><h2 id="cartTitle">장바구니</h2><button data-close aria-label="닫기">×</button></div>
-  <div class="dlg-b" id="cartBody"></div>
-  <div class="dlg-f" id="cartFoot"></div>
-</dialog>
-<dialog id="reqDlg" aria-labelledby="reqTitle">
-  <div class="dlg-h"><h2 id="reqTitle">주문 요청서</h2><button data-close aria-label="닫기">×</button></div>
-  <div class="dlg-b">
-    <p style="margin:0 0 12px;color:var(--ink2);font-size:14px">아래 내용을 복사해서 카카오톡 상담이나 전화로 전달해 주세요. 해피콜과 실측 후 최종 금액이 확정돼요.</p>
-    <pre class="req" id="reqText"></pre>
+<footer class="ft">
+  <div class="wrap">
+    <div><b>드레스룸 스토어</b><p>보르네오 브로드 시스템 드레스룸</p><p>사진은 연출용이며, 실제 설치 시에는 천장 고정이 필요해요. 치수 오차 ±5%</p></div>
+    <div><b>고객센터</b><a class="tel" href="tel:16617131">1661-7131</a><p>평일 09:00~17:00, 점심 12:00~13:00</p><p>주말·공휴일 휴무</p></div>
+    <div><b>카카오톡 상담</b><p>카카오톡에서 '보루네오가구'를 검색해 (주)클란 채널을 추가하면 1:1 상담을 받을 수 있어요.</p></div>
   </div>
-  <div class="dlg-f"><button class="btn dark" id="copyReq">요청서 복사</button><a class="btn" href="tel:16617131" style="display:grid;place-items:center;text-decoration:none">전화로 주문하기 1661-7131</a></div>
-</dialog>
-<div id="toast" role="status" aria-live="polite"></div>
+</footer>
+<div class="mcta"><a class="btn" href="#sets">추천 세트</a><a class="btn dark" href="planner.html">배치 플래너</a></div>
 
+<script src="store-data.js"></script>
+<script src="store.js"></script>
 <script>
 (function(){
-const $=id=>document.getElementById(id);
-const won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
-const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const S=window.Store,$=id=>document.getElementById(id),{won,cm,esc}=S;
+const GROUP_IMG={'기본 구성':['g3'],'일자형':['g4','g7','r1','g4'],'ㄱ자형':['g5','g1'],'ㄷ자형':['g6','g2']};
+const imgFor=(s)=>{const a=GROUP_IMG[s.g]||['g1'];const n=S.SETS.filter(x=>x.g===s.g).indexOf(s);return a[Math.max(0,n)%a.length]};
+const DETAIL=Array.from({length:25},(_,i)=>i+1).filter(n=>n!==15);
 
-const GALLERY=[['g1','월넛 선반과 블랙 기둥으로 꾸민 ㄱ자 드레스룸'],['g2','화이트 ㄷ자 드레스룸'],['g3','1단 행거, 코너장, 2단 행거 기본 구성'],['g4','일자형 배치'],['g5','ㄱ자형 배치'],['g6','마블 아일랜드가 있는 ㄷ자형 배치'],['g7','5단 선반과 서랍장, 행거 구성']];
-const DETAIL_COUNT=25;
-const PILLAR={white:{name:'화이트',hex:'#ECECE9',desc:'심플하고 세련된 순백의 솔리드 화이트 컬러예요.'},black:{name:'블랙',hex:'#2A2B2E'},silver:{name:'실버',hex:'#B6B9BC'}};
-const SHELF={white:{name:'화이트',hex:'#F7F7F4'},warmbeige:{name:'웜베이지',hex:'#DCD4C6',desc:'따뜻한 잿빛이 감도는 베이지 톤의 그레이 컬러예요.'},babypink:{name:'베이비핑크',hex:'#F6E3DC',desc:'우유에 핑크 한 방울, 순수하고 부드러운 연핑크예요.'},cottonblue:{name:'코튼블루',hex:'#C9D6D6',desc:'부드럽고 차분하게 톤 다운된, 은은하고 포근한 연블루예요.'},
-  browngray:{name:'브라운 그레이',hex:'#6F6760',desc:'브라운과 그레이의 나뭇결이 어우러진 컬러예요.',bg:'linear-gradient(160deg,#7a716a,#5f5852)'},walnut:{name:'월넛',hex:'#6B4E3F',desc:'자연스러운 나뭇결과 따뜻한 브라운 톤이 매력적인 월넛이에요.',bg:'linear-gradient(160deg,#7a5a49,#5a4136)'},
-  lightoak:{name:'라이트 오크',hex:'#DDBA8B',desc:'자연스러운 나뭇결의 따뜻한 느낌을 주는 라이트 오크예요.',bg:'linear-gradient(160deg,#e6c79d,#cfa874)'},marble:{name:'마블스톤',hex:'#ECEBE7',desc:'우아한 마블 패턴이 더해져 고급스럽고 세련된 컬러예요.',bg:'linear-gradient(135deg,#f2f1ed 40%,#cfcfcf 46%,#f2f1ed 52%,#e3e2de)'}};
-const REGIONS=[['metro','서울·경기·수도권',0],['incheon-isl','인천 영종도·강화도',30000],['gw1','강원 철원·춘천·원주',50000],['gw2','강원 그 외 지역',70000],['cc','충청도·세종·대전',50000],['jg','전라도·경상도',100000]];
-let PRICES={"unit-white":12000,"unit-warmbeige":12000,"unit-babypink":12000,"unit-cottonblue":12000,"unit-browngray":12000,"unit-walnut":12000,"unit-lightoak":12000,"unit-marble":12000,"pillar-white":0,"pillar-black":0,"pillar-silver":0,"fee-under24":50000,"fee-under15":80000};
-let OPTS=[["acc1","1단 악세서리장","W80×D40×H14cm"],["drawer2top","2단 서랍장(상단)","W80×D40×H26cm"],["pants2","2단 바지걸이장","W80×D40×H26cm"],["drawer2bot","2단 서랍장(하단)","W80×D40×H43cm"],["quilt","이불 수납장","W80×D42×H80cm"],["drawer3","3단 서랍장","W80×D40×H64cm"],["shelf5","5단 선반장","W40×D40cm, 5단"],["pullMirror","인출식 거울","W35×H100cm"],["cornerShelf","코너선반 추가","W×D 맞춤"],["island4","아일랜드 서랍장","W80×D40×H80cm"],["chest4","4단 서랍장","W80×D40×H80cm"],["islandOpen","아일랜드 수납장","W80×D40×H80cm"],["mirrorCab","전신거울장","W40×D40×H190cm"],["measure","전문가 방문 실측","서울·경기 한정"]].map(([k,name,size])=>({k,name,size}));
-const optOf=k=>OPTS.find(o=>o.k===k);
-const optPrice=k=>{const v=PRICES['opt-'+k];return typeof v==='number'?v:null};
-
-const st={pillar:'white',shelf:'white',qty:24,len:null,opts:{},region:'metro',plan:null};
-const CKEY='broad-shop-cart',SKEY='broad-shop-sel';
-try{const s=JSON.parse(localStorage.getItem(SKEY)||'null');if(s){if(PILLAR[s.pillar])st.pillar=s.pillar;if(SHELF[s.shelf])st.shelf=s.shelf;if(REGIONS.some(r=>r[0]===s.region))st.region=s.region}}catch(e){}
-const saveSel=()=>{try{localStorage.setItem(SKEY,JSON.stringify({pillar:st.pillar,shelf:st.shelf,region:st.region}))}catch(e){}};
-let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3200)}
-
-/* gallery */
-let gi=0;
-function showG(i){gi=(i+GALLERY.length)%GALLERY.length;const[k,alt]=GALLERY[gi];$('galImg').src=`img/${k}.jpg`;$('galImg').alt=alt;$('galCount').textContent=`${gi+1} / ${GALLERY.length}`;
-  $('thumbs').querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-current',j===gi))}
-$('thumbs').innerHTML=GALLERY.map(([k,alt],i)=>`<button aria-label="${i+1}번째 사진 보기: ${alt}"><img src="img/${k}-s.jpg" alt="" width="160" height="120" loading="lazy"></button>`).join('');
-$('thumbs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showG([...$('thumbs').children].indexOf(b))});
-$('galPrev').onclick=()=>showG(gi-1);$('galNext').onclick=()=>showG(gi+1);
-{let sx=null;const m=document.querySelector('.gal-main');m.addEventListener('touchstart',e=>{sx=e.touches[0].clientX},{passive:true});
- m.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)showG(gi+(dx<0?1:-1));sx=null})}
-showG(0);
-
-/* detail images */
-$('detailImgs').innerHTML=Array.from({length:DETAIL_COUNT},(_,i)=>`<img src="img/d${String(i+1).padStart(2,'0')}.jpg" alt="" loading="${i<4?'eager':'lazy'}" decoding="async">`).join('');
-$('detailImgs').firstElementChild.alt='브로드 시스템 드레스룸 상세 설명 이미지';
-$('moreBtn').onclick=()=>{const d=$('detailImgs'),open=d.classList.toggle('fold')===false;$('moreBtn').setAttribute('aria-expanded',open);$('moreBtn').textContent=open?'상세정보 접기':'상세정보 펼쳐보기';
-  if(!open)$('detail').scrollIntoView({block:'start'})};
-
-/* swatches */
-function renderSw(){
-  $('pillarSw').innerHTML=Object.entries(PILLAR).map(([k,v])=>`<button class="sw" data-p="${k}" aria-pressed="${st.pillar===k}"><i style="background:${v.hex}"></i>${v.name}</button>`).join('');
-  $('shelfSw').innerHTML=Object.entries(SHELF).map(([k,v])=>`<button class="sw" data-s="${k}" aria-pressed="${st.shelf===k}"><i style="background:${v.bg||v.hex}"></i>${v.name}</button>`).join('');
-  $('pillarName').textContent=PILLAR[st.pillar].name;$('shelfName').textContent=SHELF[st.shelf].name;
-  const P=PILLAR[st.pillar],Sh=SHELF[st.shelf];
-  $('pickP').src=`img/p-${st.pillar}.jpg`;$('pickP').alt=`${P.name} 기둥 사진`;$('pickS').src=`img/c-${st.shelf}.jpg`;$('pickS').alt=`${Sh.name} 선반 사진`;
-  $('pickPN').textContent=`기둥 ${P.name}`;$('pickSN').textContent=`선반 ${Sh.name}`;$('pickT').textContent=`${P.name} 기둥 + ${Sh.name} 선반`;$('pickD').textContent=Sh.desc;
+/* colors */
+let cp='white',cs='white';
+function renderColors(){
+  $('pSw').innerHTML=Object.entries(S.PILLAR).map(([k,v])=>`<button class="sw" data-p="${k}" aria-pressed="${cp===k}"><i style="background:${v.hex}"></i>${v.name}</button>`).join('');
+  $('sSw').innerHTML=Object.entries(S.SHELF).map(([k,v])=>`<button class="sw" data-s="${k}" aria-pressed="${cs===k}"><i style="background:${v.bg||v.hex}"></i>${v.name}</button>`).join('');
+  const P=S.PILLAR[cp],Sh=S.SHELF[cs];
+  $('cpP').src=`img/p-${cp}.jpg`;$('cpP').alt=`${P.name} 기둥`;$('cpS').src=`img/c-${cs}.jpg`;$('cpS').alt=`${Sh.name} 선반`;
+  $('cpPN').textContent=P.name;$('cpSN').textContent=Sh.name;$('cName').textContent=`${P.name} 기둥 + ${Sh.name} 선반`;$('cDesc').textContent=Sh.desc;
+  $('cGo').href=`planner.html?pillar=${cp}&shelf=${cs}`;
 }
-document.querySelector('.lay').addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b)return;toPlanner({type:'set',g:b.dataset.g});$('planner').scrollIntoView({block:'start'})});
-$('pillarSw').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;st.pillar=b.dataset.p;afterColor()};
-$('shelfSw').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;st.shelf=b.dataset.s;afterColor()};
-function afterColor(){renderSw();render();saveSel();toPlanner({type:'colors',pillar:st.pillar,shelf:st.shelf})}
+$('pSw').onclick=e=>{const b=e.target.closest('[data-p]');if(b){cp=b.dataset.p;renderColors()}};
+$('sSw').onclick=e=>{const b=e.target.closest('[data-s]');if(b){cs=b.dataset.s;renderColors()}};
 
-/* qty / length */
-function setQty(n,fromLen){n=Math.max(1,Math.min(999,Math.round(n)||1));st.qty=n;if(!fromLen){st.len=null;$('len').value=''}$('qty').value=n;render()}
-$('qMinus').onclick=()=>{st.plan=null;setQty(st.qty-1)};$('qPlus').onclick=()=>{st.plan=null;setQty(st.qty+1)};
-$('qty').addEventListener('change',e=>{st.plan=null;setQty(parseInt(e.target.value,10))});
-$('len').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(!isFinite(v)||v<=0){st.len=null;render();return}st.plan=null;st.len=Math.round(v*10)/10;setQty(Math.round(v/10)||1,true)});
-
-/* options */
-function renderOptSel(){$('optSel').innerHTML='<option value="">추가 옵션을 선택해 주세요</option>'+OPTS.map(o=>{const p=optPrice(o.k);return `<option value="${o.k}">${esc(o.name)} (${esc(o.size)}) ${p==null?'· 가격 문의':'+'+won(p)}</option>`}).join('')}
-$('optSel').addEventListener('change',e=>{const k=e.target.value;if(!k)return;st.opts[k]=(st.opts[k]||0)+1;e.target.value='';render();toast(`추가 옵션에 담았어요: ${optOf(k).name}`)});
-function renderOptLines(){
-  const ks=Object.keys(st.opts).filter(k=>st.opts[k]>0).sort((a,b)=>OPTS.findIndex(o=>o.k===a)-OPTS.findIndex(o=>o.k===b));
-  $('optLines').innerHTML=ks.map(k=>{const o=optOf(k),p=optPrice(k),n=st.opts[k];return `<li data-k="${k}"><div>${esc(o.name)}<small>${esc(o.size)} · ${p==null?'가격 문의':won(p)}</small></div>
-    <div class="step"><button data-a="-" aria-label="${esc(o.name)} 1개 줄이기">−</button><input value="${n}" inputmode="numeric" aria-label="${esc(o.name)} 수량"><button data-a="+" aria-label="${esc(o.name)} 1개 늘리기">+</button></div>
-    <button class="x" data-a="x" aria-label="${esc(o.name)} 빼기">×</button></li>`}).join('');
+/* sets */
+let filter='전체';
+function renderSets(){
+  const groups=['전체',...new Set(S.SETS.map(s=>s.g))];if(!groups.includes(filter))filter='전체';
+  $('setFilter').innerHTML=groups.map(g=>`<button data-g="${esc(g)}" aria-pressed="${g===filter}">${esc(g)}</button>`).join('');
+  const list=S.SETS.map((s,i)=>[s,i]).filter(([s])=>filter==='전체'||s.g===filter);
+  $('setList').innerHTML=list.length?list.map(([s,i])=>{const inf=S.setInfo(s),b=S.setBox(s),p=S.price(Object.assign({pillar:'white',shelf:'white'},inf));
+    const size=b.h>41?`${cm(b.w)} × ${cm(b.h)}cm`:`가로 ${cm(b.w)}cm`;
+    return `<article class="setc"><div class="ph"><img src="img/${imgFor(s)}.jpg" alt="" width="960" height="720" loading="lazy"><span class="tag">${esc(s.g)}</span></div>
+    <div class="bd"><h3>${esc(s.k)}</h3><p class="mods">${esc(S.setMods(s))}</p><p class="size">${size}, 설치 길이 ${cm(inf.lengthCm)}cm</p>
+    <p class="pr">${won(p.total)}${p.unknown.length?'<small>+ 옵션 가격 문의</small>':''}</p>
+    <div class="acts"><a class="btn sm" href="planner.html?set=${i}">플래너에서 열기</a><button class="btn sm dark" data-add="${i}">장바구니</button></div></div></article>`}).join(''):'<p>등록된 세트가 없어요.</p>';
 }
-$('optLines').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const k=b.closest('li').dataset.k;
-  if(b.dataset.a==='+')st.opts[k]++;else if(b.dataset.a==='-')st.opts[k]=Math.max(1,st.opts[k]-1);else delete st.opts[k];render()});
-$('optLines').addEventListener('change',e=>{if(e.target.tagName!=='INPUT')return;const k=e.target.closest('li').dataset.k,n=parseInt(e.target.value,10);if(n>0)st.opts[k]=Math.min(99,n);render()});
+$('setFilter').onclick=e=>{const b=e.target.closest('[data-g]');if(b){filter=b.dataset.g;renderSets()}};
+$('setList').onclick=e=>{const b=e.target.closest('[data-add]');if(!b)return;const s=S.SETS[+b.dataset.add];if(!s)return;
+  const ok=S.addCart(Object.assign({kind:'set',title:s.k,group:s.g,pillar:'white',shelf:'white'},S.setInfo(s)));
+  S.toast(ok?`'${s.k}' 세트를 담았어요. 색상은 장바구니에서 바꿀 수 있어요.`:'이 브라우저에서는 장바구니를 저장할 수 없어요.')};
 
-/* region */
-$('region').innerHTML=REGIONS.map(([k,n,f])=>`<option value="${k}">${n} (${f?'+'+won(f):'무료배송'})</option>`).join('');
-$('region').addEventListener('change',e=>{st.region=e.target.value;saveSel();render()});
+/* modules */
+function elev(type){
+  const ln=(x1,y1,x2,y2,w=1.2,dash='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
+  const sh=y=>ln(4,y,30,y,2.2),rod=y=>ln(5,y,29,y,1,'2 1.5'),wrap=s=>`<svg viewBox="0 0 34 50" aria-hidden="true">${s}</svg>`;
+  if(type==='corner')return wrap(`<path d="M4 12 H30 V22 H16 A3 3 0 0 0 13 25 V40 H4 Z" fill="none" stroke="currentColor" stroke-width="1.4"/>`);
+  let s=ln(3,1,3,49,2.4)+ln(31,1,31,49,2.4)+sh(5)+sh(46);
+  if(type==='hang2')s+=rod(8)+sh(25)+rod(28);if(type==='hangTop')s+=rod(8)+sh(37);if(type==='hangBot')s+=sh(15)+rod(18);
+  if(type==='drawer3')s+=rod(8)+`<rect x="5" y="31" width="24" height="14" fill="none" stroke="currentColor" stroke-width="1"/>`+ln(5,35.7,29,35.7,.8)+ln(5,40.3,29,40.3,.8)+sh(30);
+  if(type==='shelf5')s+=sh(15.3)+sh(25.6)+sh(35.8);return wrap(s)}
+const MODS=[['hang2','2단 상하행거','위아래 행거 1,000mm씩. 셔츠와 바지를 나눠 걸어요.'],['hangTop','1단 상부 긴행거','긴 옷 1,550mm에 아래 450mm 수납.'],['hangBot','1단 하부 긴행거','위 선반 450mm, 아래 긴 옷 1,550mm.'],
+  ['drawer3','3단 서랍장형','3단 서랍장(W80)에 행거 1,310mm. 선반 80cm 고정.'],['shelf5','5단 선반장','490mm 간격 5단 선반. 가방과 소품을 올려요.'],['corner','코너장','L자 선반으로 모서리까지. 두 변 길이를 따로 정해요.']];
+$('modGrid').innerHTML=MODS.map(([k,n,d])=>`<div class="mc">${elev(k)}<div><h3>${n}</h3><p>${d}</p></div></div>`).join('');
+function renderOpts(){$('optGrid').innerHTML=S.OPTS.map(o=>{const p=S.optPrice(o.k);return `<li><span>${esc(o.name)}<small>${esc(o.size)}</small></span><span>${p==null?'가격 문의':won(p)}</span></li>`}).join('')}
 
-/* pricing */
-function compute(s){
-  const unit=(PRICES['unit-'+s.shelf]||0)+(PRICES['pillar-'+s.pillar]||0),sys=unit*s.qty;
-  const fee=s.qty<15?(PRICES['fee-under15']||0):s.qty<24?(PRICES['fee-under24']||0):0;
-  let opt=0,unknown=[];const lines=[];
-  Object.entries(s.opts).forEach(([k,n])=>{if(!n)return;const o=optOf(k);if(!o)return;const p=optPrice(k);if(p==null)unknown.push(o.name);else opt+=p*n;lines.push([`${o.name} × ${n}`,p==null?'가격 문의':won(p*n)])});
-  const reg=REGIONS.find(r=>r[0]===s.region)||REGIONS[0],ship=reg[2];
-  return{unit,sys,fee,opt,ship,reg,lines,unknown,total:sys+fee+opt+ship};
-}
-function render(){
-  const c=compute(st);
-  $('unitPrice').textContent=won((PRICES['unit-'+st.shelf]||0)+(PRICES['pillar-'+st.pillar]||0));
-  $('qMinus').disabled=st.qty<=1;
-  const lenTxt=st.len?`${st.len.toLocaleString('ko-KR')}cm ÷ 10 = ${(st.len/10).toFixed(2)} → ${st.qty}개`:`약 ${(st.qty*10).toLocaleString('ko-KR')}cm 설치분`;
-  $('qtyHint').textContent=lenTxt+(st.qty<24?`. 240cm(24개) 미만이라 추가비용 ${won(c.fee)}이 붙어요.`:'');
-  $('qtyHint').classList.toggle('warn',st.qty<24);
-  renderOptLines();
-  $('sumList').innerHTML=[[`시스템 (${PILLAR[st.pillar].name} / ${SHELF[st.shelf].name}) ${won(c.unit)} × ${st.qty}`,won(c.sys)],
-    ...(c.fee?[[`소량 주문 추가비용 (${st.qty<15?'14개 이하':'15~23개'})`,won(c.fee)]]:[]),...c.lines,[`배송비 (${c.reg[1]})`,c.ship?won(c.ship):'무료']]
-    .map(([a,b])=>`<li><span>${esc(a)}</span><span>${b}</span></li>`).join('');
-  $('total').innerHTML=Math.round(c.total).toLocaleString('ko-KR')+'<small>원</small>';$('mTotal').textContent=won(c.total);
-  $('sumNote').textContent=(c.unknown.length?`${c.unknown.join(', ')}은(는) 가격 문의 상품이라 합계에서 빠졌어요. `:'')+'층고 250cm 이상, 분리 설치는 추가비용이 생길 수 있어요.';
-  $('region').value=st.region;
-}
+/* delivery tables */
 function renderTables(){
-  $('feeTable').innerHTML=`<tr><th>240cm 이상 (24개 이상)</th><td>추가비용 없음</td></tr><tr><th>150~240cm 미만 (15~23개)</th><td>${won(PRICES['fee-under24']||0)}</td></tr><tr><th>150cm 미만 (14개 이하)</th><td>${won(PRICES['fee-under15']||0)}</td></tr>`;
-  $('shipTable').innerHTML=REGIONS.map(([k,n,f])=>`<tr><th>${n}</th><td>${f?won(f):'무료배송'}</td></tr>`).join('');
+  $('shipTable').innerHTML=S.REGIONS.map(([k,n,f])=>`<tr><th>${n}</th><td>${f?won(f):'무료'}</td></tr>`).join('');
+  $('feeTable').innerHTML=`<tr><th>240cm 이상</th><td>추가비용 없음</td></tr><tr><th>150~240cm 미만</th><td>${won(S.PRICE['fee-under24']||0)}</td></tr><tr><th>150cm 미만</th><td>${won(S.PRICE['fee-under15']||0)}</td></tr>`;
+  $('heroPrice').innerHTML=`${(S.unitOf('white','white')*10).toLocaleString('ko-KR')}<em>원부터</em>`;
 }
 
-/* planner bridge */
-const frame=$('pframe');
-const toPlanner=m=>{try{frame.contentWindow.postMessage(Object.assign({src:'broad-shop'},m),'*')}catch(e){}};
-frame.addEventListener('load',()=>{toPlanner({type:'hello'});toPlanner({type:'colors',pillar:st.pillar,shelf:st.shelf})});
-if(/admin/.test(location.hash))frame.src='planner.html?embed=1#admin';
-window.addEventListener('message',e=>{
-  if(e.source!==frame.contentWindow)return;const m=e.data||{};if(m.src!=='broad-planner')return;
-  if(m.type==='height'&&m.h>300)frame.style.height=Math.min(4000,m.h+2)+'px';
-  else if(m.type==='toast'&&typeof m.msg==='string')toast(m.msg);
-  else if(m.type==='prices'&&m.prices&&typeof m.prices==='object'){
-    const p={};Object.entries(m.prices).forEach(([k,v])=>{if(typeof v==='number'&&isFinite(v)&&v>=0)p[k]=v});PRICES=Object.assign({},PRICES,p);
-    if(Array.isArray(m.opts)){const v=m.opts.filter(o=>o&&typeof o.k==='string'&&typeof o.name==='string').map(o=>({k:o.k,name:o.name,size:String(o.size||'')}));if(v.length)OPTS=v}
-    renderOptSel();renderTables();render();
-  }
-  else if(m.type==='order'&&m.data)takeOrder(m.data);
-});
-function takeOrder(d){
-  if(!(d.qty>0))return;
-  if(PILLAR[d.pillar])st.pillar=d.pillar;if(SHELF[d.shelf])st.shelf=d.shelf;
-  const keepM=st.opts.measure;st.opts={};(d.opts||[]).forEach(([k,n])=>{if(Array.isArray([k,n])&&optOf(k)&&n>0)st.opts[k]=Math.min(99,n|0)});
-  if(keepM)st.opts.measure=keepM;
-  st.len=Math.round(d.lengthCm*10)/10;$('len').value=st.len;setQty(d.qty,true);
-  st.plan={bays:(d.bays||[]).filter(b=>Array.isArray(b)).map(([n,c])=>`${n} ${c}칸`),room:d.room};
-  showPlanNote();renderSw();saveSel();render();
-  $('buy').scrollIntoView({block:'start'});toast(`배치한 구성을 담았어요. ${st.qty}개, 옵션 ${Object.keys(st.opts).length}종`);
-}
-function showPlanNote(){const el=$('fromPlan');if(!st.plan){el.hidden=true;return}el.hidden=false;
-  const r=st.plan.room;el.innerHTML=`<b>배치 설계에서 가져온 구성</b><br>${r?`방 ${r.w}×${r.d}cm, 층고 ${r.h}cm<br>`:''}${esc(st.plan.bays.join(', '))}`}
+/* detail */
+$('detailImgs').innerHTML=DETAIL.map((n,i)=>`<img src="img/d${String(n).padStart(2,'0')}.jpg" alt="${i?'':'브로드 시스템 드레스룸 상세 설명 이미지'}" loading="lazy" decoding="async">`).join('');
+$('moreBtn').onclick=()=>{const d=$('detailImgs'),open=!d.classList.toggle('fold');$('moreBtn').setAttribute('aria-expanded',open);$('moreBtn').textContent=open?'상세정보 접기':'상세정보 펼쳐보기';if(!open)$('detail').scrollIntoView({block:'start'})};
 
-/* cart & request */
-function snapshot(){const c=compute(st);return{pillar:st.pillar,shelf:st.shelf,qty:st.qty,len:st.len,opts:Object.assign({},st.opts),region:st.region,plan:st.plan,total:c.total,at:Date.now()}}
-const loadCart=()=>{try{const a=JSON.parse(localStorage.getItem(CKEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&PILLAR[x.pillar]&&SHELF[x.shelf]&&x.qty>0):[]}catch(e){return[]}};
-const saveCart=a=>{try{localStorage.setItem(CKEY,JSON.stringify(a))}catch(e){}};
-let cart=loadCart();
-function cartCount(){$('cartCnt').textContent=cart.length}
-function itemLines(x){const c=compute(x),L=[];
-  L.push(`기둥 ${PILLAR[x.pillar].name} / 선반 ${SHELF[x.shelf].name}`);
-  L.push(`수량 ${x.qty}개${x.len?` (설치 길이 ${x.len}cm)`:''} : ${won(c.sys)}`);
-  if(c.fee)L.push(`소량 주문 추가비용 : ${won(c.fee)}`);
-  c.lines.forEach(([a,b])=>L.push(`${a} : ${b}`));
-  L.push(`배송 ${c.reg[1]} : ${c.ship?won(c.ship):'무료'}`);
-  if(x.plan){if(x.plan.room)L.push(`배치 설계: 방 ${x.plan.room.w}×${x.plan.room.d}cm, 층고 ${x.plan.room.h}cm`);if(x.plan.bays&&x.plan.bays.length)L.push(`구성: ${x.plan.bays.join(', ')}`)}
-  return{c,L}}
-function renderCart(){
-  cartCount();
-  if(!cart.length){$('cartBody').innerHTML='<p class="empty">장바구니가 비어 있어요.</p>';$('cartFoot').innerHTML='<button class="btn" data-close>쇼핑 계속하기</button>';return}
-  let sum=0;
-  $('cartBody').innerHTML=cart.map((x,i)=>{const{c,L}=itemLines(x);sum+=c.total;return `<div class="citem"><header><span>브로드 시스템 드레스룸 ${x.qty}개</span><span>${won(c.total)}</span></header>${L.map(l=>`<p>${esc(l)}</p>`).join('')}<button data-rm="${i}">삭제</button></div>`}).join('');
-  $('cartFoot').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;font-weight:700"><span>합계</span><span style="font-size:22px;color:var(--price)">${won(sum)}</span></div><button class="btn dark" id="cartReq">주문 요청서 만들기</button>`;
-}
-$('cartBody').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;cart.splice(+b.dataset.rm,1);saveCart(cart);renderCart()});
-$('cartFoot').addEventListener('click',e=>{if(e.target.id==='cartReq'){$('cartDlg').close();openReq(cart)}});
-$('cartBtn').onclick=()=>{renderCart();$('cartDlg').showModal()};
-document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d||e.target.closest('[data-close]'))d.close()}));
-function validate(){if(!(st.qty>0)){toast('수량을 입력해 주세요.');$('qty').focus();return false}return true}
-$('addCart').onclick=()=>{if(!validate())return;cart.push(snapshot());saveCart(cart);cartCount();toast('장바구니에 담았어요.')};
-function openReq(items){
-  let sum=0;const parts=items.map((x,i)=>{const{c,L}=itemLines(x);sum+=c.total;return `[주문 ${i+1}] 브로드 시스템 드레스룸 / ${won(c.total)}\n- `+L.join('\n- ')});
-  $('reqText').textContent=`보르네오 브로드 시스템 드레스룸 주문 요청\n\n${parts.join('\n\n')}\n\n예상 합계: ${won(sum)}\n\n지역:\n설치 형태:\n천장 높이:\n엘리베이터 유무:\n요청 사항:`;
-  $('reqDlg').showModal();
-}
-const buy=()=>{if(!validate())return;openReq([snapshot()])};
-$('buyNow').onclick=buy;$('mBuy').onclick=buy;
-$('copyReq').onclick=async()=>{const t=$('reqText').textContent;try{await navigator.clipboard.writeText(t);toast('요청서를 복사했어요. 카카오톡이나 문자로 붙여 넣어 주세요.')}catch(e){
-  const r=document.createRange();r.selectNodeContents($('reqText'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('복사가 막혀 있어요. 선택된 글을 길게 눌러 복사해 주세요.')}};
-
-/* tabs highlight */
-const tabs=[...document.querySelectorAll('.tabs a')];
-const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting)tabs.forEach(a=>a.setAttribute('aria-current',a.dataset.tab===en.target.id))})},{rootMargin:'-120px 0px -60% 0px'});
-['detail','planner','guide','cs'].forEach(id=>io.observe($(id)));
-
-renderSw();renderOptSel();renderTables();cartCount();setQty(24);
+function renderAll(){renderColors();renderSets();renderOpts();renderTables()}
+renderAll();S.loadRemote().then(ok=>{if(ok)renderAll()});
 })();
 </script>
 </body>

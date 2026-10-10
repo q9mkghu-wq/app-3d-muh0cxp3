@@ -162,7 +162,7 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
     </div>
   </div>
   <div class="bar-row">
-    <div class="grp"><b><span class="n">3</span>칸 추가</b><span class="lbl">선반 80cm로 추가돼요. 평면도에서 파란 화살표를 끌어 길이를 바꿔요.</span></div>
+    <div class="grp"><b><span class="n">3</span>칸 추가</b><span class="lbl" style="white-space:normal">선반 80cm로 추가돼요. 평면도에서 파란 화살표를 끌어 길이를 바꿔요.</span></div>
     <div id="catalog"></div>
     <label class="check"><input type="checkbox" id="autoRot" checked> 벽에 끌면 자동 회전</label>
   </div>
@@ -219,6 +219,7 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
    Firebase 콘솔 > 프로젝트 설정 > 일반 > 내 앱(웹)의 apiKey, projectId를 넣으세요.
    비워 두면 Firebase 없이 파일에 들어 있는 단가와 세트를 써요. */
 window.PLANNER_FIREBASE={apiKey:"",projectId:""};
+window.PLANNER_STORE=true;
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -259,6 +260,7 @@ const optName=k=>OPTS[k]?OPTS[k].name:TYPES[k].name;
 const DEFAULT_PRICE={"unit-white":12000,"unit-warmbeige":12000,"unit-babypink":12000,"unit-cottonblue":12000,"unit-browngray":12000,"unit-walnut":12000,"unit-lightoak":12000,"unit-marble":12000,"pillar-white":0,"pillar-black":0,"pillar-silver":0,"fee-under24":50000,"fee-under15":80000};
 const HAS_RT=!!(window.claude&&window.claude.use);
 const EMBED=/[?&]embed=1/.test(location.search);
+const STORE=window.PLANNER_STORE===true;
 if(EMBED){document.documentElement.dataset.theme='light';document.documentElement.classList.add('embed')}
 const toShop=m=>{if(EMBED&&window.parent!==window)try{window.parent.postMessage(Object.assign({src:'broad-planner'},m),'*')}catch(e){}};
 const FB=(!HAS_RT&&window.PLANNER_FIREBASE&&window.PLANNER_FIREBASE.apiKey&&window.PLANNER_FIREBASE.projectId)?window.PLANNER_FIREBASE:null;
@@ -801,7 +803,7 @@ function calc(){
     if(T.kind==='free')add(it.type);if(T.opt)add(T.opt);
     if(it.o.up)add(it.o.up);if(it.o.low)add(it.o.low);if(it.o.mir)add('pullMirror');for(let i=0;i<(it.o.cs||0);i++)add('cornerShelf')});
   const cm=Math.round(L)/10,qty=Math.round(cm/10),unit=(PRICE['unit-'+S.shelf]||0)+(PRICE['pillar-'+S.pillar]||0);
-  const fee=!qty?0:qty<15?(PRICE['fee-under15']||0):qty<24?(PRICE['fee-under24']||0):0;
+  const fee=!qty?0:L<1500?(PRICE['fee-under15']||0):L<2400?(PRICE['fee-under24']||0):0;
   return{L,cm,qty,unit,bays,opts,fee};
 }
 function renderParts(){
@@ -816,15 +818,15 @@ function renderParts(){
     <div class="muted" style="font-size:12px">${p==null?`${n}개`:`${won(p)} × ${n}개`}</div></li>`}).join('');
   const nb=S.items.filter(bad).length;
   $('parts').innerHTML=colors+(bayRows?`<h4>벽면 시스템</h4><ul class="parts">${bayRows}</ul>
-  <div class="calc">설치 길이 합계 <b>${fmt(c.L)}cm</b><br>${fmt(c.L)} ÷ 10 = ${(c.cm/10).toFixed(2)} → 반올림 <b>${c.qty}개</b><br><span class="muted" style="font-size:12px">칸마다 선반 양 끝 캡 1.5cm씩(합 3cm)을 포함한 길이예요.${hasCorner?' 코너장은 두 변을 더하고 겹치는 40cm를 빼서 계산해요.':''}</span></div>
-  <ul class="parts"><li><span>시스템 ${won(c.unit)} × ${c.qty}개</span><span>${won(sys)}</span></li>${c.fee?`<li><span>소량 주문 추가비용 (${c.qty<15?'14개 이하':'15~23개'})</span><span>${won(c.fee)}</span></li>`:''}</ul>${c.qty&&c.qty<24?`<p class="muted" style="font-size:12px;margin:4px 0 0">최소 구매 길이는 240cm(24개)예요. 그보다 짧으면 추가비용이 붙어요.</p>`:''}`:'')+
+  <div class="calc">설치 길이 합계 <b>${fmt(c.L)}cm</b><br><span class="muted" style="font-size:12px">칸마다 선반 양 끝 캡 1.5cm씩(합 3cm)을 포함한 길이예요.${hasCorner?' 코너장은 두 변을 더하고 겹치는 40cm를 빼서 계산해요.':''}</span></div>
+  <ul class="parts"><li><span>시스템 (설치 길이 ${fmt(c.L)}cm)</span><span>${won(sys)}</span></li>${c.fee?`<li><span>소량 주문 추가비용 (${c.L<1500?'150cm 미만':'150~240cm 미만'})</span><span>${won(c.fee)}</span></li>`:''}</ul>${c.fee?`<p class="muted" style="font-size:12px;margin:4px 0 0">설치 길이가 240cm보다 짧으면 추가비용이 붙어요.</p>`:''}`:'')+
   (optRows?`<h4>옵션과 가구</h4><ul class="parts">${optRows}</ul>`:'')+
   `<div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid var(--ink);margin-top:6px;padding-top:9px">
     <span style="font-weight:600">예상 금액</span><span style="font-weight:600;font-size:17px">${won(total)}</span></div>
   ${missing?`<p class="status bad" style="margin:4px 0 0">가격이 정해지지 않은 옵션은 금액에서 빠졌어요.</p>`:''}
   ${nb?`<p class="status bad" style="margin:4px 0 0">겹치거나, 벽 간격 2cm가 안 되거나, 옵션이 맞지 않는 칸이 ${nb}개 있어요.</p>`:''}
   ${S.room.h>=2700?`<p class="status bad" style="margin:4px 0 0">층고 270cm 이상은 시공할 수 없어요.</p>`:S.room.h>=2500?`<p class="status bad" style="margin:4px 0 0">층고 250cm 이상은 추가요금이 생길 수 있어요.</p>`:''}
-  ${EMBED?`<button class="btn primary" id="orderBtn" style="width:100%;margin-top:12px;padding:10px">이 배치로 주문 담기</button>`:''}
+  ${EMBED?`<button class="btn primary" id="orderBtn" style="width:100%;margin-top:12px;padding:10px">이 배치로 주문 담기</button>`:''}${STORE?`<button class="btn primary" id="orderBtn" style="width:100%;margin-top:12px;padding:12px;font-size:15px">이 배치 그대로 장바구니 담기</button>${storeAdded?`<a class="btn" href="cart.html" style="display:block;text-align:center;margin-top:6px;padding:10px;text-decoration:none">장바구니 보기 (${storeCart().length})</a>`:''}`:''}
   <p class="muted" style="font-size:12px;margin:8px 0 0">치수 오차 ±5%. 실제 설치 시 기둥은 천장에 고정해요.</p>`;
 }
 function refreshAll(){renderPlan();sync3D();renderSel();renderParts();save()}
@@ -833,8 +835,24 @@ function sendOrder(){
   const nb=S.items.filter(bad).length;if(nb){toast(`빨갛게 표시된 칸 ${nb}개를 먼저 정리해 주세요.`);return}
   if(S.room.h>=2700){toast('층고 270cm 이상은 시공할 수 없어요. 층고를 확인해 주세요.');return}
   const c=calc();if(!c.qty){toast('벽면 시스템 칸을 하나 이상 배치해 주세요.');return}
-  toShop({type:'order',data:{qty:c.qty,lengthCm:Math.round(c.L)/10,pillar:S.pillar,shelf:S.shelf,room:{w:S.room.w/10,d:S.room.d/10,h:S.room.h/10},
-    bays:[...c.bays],opts:[...c.opts].sort((a,b)=>OPT_KEYS.indexOf(a[0])-OPT_KEYS.indexOf(b[0]))}});
+  const data={qty:c.qty,lengthCm:Math.round(c.L)/10,pillar:S.pillar,shelf:S.shelf,room:{w:S.room.w/10,d:S.room.d/10,h:S.room.h/10},
+    bays:[...c.bays],opts:[...c.opts].sort((a,b)=>OPT_KEYS.indexOf(a[0])-OPT_KEYS.indexOf(b[0]))};
+  if(STORE){const a=storeCart();a.push(Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),kind:'design',title:'내가 배치한 드레스룸',at:Date.now()},data));
+    try{localStorage.setItem(CART_KEY,JSON.stringify(a))}catch(e){toast('이 브라우저에서는 장바구니를 저장할 수 없어요.');return}
+    storeAdded=true;renderParts();updateStoreBar();toast('장바구니에 담았어요. 아래 버튼으로 장바구니를 볼 수 있어요.');return}
+  toShop({type:'order',data});
+}
+const CART_KEY='broad-store-cart';let storeAdded=false;
+function storeCart(){try{const a=JSON.parse(localStorage.getItem(CART_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function updateStoreBar(){const n=document.getElementById('sbCnt');if(n)n.textContent=storeCart().length}
+if(STORE){
+  const st=document.createElement('style');st.textContent=`.storebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 20px;height:54px;background:#1F1D1A;color:#fff}
+.storebar a{color:#fff;text-decoration:none}.storebar .lg{font-weight:800;font-size:16px;letter-spacing:-.01em}.storebar nav{display:flex;gap:18px;align-items:center;font-size:14px}
+.storebar nav a{opacity:.85}.storebar nav a:hover{opacity:1}.storebar b{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:10px;background:#fff;color:#1F1D1A;font-size:12px;margin-left:4px;padding:0 6px}
+@media (max-width:600px){.storebar{padding:0 14px}.storebar .hide-s{display:none}}`;document.head.appendChild(st);
+  const bar=document.createElement('div');bar.className='storebar';bar.innerHTML='<a class="lg" href="index.html">드레스룸 스토어</a><nav><a class="hide-s" href="index.html#sets">추천 세트</a><a class="hide-s" href="index.html#colors">컬러</a><a href="cart.html">장바구니<b id="sbCnt">0</b></a></nav>';
+  document.body.insertBefore(bar,document.body.firstChild);updateStoreBar();
+  window.addEventListener('storage',e=>{if(e.key===CART_KEY)updateStoreBar()});
 }
 function postPrices(){toShop({type:'prices',prices:Object.assign({},PRICE),opts:OPT_KEYS.map(k=>({k,name:optName(k),size:optSize(k)}))})}
 document.addEventListener('click',e=>{if(e.target.closest('#orderBtn'))sendOrder()});
@@ -911,7 +929,7 @@ let adminMode=null,artifactNs=null,adminSets=[];
 function priceKeys(){
   return [['선반 색상별 10cm당 단가',Object.entries(SHELF).map(([k,v])=>['unit-'+k,`선반 ${v.name}`,true])],
     ['기둥 색상 추가금 (10cm당)',Object.entries(PILLAR).map(([k,v])=>['pillar-'+k,`기둥 ${v.name}`,true])],
-    ['소량 주문 추가비용 (240cm 미만)',[['fee-under24','15~23개 (150~240cm 미만)',true],['fee-under15','14개 이하 (150cm 미만)',true]]],
+    ['소량 주문 추가비용 (설치 길이 240cm 미만)',[['fee-under24','150~240cm 미만',true],['fee-under15','150cm 미만',true]]],
     ['옵션과 가구 단가 (비워 두면 가격 미정)',OPT_KEYS.map(k=>['opt-'+k,optName(k),false])]];
 }
 function renderSetRows(){
@@ -1032,6 +1050,10 @@ $('adminSave').onclick=async()=>{
 })();
 
 load();
+if(STORE){const q=new URLSearchParams(location.search);let used=false;
+  if(PILLAR[q.get('pillar')]){S.pillar=q.get('pillar');used=true}if(SHELF[q.get('shelf')]){S.shelf=q.get('shelf');used=true}
+  const si=q.get('set');if(si!=null&&SETS[+si]){used=true;setTimeout(()=>{$('setSel').value=+si;placeSet(+si)},0)}
+  if(used)try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}}
 syncInputs();applyColors();buildRoom();resetCam();size3();refreshAll();
 let fbStamp='';
 async function loadRemote(quiet){if(!FB)return;

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>장바구니 | 드레스룸 스토어</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="store.css">
+<style>
+main{padding:44px 0 96px}
+h1{font-size:32px;font-weight:800;letter-spacing:-.03em;margin:0 0 24px}
+.cartgrid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start}
+.item{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:14px}
+.item header{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:6px}
+.item h2{font-size:19px;font-weight:800;margin:0;letter-spacing:-.02em}
+.item h2 small{font-size:13px;font-weight:600;color:var(--walnut2);margin-left:6px}
+.item .tot{font-size:21px;font-weight:800;white-space:nowrap}
+.item .meta{color:var(--ink2);font-size:14px;margin:0 0 12px}
+.colors{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
+.colors label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink3)}
+.colors select{height:42px;border:1px solid var(--line2);border-radius:6px;padding:0 10px;background:#fff;font-size:15px;color:var(--ink)}
+.lines{list-style:none;margin:0;padding:12px 0 0;border-top:1px dashed var(--line2)}
+.lines li{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:3px 0}
+.lines li span:first-child{color:var(--ink2)}
+.item .acts{display:flex;gap:14px;margin-top:12px;font-size:13.5px}
+.item .acts button,.item .acts a{border:0;background:none;padding:0;cursor:pointer;color:var(--ink2);text-decoration:underline;font-size:13.5px}
+.side{position:sticky;top:84px;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px}
+.side h2{font-size:17px;margin:0 0 12px}
+.side select{width:100%;height:46px;border:1px solid var(--line2);border-radius:6px;padding:0 10px;background:#fff;font-size:15px}
+.side ul{list-style:none;margin:16px 0 0;padding:0}
+.side li{display:flex;justify-content:space-between;font-size:14.5px;padding:4px 0}
+.side li span:first-child{color:var(--ink2)}
+.side .sum{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);margin-top:10px;padding-top:14px}
+.side .sum strong{font-size:28px;font-weight:800;color:var(--price);letter-spacing:-.02em}
+.side .btn{width:100%;margin-top:14px}
+.empty{text-align:center;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:56px 20px}
+.empty p{color:var(--ink2);margin:0 0 18px}
+.empty div{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+@media (max-width:900px){.cartgrid{grid-template-columns:minmax(0,1fr)}.side{position:static}}
+@media (max-width:600px){h1{font-size:26px}.item{padding:18px}.item header{flex-direction:column;gap:2px}}
+</style>
+</head>
+<body>
+<header class="hd">
+  <div class="wrap">
+    <a class="logo" href="index.html"><b>드레스룸 스토어</b><small>BORNEO BROAD SYSTEM</small></a>
+    <nav class="nav" aria-label="메뉴"><a href="index.html#sets">추천 세트</a><a href="index.html#colors">컬러</a><a href="index.html#modules">칸 구성</a><a href="index.html#delivery">배송·설치</a></nav>
+    <div class="hd-r"><a class="pillbtn" href="planner.html">배치 플래너</a><a class="pillbtn dark" href="cart.html" aria-current="page">장바구니 <span class="n" data-cart-count>0</span></a></div>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <h1>장바구니</h1>
+    <div id="body"></div>
+  </div>
+</main>
+<footer class="ft">
+  <div class="wrap">
+    <div><b>드레스룸 스토어</b><p>주문 요청서를 보내 주시면 해피콜과 실측 후 최종 금액을 안내해 드려요.</p></div>
+    <div><b>고객센터</b><a class="tel" href="tel:16617131">1661-7131</a><p>평일 09:00~17:00, 점심 12:00~13:00</p></div>
+    <div><b>카카오톡 상담</b><p>카카오톡에서 '보루네오가구'를 검색해 (주)클란 채널을 추가하세요.</p></div>
+  </div>
+</footer>
+<dialog id="reqDlg" aria-labelledby="reqTitle">
+  <div class="dlg-h"><h2 id="reqTitle">주문 요청서</h2><button data-close aria-label="닫기">×</button></div>
+  <div class="dlg-b"><p style="margin:0 0 12px;color:var(--ink2);font-size:14px">아래 내용을 복사해서 카카오톡 상담이나 문자로 보내 주세요. 해피콜과 실측 후 최종 금액이 확정돼요.</p><pre class="req" id="reqText"></pre></div>
+  <div class="dlg-f"><button class="btn dark" id="copyReq">요청서 복사</button><a class="btn" href="tel:16617131">전화로 주문하기 1661-7131</a></div>
+</dialog>
+
+<script src="store-data.js"></script>
+<script src="store.js"></script>
+<script>
+(function(){
+const S=window.Store,$=id=>document.getElementById(id),{won,cm,esc}=S;
+const RKEY='broad-store-region';let region='metro';try{const r=localStorage.getItem(RKEY);if(S.REGIONS.some(x=>x[0]===r))region=r}catch(e){}
+function lines(x){const p=S.price(x),L=[[`시스템 (설치 길이 ${cm(x.lengthCm)}cm)`,won(p.sys)]];if(p.fee)L.push([`소량 주문 추가비용 (${x.lengthCm<150?'150cm 미만':'150~240cm 미만'})`,won(p.fee)]);return{p,L:L.concat(p.lines)}}
+function render(){
+  const items=S.cart();S.updateCount();
+  if(!items.length){$('body').innerHTML=`<div class="empty"><p>장바구니가 비어 있어요. 추천 세트를 담거나 플래너에서 직접 배치해 보세요.</p><div><a class="btn" href="index.html#sets">추천 세트 보기</a><a class="btn dark" href="planner.html">배치 플래너 시작하기</a></div></div>`;return}
+  let sum=0;const reg=S.REGIONS.find(r=>r[0]===region)||S.REGIONS[0];
+  const html=items.map(x=>{const{p,L}=lines(x);sum+=p.total;
+    const room=x.room?`방 ${cm(x.room.w)}×${cm(x.room.d)}cm, 층고 ${cm(x.room.h)}cm. `:'';
+    const bays=(x.bays||[]).map(([n,c])=>`${n} ${c}칸`).join(', ');
+    return `<article class="item" data-id="${esc(x.id)}"><header><h2>${esc(x.title||'드레스룸')}<small>${x.kind==='set'?esc(x.group||'추천 세트'):'직접 배치'}</small></h2><span class="tot">${won(p.total)}</span></header>
+      <p class="meta">${room}${esc(bays)}</p>
+      <div class="colors"><label>기둥 색상<select data-f="pillar">${Object.entries(S.PILLAR).map(([k,v])=>`<option value="${k}" ${x.pillar===k?'selected':''}>${v.name}</option>`).join('')}</select></label>
+      <label>선반 색상<select data-f="shelf">${Object.entries(S.SHELF).map(([k,v])=>`<option value="${k}" ${x.shelf===k?'selected':''}>${v.name}</option>`).join('')}</select></label></div>
+      <ul class="lines">${L.map(([a,b])=>`<li><span>${esc(a)}</span><span>${b}</span></li>`).join('')}</ul>
+      <div class="acts"><button data-rm>삭제</button></div></article>`}).join('');
+  const unknown=[...new Set(items.flatMap(x=>S.price(x).unknown))];
+  $('body').innerHTML=`<div class="cartgrid"><div>${html}</div><aside class="side" aria-label="주문 금액"><h2>배송 지역</h2>
+    <select id="region" aria-label="배송 지역">${S.REGIONS.map(([k,n,f])=>`<option value="${k}" ${k===region?'selected':''}>${n} (${f?'+'+won(f):'무료'})</option>`).join('')}</select>
+    <p class="note" style="margin-top:8px">제주도와 도서산간은 배송할 수 없어요.</p>
+    <ul><li><span>상품 금액</span><span>${won(sum)}</span></li><li><span>배송비</span><span>${reg[2]?won(reg[2]):'무료'}</span></li></ul>
+    <div class="sum"><b>예상 합계</b><strong>${won(sum+reg[2])}</strong></div>
+    ${unknown.length?`<p class="note">${esc(unknown.join(', '))}은(는) 가격 문의 상품이라 합계에서 빠졌어요.</p>`:''}
+    <p class="note">층고 250cm 이상, 분리 설치는 추가비용이 생길 수 있어요.</p>
+    <button class="btn dark" id="reqBtn">주문 요청서 만들기</button><a class="btn" href="tel:16617131" style="margin-top:8px;width:100%">전화 상담 1661-7131</a></aside></div>`;
+}
+$('body').addEventListener('change',e=>{
+  if(e.target.id==='region'){region=e.target.value;try{localStorage.setItem(RKEY,region)}catch(_){}render();return}
+  const f=e.target.dataset.f;if(!f)return;const id=e.target.closest('.item').dataset.id,a=S.cart(),x=a.find(i=>i.id===id);if(!x)return;
+  x[f]=e.target.value;S.saveCart(a);render()});
+$('body').addEventListener('click',e=>{
+  if(e.target.closest('[data-rm]')){const id=e.target.closest('.item').dataset.id;S.saveCart(S.cart().filter(i=>i.id!==id));render();S.toast('삭제했어요.');return}
+  if(e.target.id==='reqBtn')openReq()});
+function openReq(){
+  const items=S.cart();let sum=0;const reg=S.REGIONS.find(r=>r[0]===region)||S.REGIONS[0];
+  const parts=items.map((x,i)=>{const{p,L}=lines(x);sum+=p.total;const head=[`[${i+1}] ${x.title||'드레스룸'} (${x.kind==='set'?'추천 세트':'직접 배치'}) : ${won(p.total)}`,`- 기둥 ${S.PILLAR[x.pillar].name} / 선반 ${S.SHELF[x.shelf].name}`];
+    if(x.room)head.push(`- 방 ${cm(x.room.w)}×${cm(x.room.d)}cm, 층고 ${cm(x.room.h)}cm`);if(x.bays&&x.bays.length)head.push(`- 구성: ${x.bays.map(([n,c])=>`${n} ${c}칸`).join(', ')}`);
+    return head.concat(L.map(([a,b])=>`- ${a} : ${b}`)).join('\n')});
+  $('reqText').textContent=`드레스룸 스토어 주문 요청 (보르네오 브로드 시스템 드레스룸)\n\n${parts.join('\n\n')}\n\n배송 지역: ${reg[1]} (${reg[2]?won(reg[2]):'무료'})\n예상 합계: ${won(sum+reg[2])}\n\n이름:\n연락처:\n설치 주소(시·구까지):\n천장 높이:\n엘리베이터 유무:\n요청 사항:`;
+  $('reqDlg').showModal()}
+$('reqDlg').addEventListener('click',e=>{if(e.target===$('reqDlg')||e.target.closest('[data-close]'))$('reqDlg').close()});
+$('copyReq').onclick=async()=>{try{await navigator.clipboard.writeText($('reqText').textContent);S.toast('요청서를 복사했어요. 카카오톡이나 문자로 붙여 넣어 주세요.')}catch(e){const r=document.createRange();r.selectNodeContents($('reqText'));const s=getSelection();s.removeAllRanges();s.addRange(r);S.toast('복사가 막혀 있어요. 선택된 글을 복사해 주세요.')}};
+document.addEventListener('cartchange',render);
+render();S.loadRemote().then(ok=>{if(ok)render()});
+})();
+</script>
+</body>
+</html>
