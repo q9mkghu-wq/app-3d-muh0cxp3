@@ -843,6 +843,7 @@ window.addEventListener('message',e=>{if(!EMBED||e.source!==window.parent)return
   if(m.type==='colors'){let ch=false;if(PILLAR[m.pillar]&&m.pillar!==S.pillar){S.pillar=m.pillar;ch=true}if(SHELF[m.shelf]&&m.shelf!==S.shelf){S.shelf=m.shelf;ch=true}
     if(ch){renderSwatches();applyColors();refreshAll()}}
   if(m.type==='hello')postPrices();
+  if(m.type==='set'&&typeof m.g==='string'){const i=SETS.findIndex(x=>x.g===m.g);if(i<0){toast(`${m.g} 세트가 없어요.`);return}$('setSel').value=i;placeSet(i)}
 });
 if(EMBED){const rh=()=>toShop({type:'height',h:Math.ceil(document.body.offsetHeight)});new ResizeObserver(rh).observe(document.body);rh()}
 

@@ -37,8 +37,27 @@ button,input,select{font:inherit;color:inherit}
 /* product top */
 .crumb{font-size:13px;color:var(--ink3);padding:18px 0 12px}
 .crumb a{color:inherit;text-decoration:none}
-.prod{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:48px;align-items:start;padding-bottom:56px}
-.gal{position:sticky;top:84px}
+.prod{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"gal buy" "lm buy";column-gap:48px;row-gap:28px;align-items:start;padding-bottom:56px}
+.gal{grid-area:gal}.buy{grid-area:buy}.lmore{grid-area:lm;display:flex;flex-direction:column;gap:28px}
+.lm-h{font-size:16px;font-weight:700;margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lm-h small{font-weight:500;font-size:13px;color:var(--ink3)}
+.pick{display:grid;grid-template-columns:84px minmax(0,1fr) minmax(0,1.15fr);gap:14px;background:var(--ivory);border-radius:8px;padding:14px;align-items:stretch}
+.pick figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pick img{width:100%;height:150px;object-fit:cover;border-radius:5px;background:#fff}
+.pick figcaption{font-size:12.5px;color:var(--ink2);text-align:center}
+.pick .txt{display:flex;flex-direction:column;justify-content:center;gap:6px}
+.pick .txt b{font-size:17px;font-weight:800;letter-spacing:-.01em}
+.pick .txt p{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.55}
+.svc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0}
+.svc li{border:1px solid var(--line);border-radius:8px;padding:14px 12px;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--ink2);line-height:1.4}
+.svc li svg{color:var(--walnut)}
+.svc li b{display:block;color:var(--ink);font-size:14px}
+.lay{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.lay button{padding:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;cursor:pointer;text-align:left}
+.lay button:hover{border-color:var(--ink2)}
+.lay img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.lay span{display:block;padding:9px 11px 11px;font-size:13px;color:var(--ink2);line-height:1.4}
+.lay span b{display:block;color:var(--ink);font-size:14.5px}
 .gal-main{position:relative;aspect-ratio:4/3;background:var(--ivory);border-radius:6px;overflow:hidden}
 .gal-main img{width:100%;height:100%;object-fit:cover}
 .gal-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.88);cursor:pointer;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.15)}
@@ -178,7 +197,7 @@ pre.req{white-space:pre-wrap;word-break:keep-all;background:var(--ivory);border-
 .mbar{display:none}
 @media (max-width:980px){
   .prod{grid-template-columns:minmax(0,1fr);gap:24px}
-  .gal{position:static}
+  .prod{grid-template-areas:"gal" "buy" "lm";grid-template-rows:auto}
   .flow{grid-template-columns:repeat(3,1fr)}
   .flow-band{display:none}
 }
@@ -189,6 +208,10 @@ pre.req{white-space:pre-wrap;word-break:keep-all;background:var(--ivory);border-
   .price strong{font-size:26px}
   .thumbs{grid-template-columns:repeat(7,1fr);gap:5px}
   .sws{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 4px}
+  .pick{grid-template-columns:84px minmax(0,1fr)}
+  .pick .txt{grid-column:1/-1}
+  .svc{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lm-h{flex-direction:column;align-items:flex-start;gap:2px}
   .tabs a{font-size:14px}
   section.blk{padding:44px 0}
   .blk-h h2{font-size:23px}
@@ -277,6 +300,29 @@ pre.req{white-space:pre-wrap;word-break:keep-all;background:var(--ivory);border-
         </div>
         <div class="btns"><button class="btn" id="addCart">장바구니</button><button class="btn dark" id="buyNow">구매하기</button></div>
         <div class="consult"><span>구매가 어렵다면</span><a href="tel:16617131">전화 상담</a><a href="#cs">카카오톡 상담</a></div>
+      </div>
+
+      <div class="lmore">
+        <div>
+          <h2 class="lm-h">선택한 색상 <small>색상을 고르면 바로 바뀌어요</small></h2>
+          <div class="pick">
+            <figure><img id="pickP" src="img/p-white.jpg" alt="" width="150" height="308"><figcaption id="pickPN">기둥</figcaption></figure>
+            <figure><img id="pickS" src="img/c-white.jpg" alt="" width="300" height="330"><figcaption id="pickSN">선반</figcaption></figure>
+            <div class="txt"><b id="pickT"></b><p id="pickD"></p></div>
+          </div>
+        </div>
+        <div>
+          <h2 class="lm-h">배치 유형으로 시작하기 <small>누르면 배치 설계에 놓여요</small></h2>
+          <div class="lay">
+            <button data-g="일자형"><img src="img/g4-s.jpg" alt="" width="160" height="120"><span><b>일자형</b>벽 한 면에 깔끔하게</span></button>
+            <button data-g="ㄱ자형"><img src="img/g5-s.jpg" alt="" width="160" height="120"><span><b>ㄱ자형</b>코너까지 넓게</span></button>
+            <button data-g="ㄷ자형"><img src="img/g6-s.jpg" alt="" width="160" height="120"><span><b>ㄷ자형</b>세 면을 모두</span></button>
+          </div>
+        </div>
+        <div>
+          <h2 class="lm-h">편리하고 정확한 시공 서비스</h2>
+          <ul class="svc"><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h11v9H2zM13 10h4l3 3v3h-7"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg><span>수도권 배송비<b>무료 배송</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l7-7M14 4l6 6-3 3-6-6zM9 9l-3 3"/></svg><span>전문 시공팀<b>무료 설치</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15l9-9 6 6-9 9H3z"/><path d="M8 10l2 2M11 7l2 2M5 13l2 2"/></svg><span>전문가<b>방문 실측 서비스</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span>실측 확정 후<b>빠른 시공</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span>벽 손상 없는<b>무타공 시공</b></span></li><li><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg><span>1:1 맞춤<b>입체 도면 설계</b></span></li></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -409,10 +455,10 @@ const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 
 const GALLERY=[['g1','월넛 선반과 블랙 기둥으로 꾸민 ㄱ자 드레스룸'],['g2','화이트 ㄷ자 드레스룸'],['g3','1단 행거, 코너장, 2단 행거 기본 구성'],['g4','일자형 배치'],['g5','ㄱ자형 배치'],['g6','마블 아일랜드가 있는 ㄷ자형 배치'],['g7','5단 선반과 서랍장, 행거 구성']];
 const DETAIL_COUNT=25;
-const PILLAR={white:{name:'화이트',hex:'#ECECE9'},black:{name:'블랙',hex:'#2A2B2E'},silver:{name:'실버',hex:'#B6B9BC'}};
-const SHELF={white:{name:'화이트',hex:'#F7F7F4'},warmbeige:{name:'웜베이지',hex:'#DCD4C6'},babypink:{name:'베이비핑크',hex:'#F6E3DC'},cottonblue:{name:'코튼블루',hex:'#C9D6D6'},
-  browngray:{name:'브라운 그레이',hex:'#6F6760',bg:'linear-gradient(160deg,#7a716a,#5f5852)'},walnut:{name:'월넛',hex:'#6B4E3F',bg:'linear-gradient(160deg,#7a5a49,#5a4136)'},
-  lightoak:{name:'라이트 오크',hex:'#DDBA8B',bg:'linear-gradient(160deg,#e6c79d,#cfa874)'},marble:{name:'마블스톤',hex:'#ECEBE7',bg:'linear-gradient(135deg,#f2f1ed 40%,#cfcfcf 46%,#f2f1ed 52%,#e3e2de)'}};
+const PILLAR={white:{name:'화이트',hex:'#ECECE9',desc:'심플하고 세련된 순백의 솔리드 화이트 컬러예요.'},black:{name:'블랙',hex:'#2A2B2E'},silver:{name:'실버',hex:'#B6B9BC'}};
+const SHELF={white:{name:'화이트',hex:'#F7F7F4'},warmbeige:{name:'웜베이지',hex:'#DCD4C6',desc:'따뜻한 잿빛이 감도는 베이지 톤의 그레이 컬러예요.'},babypink:{name:'베이비핑크',hex:'#F6E3DC',desc:'우유에 핑크 한 방울, 순수하고 부드러운 연핑크예요.'},cottonblue:{name:'코튼블루',hex:'#C9D6D6',desc:'부드럽고 차분하게 톤 다운된, 은은하고 포근한 연블루예요.'},
+  browngray:{name:'브라운 그레이',hex:'#6F6760',desc:'브라운과 그레이의 나뭇결이 어우러진 컬러예요.',bg:'linear-gradient(160deg,#7a716a,#5f5852)'},walnut:{name:'월넛',hex:'#6B4E3F',desc:'자연스러운 나뭇결과 따뜻한 브라운 톤이 매력적인 월넛이에요.',bg:'linear-gradient(160deg,#7a5a49,#5a4136)'},
+  lightoak:{name:'라이트 오크',hex:'#DDBA8B',desc:'자연스러운 나뭇결의 따뜻한 느낌을 주는 라이트 오크예요.',bg:'linear-gradient(160deg,#e6c79d,#cfa874)'},marble:{name:'마블스톤',hex:'#ECEBE7',desc:'우아한 마블 패턴이 더해져 고급스럽고 세련된 컬러예요.',bg:'linear-gradient(135deg,#f2f1ed 40%,#cfcfcf 46%,#f2f1ed 52%,#e3e2de)'}};
 const REGIONS=[['metro','서울·경기·수도권',0],['incheon-isl','인천 영종도·강화도',30000],['gw1','강원 철원·춘천·원주',50000],['gw2','강원 그 외 지역',70000],['cc','충청도·세종·대전',50000],['jg','전라도·경상도',100000]];
 let PRICES={"unit-white":12000,"unit-warmbeige":12000,"unit-babypink":12000,"unit-cottonblue":12000,"unit-browngray":12000,"unit-walnut":12000,"unit-lightoak":12000,"unit-marble":12000,"pillar-white":0,"pillar-black":0,"pillar-silver":0,"fee-under24":50000,"fee-under15":80000};
 let OPTS=[["acc1","1단 악세서리장","W80×D40×H14cm"],["drawer2top","2단 서랍장(상단)","W80×D40×H26cm"],["pants2","2단 바지걸이장","W80×D40×H26cm"],["drawer2bot","2단 서랍장(하단)","W80×D40×H43cm"],["quilt","이불 수납장","W80×D42×H80cm"],["drawer3","3단 서랍장","W80×D40×H64cm"],["shelf5","5단 선반장","W40×D40cm, 5단"],["pullMirror","인출식 거울","W35×H100cm"],["cornerShelf","코너선반 추가","W×D 맞춤"],["island4","아일랜드 서랍장","W80×D40×H80cm"],["chest4","4단 서랍장","W80×D40×H80cm"],["islandOpen","아일랜드 수납장","W80×D40×H80cm"],["mirrorCab","전신거울장","W40×D40×H190cm"],["measure","전문가 방문 실측","서울·경기 한정"]].map(([k,name,size])=>({k,name,size}));
@@ -447,7 +493,11 @@ function renderSw(){
   $('pillarSw').innerHTML=Object.entries(PILLAR).map(([k,v])=>`<button class="sw" data-p="${k}" aria-pressed="${st.pillar===k}"><i style="background:${v.hex}"></i>${v.name}</button>`).join('');
   $('shelfSw').innerHTML=Object.entries(SHELF).map(([k,v])=>`<button class="sw" data-s="${k}" aria-pressed="${st.shelf===k}"><i style="background:${v.bg||v.hex}"></i>${v.name}</button>`).join('');
   $('pillarName').textContent=PILLAR[st.pillar].name;$('shelfName').textContent=SHELF[st.shelf].name;
+  const P=PILLAR[st.pillar],Sh=SHELF[st.shelf];
+  $('pickP').src=`img/p-${st.pillar}.jpg`;$('pickP').alt=`${P.name} 기둥 사진`;$('pickS').src=`img/c-${st.shelf}.jpg`;$('pickS').alt=`${Sh.name} 선반 사진`;
+  $('pickPN').textContent=`기둥 ${P.name}`;$('pickSN').textContent=`선반 ${Sh.name}`;$('pickT').textContent=`${P.name} 기둥 + ${Sh.name} 선반`;$('pickD').textContent=Sh.desc;
 }
+document.querySelector('.lay').addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b)return;toPlanner({type:'set',g:b.dataset.g});$('planner').scrollIntoView({block:'start'})});
 $('pillarSw').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;st.pillar=b.dataset.p;afterColor()};
 $('shelfSw').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;st.shelf=b.dataset.s;afterColor()};
 function afterColor(){renderSw();render();saveSel();toPlanner({type:'colors',pillar:st.pillar,shelf:st.shelf})}
