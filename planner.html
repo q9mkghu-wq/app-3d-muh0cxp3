@@ -850,8 +850,9 @@ if(STORE){
 .storebar a{color:#fff;text-decoration:none}.storebar .lg{font-weight:800;font-size:16px;letter-spacing:-.01em}.storebar nav{display:flex;gap:18px;align-items:center;font-size:14px}
 .storebar nav a{opacity:.85}.storebar nav a:hover{opacity:1}.storebar b{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:10px;background:#fff;color:#1F1D1A;font-size:12px;margin-left:4px;padding:0 6px}
 @media (max-width:600px){.storebar{padding:0 14px}.storebar .hide-s{display:none}}`;document.head.appendChild(st);
-  const bar=document.createElement('div');bar.className='storebar';bar.innerHTML='<a class="lg" href="index.html">드레스룸 스토어</a><nav><a class="hide-s" href="index.html#sets">추천 세트</a><a class="hide-s" href="index.html#colors">컬러</a><a href="cart.html">장바구니<b id="sbCnt">0</b></a></nav>';
+  const bar=document.createElement('div');bar.className='storebar';bar.innerHTML='<a class="lg" href="index.html">드레스룸 스토어</a><nav><a class="hide-s" href="index.html#sets">추천 세트</a><a class="hide-s" href="index.html#colors">컬러</a><a href="cart.html">장바구니<b id="sbCnt">0</b></a><a href="planner.html#admin" id="sbAdmin" style="font-size:13px;opacity:.7">관리자</a></nav>';
   document.body.insertBefore(bar,document.body.firstChild);updateStoreBar();
+  document.getElementById('sbAdmin').addEventListener('click',e=>{e.preventDefault();if(/admin/.test(location.hash)&&!$('adminBtn').hidden){openAdmin();return}location.hash='admin';location.reload()});
   window.addEventListener('storage',e=>{if(e.key===CART_KEY)updateStoreBar()});
 }
 function postPrices(){toShop({type:'prices',prices:Object.assign({},PRICE),opts:OPT_KEYS.map(k=>({k,name:optName(k),size:optSize(k)}))})}
@@ -1036,9 +1037,9 @@ $('adminSave').onclick=async()=>{
 (async function initAdmin(){
   if(!HAS_RT){
     if(FB&&/admin/.test(location.hash)){adminMode='firebase';$('adminBtn').hidden=false;$('fbLogin').hidden=false;$('adminSave').textContent='저장하고 모두에게 적용';
-      $('adminNote').textContent='관리자 이메일로 로그인해 저장하면 모든 컴퓨터에 바로 반영돼요.';return}
+      $('adminNote').textContent='관리자 이메일로 로그인해 저장하면 모든 컴퓨터에 바로 반영돼요.';if(STORE)setTimeout(openAdmin,0);return}
     if(/admin/.test(location.hash)){adminMode='local';$('adminBtn').hidden=false;$('adminCopy').hidden=false;
-      $('adminNote').textContent='이 브라우저에만 저장돼요. 고객 화면에 반영하려면 JSON 복사로 개발 담당자에게 전달해 주세요.'}
+      $('adminNote').textContent='이 브라우저에만 저장돼요. 모든 컴퓨터에 반영하려면 Firebase를 연결하거나 JSON 복사로 전달해 주세요.';if(STORE)setTimeout(openAdmin,0)}
     return;
   }
   try{

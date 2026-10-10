@@ -24,6 +24,8 @@ a{color:inherit}
 .nav a{text-decoration:none;color:var(--ink2)}
 .nav a:hover{color:var(--ink)}
 .hd-r{display:flex;gap:8px;align-items:center}
+.adminlink{font-size:13px;color:var(--ink3);text-decoration:none;padding:0 6px;white-space:nowrap}
+.adminlink:hover{color:var(--ink);text-decoration:underline}
 .pillbtn{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border-radius:20px;border:1px solid var(--line2);background:var(--paper);text-decoration:none;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
 .pillbtn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
 .pillbtn .n{min-width:20px;height:20px;border-radius:10px;background:var(--ink);color:#fff;font-size:12px;display:inline-grid;place-items:center;padding:0 6px}
