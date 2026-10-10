@@ -628,7 +628,7 @@ function bayLayout(it){const B=100,Hc=S.room.h,top=Math.max(1500,Hc-210),o=it.o|
     case 'hangBot':{if(U){const m=1100;s=[B,m,top];r=[top-60,m-t*1000-U-60];up={y0:m-t*1000-U,h:U};break}
       if(Lh){low={y0:0,h:Lh};s=[Lh+50,top];r=[top-60];return{s,r,up,low}}
       const m=top-450;s=[B,m,top];r=[m-60];break}
-    case 'drawer3':s=[690+t*1000,top];r=[top-60];break;
+    case 'drawer3':s=[690,top];r=[top-60];break;
     case 'shelf5':{const g=(top-B)/4;s=[B,B+g,B+2*g,B+3*g,top].map(Math.round);break}
   }
   if(Lh){low={y0:0,h:Lh};const ns=Lh+50;s=s.filter(y=>y!==B&&y>ns);
@@ -663,7 +663,7 @@ function buildModule(it){
   [-1,1].forEach(sx=>pole(g,sx*xi,zP,Hc));
   Lo.s.forEach(y=>{y/=1000;bx(g,W,t,D-0.012,0,y-t/2,0.004,MAT.shelf);[-1,1].forEach(sx=>bx(g,CAP,t+0.006,D-0.008,sx*(W/2+CAP/2),y-t/2,0.004,MAT.frame));[-1,1].forEach(sx=>bx(g,0.014,0.028,D-0.03,sx*(W/2-0.007),y-t-0.014,0,MAT.frame))});
   Lo.r.forEach(y=>rodAB(g,new THREE.Vector3(-xi,y/1000,zP),new THREE.Vector3(xi,y/1000,zP)));
-  if(it.type==='drawer3')chestBox(g,Math.min(0.8,W),0.69,D-0.02,0,0,0,3);
+  if(it.type==='drawer3')chestBox(g,Math.min(0.8,W),0.64,D-0.02,0,0,0,3);
   if(Lo.up){const bw=Math.min(0.8,W),h=Lo.up.h/1000;chestBox(g,bw,h,D-0.02,0,Lo.up.y0/1000,0,it.o.up==='acc1'?1:2)}
   if(Lo.low){const bw=Math.min(0.8,W),h=Lo.low.h/1000,y0=Lo.low.y0/1000;
     if(it.o.low==='quilt'){bx(g,bw,h,D-0.01,0,y0+h/2,0,MAT.shelf);bx(g,0.005,h-0.02,0.004,0,y0+h/2,D/2-0.004,MAT.gap)}
