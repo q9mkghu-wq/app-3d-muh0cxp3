@@ -333,7 +333,9 @@ function setLabel(st){return `${st.k}: ${setMods(st)} (${setSize(st)})`}
 let S={room:{w:3400,d:2800,h:2300},pillar:'white',shelf:'white',autoRot:true,items:[]};
 let sel=null,nextId=1,hist=[],drag=null,guides=null,rsz=null;
 const get=id=>S.items.find(i=>i.id===id);
-function nameOf(it){const T=TYPES[it.type];return T.kind==='bay'?`${T.name} ${fmt(it.w)}cm`:T.kind==='corner'?`코너장 ${fmt(it.w)}×${fmt(it.w2||it.w)}cm`:T.name}
+const VARIANTS={hangTop:[{low:'drawer2bot'}],hangBot:[{up:'acc1'},{up:'drawer2top'},{up:'pants2'},{low:'drawer2bot'},{low:'quilt'}]};
+const withOpt=it=>[it.o&&it.o.up,it.o&&it.o.low].filter(Boolean).map(k=>' + '+OPTS[k].name).join('');
+function nameOf(it){const T=TYPES[it.type];return T.kind==='bay'?`${T.name}${VARIANTS[it.type]?withOpt(it):''} ${fmt(it.w)}cm`:T.kind==='corner'?`코너장 ${fmt(it.w)}×${fmt(it.w2||it.w)}cm`:T.name}
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.room&&Array.isArray(s.items)){
@@ -349,7 +351,8 @@ function hits(a,b){const fa=fp(a),fb=fp(b);return a.x<b.x+fb.w-1&&a.x+fa.w>b.x+1
 function outside(a){const f=fp(a);return a.x<G-1||a.y<G-1||a.x+f.w>S.room.w-G+1||a.y+f.h>S.room.d-G+1}
 function needW(a){if(TYPES[a.type].kind!=='bay')return 0;let n=0,by='';const o=a.o||{};
   if(o.up&&800>n){n=800;by=OPTS[o.up].name}if(o.low&&800>n){n=800;by=OPTS[o.low].name}if(a.type==='drawer3'&&800>n){n=800;by='3단 서랍장'}return n?{n,by}:0}
-function optBad(a){const q=needW(a);return !!q&&a.w<q.n}
+function optClash(a){if(TYPES[a.type].kind!=='bay'||!a.o||!a.o.up||!a.o.low)return false;const Lo=bayLayout(a);return !!(Lo.up&&Lo.low&&Lo.up.y0<Lo.low.h+50+t*1000)}
+function optBad(a){const q=needW(a);return (!!q&&a.w<q.n)||optClash(a)}
 function bad(a){return outside(a)||optBad(a)||S.items.some(o=>o!==a&&hits(a,o))}
 function clampIn(it){const f=fp(it);if(f.w<=S.room.w-2*G)it.x=Math.min(Math.max(it.x,G),S.room.w-G-f.w);if(f.h<=S.room.d-2*G)it.y=Math.min(Math.max(it.y,G),S.room.d-G-f.h)}
 function badPos(a){return outside(a)||S.items.some(o=>o!==a&&hits(a,o))}
@@ -370,8 +373,8 @@ function findSpot(it){
   }
   it.rot=0;const f=fp(it);it.x=Math.max(0,Math.round((RW-f.w)/2));it.y=Math.max(0,Math.round((RD-f.h)/2));return false;
 }
-function addModule(type,w){
-  const T=TYPES[type];snapshot();const it={id:nextId++,type,w:T.kind==='free'?T.fw:w,rot:0,x:0,y:0,o:normO(type)};if(T.kind==='corner')it.w2=w;const ok=findSpot(it);S.items.push(it);sel=it.id;refreshAll();
+function addModule(type,w,preset){
+  const T=TYPES[type];snapshot();const it={id:nextId++,type,w:T.kind==='free'?T.fw:w,rot:0,x:0,y:0,o:normO(type,preset)};if(T.kind==='corner')it.w2=w;const ok=findSpot(it);S.items.push(it);sel=it.id;refreshAll();
   toast(ok?`추가했어요: ${nameOf(it)}`:'빈 벽 공간이 없어 방 가운데에 놓았어요. 끌어서 옮겨 주세요.');
 }
 function placeSetObj(st){
@@ -622,7 +625,9 @@ function bayLayout(it){const B=100,Hc=S.room.h,top=Math.max(1500,Hc-210),o=it.o|
     case 'drawer3':s=[690+t*1000,top];r=[top-60];break;
     case 'shelf5':{const g=(top-B)/4;s=[B,B+g,B+2*g,B+3*g,top].map(Math.round);break}
   }
-  if(Lh){low={y0:0,h:Lh};s=s.filter(y=>y!==B);r=r.filter(y=>y>Lh+250)}
+  if(Lh){low={y0:0,h:Lh};const ns=Lh+50;s=s.filter(y=>y!==B&&y>ns);
+    if(!up&&s.length){const nx=Math.min(...s);if(nx-ns<700){s=s.filter(y=>y!==nx);r=r.filter(y=>!(y<nx&&y>ns))}}
+    s.push(ns);s.sort((a,b)=>a-b);r=r.filter(y=>y>ns+350)}
   return{s,r,up,low}}
 function cornerShape(Lu,Lv,Dd){const r=R_IN/1000,sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(Lu,0);sh.lineTo(Lu,Dd);sh.lineTo(Dd+r,Dd);sh.absarc(Dd+r,Dd+r,r,-Math.PI/2,-Math.PI,true);sh.lineTo(Dd,Lv);sh.lineTo(0,Lv);sh.lineTo(0,0);return new THREE.ExtrudeGeometry(sh,{depth:t,bevelEnabled:false})}
 function buildModule(it){
@@ -766,13 +771,16 @@ function renderSel(){
   if(T.kind==='corner'){const uH=Math.abs(armDir(it,'u')[0])>.5,fld=(id,lab,v)=>`<label class="field">${lab} 방향 선반 (cm, ${CMIN/10}~${CMAX/10})<input id="${id}" type="number" step="0.1" min="${CMIN/10}" max="${CMAX/10}" value="${v/10}"></label>`;
     wField=uH?fld('selW','가로',it.w)+fld('selW2','세로',it.w2||it.w):fld('selW2','가로',it.w2||it.w)+fld('selW','세로',it.w)}
   let opt='';
-  if(A){const ss=(id,label,list,cur)=>`<label class="field">${label}<select id="${id}"><option value="">없음</option>${list.map(k=>`<option value="${k}" ${cur===k?'selected':''}>${OPTS[k].name} (${OPTS[k].size})</option>`).join('')}</select></label>`;
+  if(A&&VARIANTS[it.type])opt=`<div class="optbox"><p class="muted" style="margin:0;grid-column:1/-1">${it.o.up||it.o.low?`${[it.o.up,it.o.low].filter(Boolean).map(k=>`${OPTS[k].name}(${OPTS[k].size})`).join(', ')}이 들어간 완성형 칸이에요.`:'옵션 없는 기본 칸이에요.'} 구성을 바꾸려면 칸 추가 목록에서 다른 칸을 넣어 주세요.</p>
+      <label class="check"><input type="checkbox" id="optMir" ${it.o.mir?'checked':''}> 인출식 거울 (${OPTS.pullMirror.size})</label></div>`;
+  else if(A){const ss=(id,label,list,cur)=>`<label class="field">${label}<select id="${id}"><option value="">없음</option>${list.map(k=>`<option value="${k}" ${cur===k?'selected':''}>${OPTS[k].name} (${OPTS[k].size})</option>`).join('')}</select></label>`;
     opt=`<div class="optbox">${A.up.length?ss('optUp','중간 옵션',A.up,it.o.up):''}${A.low.length?ss('optLow','바닥 옵션',A.low,it.o.low):''}
       <label class="check"><input type="checkbox" id="optMir" ${it.o.mir?'checked':''}> 인출식 거울 (${OPTS.pullMirror.size})</label></div>`}
   if(it.type==='corner')opt=`<div class="optbox"><label class="field">코너선반 추가<select id="optCs">${[0,1,2].map(n=>`<option value="${n}" ${it.o.cs===n?'selected':''}>${n?n+'개':'없음'}</option>`).join('')}</select></label></div>`;
   if(it.type==='drawer3')opt=`<p class="muted" style="margin:10px 0 0">3단 서랍장(${OPTS.drawer3.size})이 들어가는 칸이라 선반 폭이 80cm로 고정돼요.</p>`;
   let st;
   if(outside(it))st='벽에서 2cm 이상 떨어져야 해요. 안쪽으로 옮겨 주세요.';
+  else if(optClash(it))st=`${OPTS[it.o.low].name} 위에 ${OPTS[it.o.up].name}을(를) 넣을 높이가 모자라요. 둘 중 하나를 빼 주세요.`;
   else if(optBad(it)){const q=needW(it);st=`${q.by}(W${q.n/10}cm)를 넣으려면 선반 폭이 ${q.n/10}cm 이상이어야 해요.`}
   else if(b)st='다른 칸과 겹쳐 있어요. 옆으로 옮겨 주세요.';
   el.innerHTML=`<h3>${nameOf(it)}</h3><p class="muted" style="margin:0">${size}${dir?', '+dir:''}</p>
@@ -884,7 +892,7 @@ function renderSwatches(){
 $('pillarSw').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;S.pillar=b.dataset.p;renderSwatches();applyColors();refreshAll()};
 $('shelfSw').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;S.shelf=b.dataset.s;renderSwatches();applyColors();refreshAll()};
 $('autoRot').onchange=e=>{S.autoRot=e.target.checked;save()};
-function elev(type){
+function elev(type,v){
   const ln=(x1,y1,x2,y2,w=1.2,dash='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
   const sh=y=>ln(4,y,30,y,2.2),rod=y=>ln(5,y,29,y,1,'2 1.5'),wrap=s=>`<svg viewBox="0 0 34 50" aria-hidden="true" style="color:var(--ink2)">${s}</svg>`;
   if(type==='corner')return wrap(`<path d="M4 12 H30 V22 H16 A3 3 0 0 0 13 25 V40 H4 Z" fill="none" stroke="currentColor" stroke-width="1.4"/>${ln(4,12,30,12,2.4)}${ln(4,12,4,36,2.4)}`);
@@ -897,15 +905,18 @@ function elev(type){
   if(type==='hang2')s+=rod(8)+sh(25)+rod(28);
   if(type==='hangTop')s+=rod(8)+sh(37);
   if(type==='hangBot')s+=sh(15)+rod(18);
+  if(v&&v.low){const h=v.low==='quilt'?17:9;s+=`<rect x="5" y="${45-h}" width="24" height="${h}" fill="none" stroke="currentColor" stroke-width="1"/>`+(v.low==='quilt'?ln(17,45-h,17,45,.8):ln(5,45-h/2,29,45-h/2,.8))+sh(44-h)}
+  if(v&&v.up){const h=v.up==='acc1'?3:5;s+=`<rect x="6" y="16.5" width="22" height="${h}" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width=".8"/>`}
   if(type==='drawer3')s+=rod(8)+`<rect x="5" y="31" width="24" height="14" fill="none" stroke="currentColor" stroke-width="1"/>`+ln(5,35.7,29,35.7,.8)+ln(5,40.3,29,40.3,.8)+sh(30);
   if(type==='shelf5')s+=sh(15.3)+sh(25.6)+sh(35.8);
   return wrap(s);
 }
-$('catalog').innerHTML=Object.entries(TYPES).map(([k,t])=>`<div class="cat${t.kind==='free'?' free':''}" title="${t.desc}">${elev(k)}<div><b>${t.name}</b><small>${t.desc}</small><div class="chips">${
+const CAT=[];Object.entries(TYPES).forEach(([k,t])=>{CAT.push([k,t,null]);(VARIANTS[k]||[]).forEach((v,i)=>CAT.push([k,t,v,i]))});
+$('catalog').innerHTML=CAT.map(([k,t,v,vi])=>v?`<div class="cat" title="${t.name} + ${OPTS[v.up||v.low].name}">${elev(k,v)}<div><b>${t.short} + ${OPTS[v.up||v.low].short}</b><small>${OPTS[v.up||v.low].name} ${OPTS[v.up||v.low].size} 포함</small><div class="chips"><button class="chip" data-t="${k}" data-v="${vi}" aria-label="${t.name} + ${OPTS[v.up||v.low].name} 추가">80cm 추가</button></div></div></div>`:`<div class="cat${t.kind==='free'?' free':''}" title="${t.desc}">${elev(k)}<div><b>${t.name}</b><small>${t.desc}</small><div class="chips">${
   t.kind==='corner'?`<button class="chip" data-t="corner" aria-label="코너장 추가">80×80 추가</button>`:
   t.kind==='free'?`<button class="chip" data-t="${k}" data-w="0" aria-label="${t.name} 추가">${fmt(t.fw)}×${fmt(t.fd)} 추가</button>`:
   `<button class="chip" data-t="${k}" aria-label="${t.name} 추가">${k==='shelf5'?40:80}cm 추가</button>`}</div></div></div>`).join('');
-$('catalog').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t,T=TYPES[t];addModule(t,T.kind==='free'?0:t==='shelf5'?400:800)};
+$('catalog').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t,T=TYPES[t],v=b.dataset.v!=null?(VARIANTS[t]||[])[+b.dataset.v]:null;addModule(t,T.kind==='free'?0:t==='shelf5'?400:800,v)};
 function renderSetSel(){$('setSel').innerHTML=[...new Set(SETS.map(x=>x.g))].map(g=>`<optgroup label="${esc(g)}">${SETS.map((x,i)=>x.g===g?`<option value="${i}">${esc(setLabel(x))}</option>`:'').join('')}</optgroup>`).join('')}
 renderSetSel();
 $('setBtn').onclick=()=>placeSet(+$('setSel').value);
