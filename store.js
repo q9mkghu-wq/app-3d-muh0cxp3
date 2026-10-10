@@ -28,15 +28,19 @@ const optOf=k=>OPTS.find(o=>o.k===k);
 const optPrice=k=>{const v=PRICE['opt-'+k];return typeof v==='number'?v:null};
 const unitOf=(p,s)=>(PRICE['unit-'+s]||0)+(PRICE['pillar-'+p]||0);
 
+function varName(t,o,short){o=o||{};
+  if(t==='hangTop'&&o.low==='drawer2bot')return short?'상부 긴행거 + 하단 서랍':'1단 상부 긴행거 + 2단 서랍장(하단)';
+  if(t==='hangBot'){if(o.up==='acc1')return '1단 악세서리장형';if(o.up==='drawer2top')return short?'2단 서랍장형':'2단 서랍장(상단)형';if(o.up==='pants2')return '2단 바지걸이장형';if(o.low==='quilt')return '이불 수납장형'}
+  return null}
 /* 세트 계산 (mm 단위 데이터) */
 function runLen(m){const T=TYPES[m.t];return T.kind==='bay'?m.w+30:T.kind==='corner'?m.w+(m.w2||m.w)+30-400:0}
 function setInfo(s){
   let L=0;const bays=new Map(),opts=new Map(),add=k=>opts.set(k,(opts.get(k)||0)+1);
-  s.items.forEach(m=>{const T=TYPES[m.t];L+=runLen(m);if(T.kind!=='free')bays.set(T.name,(bays.get(T.name)||0)+1);
+  s.items.forEach(m=>{const T=TYPES[m.t];L+=runLen(m);if(T.kind!=='free'){const nm=(T.kind==='bay'&&varName(m.t,m.o))||T.name;bays.set(nm,(bays.get(nm)||0)+1)}
     if(T.kind==='free')add(m.t);if(T.opt)add(T.opt);const o=m.o||{};if(o.up)add(o.up);if(o.low)add(o.low);if(o.mir)add('pullMirror');for(let i=0;i<(o.cs||0);i++)add('cornerShelf')});
   return{lengthCm:Math.round(L)/10,bays:[...bays],opts:[...opts]};
 }
-function setMods(s){return [...s.items].sort((a,b)=>(a.y-b.y)||(a.x-b.x)).map(m=>{const T=TYPES[m.t];return T.kind==='bay'?`${T.short} ${cm(m.w/10)}`:T.short}).join(' + ')}
+function setMods(s){return [...s.items].sort((a,b)=>(a.y-b.y)||(a.x-b.x)).map(m=>{const T=TYPES[m.t];return T.kind==='bay'?`${varName(m.t,m.o,true)||T.short} ${cm(m.w/10)}`:T.short}).join(' + ')}
 function setBox(s){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;s.items.forEach(m=>{const T=TYPES[m.t];let w,h;
   if(T.kind==='corner'){const U=m.w+15,V=(m.w2||m.w)+15;[w,h]=m.r%180===0?[U,V]:[V,U]}
   else{const L=T.kind==='free'?(m.t==='mirrorCab'?430:800):m.w+30,Dp=400;[w,h]=m.r%180===0?[L,Dp]:[Dp,L]}

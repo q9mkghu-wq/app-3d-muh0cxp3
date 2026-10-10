@@ -360,7 +360,7 @@ function elev(type){
   if(type==='hang2')s+=rod(8)+sh(25)+rod(28);if(type==='hangTop')s+=rod(8)+sh(37);if(type==='hangBot')s+=sh(15)+rod(18);
   if(type==='drawer3')s+=rod(8)+`<rect x="5" y="31" width="24" height="14" fill="none" stroke="currentColor" stroke-width="1"/>`+ln(5,35.7,29,35.7,.8)+ln(5,40.3,29,40.3,.8)+sh(30);
   if(type==='shelf5')s+=sh(15.3)+sh(25.6)+sh(35.8);return wrap(s)}
-const MODS=[['hang2','2단 상하행거','위아래 행거 1,000mm씩. 셔츠와 바지를 나눠 걸어요.'],['hangTop','1단 상부 긴행거','긴 옷 1,550mm에 아래 450mm 수납. 하단 서랍장 포함형도 있어요.'],['hangBot','1단 하부 긴행거','위 선반 450mm, 아래 긴 옷 1,550mm. 악세서리장·서랍장·바지걸이장·이불장 포함형도 있어요.'],
+const MODS=[['hang2','2단 상하행거','위아래 행거 1,000mm씩. 셔츠와 바지를 나눠 걸어요.'],['hangTop','1단 상부 긴행거','긴 옷 1,550mm에 아래 450mm 수납. 하단 서랍장 포함형도 있어요.'],['hangBot','1단 하부 긴행거','위 선반 450mm, 아래 긴 옷 1,550mm. 1단 악세서리장형, 2단 서랍장·바지걸이장형, 이불 수납장형도 있어요.'],
   ['drawer3','3단 서랍장형','3단 서랍장(W80)에 행거 1,310mm. 선반 80cm 고정.'],['shelf5','5단 선반장','490mm 간격 5단 선반. 가방과 소품을 올려요.'],['corner','코너장','L자 선반으로 모서리까지. 두 변 길이를 따로 정해요.']];
 $('modGrid').innerHTML=MODS.map(([k,n,d])=>`<div class="mc">${elev(k)}<div><h3>${n}</h3><p>${d}</p></div></div>`).join('');
 function renderOpts(){$('optGrid').innerHTML=S.OPTS.map(o=>{const p=S.optPrice(o.k);return `<li><span>${esc(o.name)}<small>${esc(o.size)}</small></span><span>${p==null?'가격 문의':won(p)}</span></li>`}).join('')}

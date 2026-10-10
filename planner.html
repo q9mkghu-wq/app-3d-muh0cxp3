@@ -253,7 +253,7 @@ const OPTS={
   shelf5:{name:'5단 선반장',short:'5단 선반',slot:'bay',size:'W40×D40cm, 5단'},
   measure:{name:'전문가 방문 실측',short:'실측',slot:'svc',size:'서울·경기 한정'}
 };
-const ALLOW={hang2:{up:['acc1','drawer2top','pants2'],low:['drawer2bot','quilt'],mir:true},hangTop:{up:[],low:['drawer2bot'],mir:true},hangBot:{up:['acc1','drawer2top','pants2'],low:['drawer2bot','quilt'],mir:true}};
+const ALLOW={hang2:{up:['acc1','drawer2top','pants2'],low:['drawer2bot','quilt'],mir:true},hangTop:{up:[],low:['drawer2bot'],mir:true},hangBot:{up:['acc1','drawer2top','pants2'],low:['quilt'],mir:true}};
 const OPT_KEYS=['acc1','drawer2top','pants2','drawer2bot','quilt','drawer3','shelf5','pullMirror','cornerShelf','island4','chest4','islandOpen','mirrorCab','measure'];
 const optSize=k=>OPTS[k]?OPTS[k].size:`W${TYPES[k].fw/10}×D${TYPES[k].fd/10}×H${TYPES[k].fh/10}cm`;
 const optName=k=>OPTS[k]?OPTS[k].name:TYPES[k].name;
@@ -325,7 +325,7 @@ let SETS=DEFAULT_SETS;
 try{const d=JSON.parse($('set-data').textContent||'null');if(Array.isArray(d)){const v=d.filter(validSet).map(cleanSet);if(v.length)SETS=v}}catch(e){}
 if(!HAS_RT&&!FB){try{const d=JSON.parse(localStorage.getItem(SKEY)||'null');if(Array.isArray(d)){const v=d.filter(validSet).map(cleanSet);if(v.length)SETS=v}}catch(e){}}
 function setBox(st){let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;st.items.forEach(m=>{const f=fpM(m);x0=Math.min(x0,m.x);y0=Math.min(y0,m.y);x1=Math.max(x1,m.x+f.w);y1=Math.max(y1,m.y+f.h)});return{w:x1-x0,h:y1-y0}}
-function modLabel(m){const T=TYPES[m.t];return T.kind==='bay'?`${T.short} ${fmt(m.w)}`:T.kind==='corner'?'코너장':T.short}
+function modLabel(m){const T=TYPES[m.t];return T.kind==='bay'?`${varName(m.t,m.o,true)||T.short} ${fmt(m.w)}`:T.kind==='corner'?'코너장':T.short}
 function setMods(st){return [...st.items].sort((a,b)=>(a.y-b.y)||(a.x-b.x)).map(modLabel).join(' + ')}
 function setSize(st){const b=setBox(st);return b.h>DEPTH+1?`${fmt(b.w)} × ${fmt(b.h)}cm`:`${fmt(b.w)}cm`}
 function setLabel(st){return `${st.k}: ${setMods(st)} (${setSize(st)})`}
@@ -333,9 +333,13 @@ function setLabel(st){return `${st.k}: ${setMods(st)} (${setSize(st)})`}
 let S={room:{w:3400,d:2800,h:2300},pillar:'white',shelf:'white',autoRot:true,items:[]};
 let sel=null,nextId=1,hist=[],drag=null,guides=null,rsz=null;
 const get=id=>S.items.find(i=>i.id===id);
-const VARIANTS={hangTop:[{low:'drawer2bot'}],hangBot:[{up:'acc1'},{up:'drawer2top'},{up:'pants2'},{low:'drawer2bot'},{low:'quilt'}]};
-const withOpt=it=>[it.o&&it.o.up,it.o&&it.o.low].filter(Boolean).map(k=>' + '+OPTS[k].name).join('');
-function nameOf(it){const T=TYPES[it.type];return T.kind==='bay'?`${T.name}${VARIANTS[it.type]?withOpt(it):''} ${fmt(it.w)}cm`:T.kind==='corner'?`코너장 ${fmt(it.w)}×${fmt(it.w2||it.w)}cm`:T.name}
+const VARIANTS={hangTop:[{low:'drawer2bot'}],hangBot:[{up:'acc1'},{up:'drawer2top'},{low:'quilt'}]};
+function varName(t,o,short){o=o||{};
+  if(t==='hangTop'&&o.low==='drawer2bot')return short?'상부 긴행거 + 하단 서랍':'1단 상부 긴행거 + 2단 서랍장(하단)';
+  if(t==='hangBot'){if(o.up==='acc1')return '1단 악세서리장형';if(o.up==='drawer2top')return short?'2단 서랍장형':'2단 서랍장(상단)형';if(o.up==='pants2')return short?'2단 바지걸이장형':'2단 바지걸이장형';if(o.low==='quilt')return '이불 수납장형'}
+  return null}
+const VAR_DESC={'hangTop:drawer2bot':'2단 서랍장(하단) W80×H43cm + 긴 옷','hangBot:acc1':'1단 악세서리장 W80×H14cm + 위아래 행거','hangBot:drawer2top':'2단 서랍장(상단)이나 2단 바지걸이장 W80×H26cm + 위아래 행거','hangBot:quilt':'이불 수납장 W80×H80cm + 긴 옷'};
+function nameOf(it){const T=TYPES[it.type];return T.kind==='bay'?`${varName(it.type,it.o)||T.name} ${fmt(it.w)}cm`:T.kind==='corner'?`코너장 ${fmt(it.w)}×${fmt(it.w2||it.w)}cm`:T.name}
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.room&&Array.isArray(s.items)){
@@ -620,8 +624,10 @@ function bayLayout(it){const B=100,Hc=S.room.h,top=Math.max(1500,Hc-210),o=it.o|
   const U=o.up?OPTS[o.up].h:0,Lh=o.low?OPTS[o.low].h:0;
   switch(it.type){
     case 'hang2':{const m=1100;s=[B,m,top];r=[top-60,U?m-t*1000-U-60:m-60];if(U)up={y0:m-t*1000-U,h:U};break}
-    case 'hangTop':s=[B,B+450,top];r=[top-60];break;
-    case 'hangBot':{const m=top-450;s=[B,m,top];r=[U?m-t*1000-U-60:m-60];if(U)up={y0:m-t*1000-U,h:U};break}
+    case 'hangTop':s=[B,B+450,top];r=[top-60];if(Lh){low={y0:0,h:Lh};s=[B+450,top];return{s,r,up,low}}break;
+    case 'hangBot':{if(U){const m=1100;s=[B,m,top];r=[top-60,m-t*1000-U-60];up={y0:m-t*1000-U,h:U};break}
+      if(Lh){low={y0:0,h:Lh};s=[Lh+50,top];r=[top-60];return{s,r,up,low}}
+      const m=top-450;s=[B,m,top];r=[m-60];break}
     case 'drawer3':s=[690+t*1000,top];r=[top-60];break;
     case 'shelf5':{const g=(top-B)/4;s=[B,B+g,B+2*g,B+3*g,top].map(Math.round);break}
   }
@@ -772,6 +778,7 @@ function renderSel(){
     wField=uH?fld('selW','가로',it.w)+fld('selW2','세로',it.w2||it.w):fld('selW2','가로',it.w2||it.w)+fld('selW','세로',it.w)}
   let opt='';
   if(A&&VARIANTS[it.type])opt=`<div class="optbox"><p class="muted" style="margin:0;grid-column:1/-1">${it.o.up||it.o.low?`${[it.o.up,it.o.low].filter(Boolean).map(k=>`${OPTS[k].name}(${OPTS[k].size})`).join(', ')}이 들어간 완성형 칸이에요.`:'옵션 없는 기본 칸이에요.'} 구성을 바꾸려면 칸 추가 목록에서 다른 칸을 넣어 주세요.</p>
+      ${it.type==='hangBot'&&(it.o.up==='drawer2top'||it.o.up==='pants2')?`<div class="acts" style="grid-column:1/-1" role="group" aria-label="수납장 종류"><button class="btn${it.o.up==='drawer2top'?' primary':''}" data-sw="drawer2top">2단 서랍장</button><button class="btn${it.o.up==='pants2'?' primary':''}" data-sw="pants2">2단 바지걸이장</button></div>`:''}
       <label class="check"><input type="checkbox" id="optMir" ${it.o.mir?'checked':''}> 인출식 거울 (${OPTS.pullMirror.size})</label></div>`;
   else if(A){const ss=(id,label,list,cur)=>`<label class="field">${label}<select id="${id}"><option value="">없음</option>${list.map(k=>`<option value="${k}" ${cur===k?'selected':''}>${OPTS[k].name} (${OPTS[k].size})</option>`).join('')}</select></label>`;
     opt=`<div class="optbox">${A.up.length?ss('optUp','중간 옵션',A.up,it.o.up):''}${A.low.length?ss('optLow','바닥 옵션',A.low,it.o.low):''}
@@ -802,12 +809,13 @@ function renderSel(){
   if($('optUp'))$('optUp').onchange=e=>setO('up',e.target.value||null);
   if($('optLow'))$('optLow').onchange=e=>setO('low',e.target.value||null);
   if($('optMir'))$('optMir').onchange=e=>setO('mir',e.target.checked);
+  el.querySelectorAll('[data-sw]').forEach(b=>b.onclick=()=>{if(it.o.up!==b.dataset.sw)setO('up',b.dataset.sw)});
   if($('optCs'))$('optCs').onchange=e=>setO('cs',+e.target.value);
 }
 function calc(){
   let L=0;const bays=new Map(),opts=new Map(),add=k=>opts.set(k,(opts.get(k)||0)+1);
   S.items.forEach(it=>{const T=TYPES[it.type];L+=runLen(it);
-    if(T.kind!=='free')bays.set(T.name,(bays.get(T.name)||0)+1);
+    if(T.kind!=='free'){const nm=(T.kind==='bay'&&varName(it.type,it.o))||T.name;bays.set(nm,(bays.get(nm)||0)+1)}
     if(T.kind==='free')add(it.type);if(T.opt)add(T.opt);
     if(it.o.up)add(it.o.up);if(it.o.low)add(it.o.low);if(it.o.mir)add('pullMirror');for(let i=0;i<(it.o.cs||0);i++)add('cornerShelf')});
   const cm=Math.round(L)/10,qty=Math.round(cm/10),unit=(PRICE['unit-'+S.shelf]||0)+(PRICE['pillar-'+S.pillar]||0);
@@ -901,18 +909,20 @@ function elev(type,v){
   if(type==='chest4')return wrap(box(16,30,4));
   if(type==='islandOpen')return wrap(box(16,30,1,ln(4,21,30,21,.8)+ln(4,29,30,29,.8)+ln(4,37,30,37,.8)+ln(17,21,17,46,.8)+ln(3,15,31,15,2)));
   if(type==='mirrorCab')return wrap(`<rect x="9" y="2" width="16" height="46" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="11" y="4" width="12" height="42" fill="currentColor" opacity=".18"/>`);
-  let s=ln(3,1,3,49,2.4)+ln(31,1,31,49,2.4)+sh(5)+sh(46);
+  const fr=ln(3,1,3,49,2.4)+ln(31,1,31,49,2.4)+sh(5),bx2=(y0,h,line)=>`<rect x="5" y="${y0}" width="24" height="${h}" fill="none" stroke="currentColor" stroke-width="1"/>`+(line||'');
+  if(v&&type==='hangTop')return wrap(fr+rod(8)+sh(37)+bx2(38,8,ln(5,42,29,42,.8)));
+  if(v&&type==='hangBot'&&v.up){const h=v.up==='acc1'?3:6;return wrap(fr+sh(46)+rod(8)+sh(25)+bx2(26,h,h>3?ln(5,26+h/2,29,26+h/2,.8):'')+rod(26+h+3))}
+  if(v&&type==='hangBot'&&v.low)return wrap(fr+rod(8)+sh(28)+bx2(29,17,ln(17,29,17,46,.8)));
+  let s=fr+sh(46);
   if(type==='hang2')s+=rod(8)+sh(25)+rod(28);
   if(type==='hangTop')s+=rod(8)+sh(37);
   if(type==='hangBot')s+=sh(15)+rod(18);
-  if(v&&v.low){const h=v.low==='quilt'?17:9;s+=`<rect x="5" y="${45-h}" width="24" height="${h}" fill="none" stroke="currentColor" stroke-width="1"/>`+(v.low==='quilt'?ln(17,45-h,17,45,.8):ln(5,45-h/2,29,45-h/2,.8))+sh(44-h)}
-  if(v&&v.up){const h=v.up==='acc1'?3:5;s+=`<rect x="6" y="16.5" width="22" height="${h}" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width=".8"/>`}
   if(type==='drawer3')s+=rod(8)+`<rect x="5" y="31" width="24" height="14" fill="none" stroke="currentColor" stroke-width="1"/>`+ln(5,35.7,29,35.7,.8)+ln(5,40.3,29,40.3,.8)+sh(30);
   if(type==='shelf5')s+=sh(15.3)+sh(25.6)+sh(35.8);
   return wrap(s);
 }
 const CAT=[];Object.entries(TYPES).forEach(([k,t])=>{CAT.push([k,t,null]);(VARIANTS[k]||[]).forEach((v,i)=>CAT.push([k,t,v,i]))});
-$('catalog').innerHTML=CAT.map(([k,t,v,vi])=>v?`<div class="cat" title="${t.name} + ${OPTS[v.up||v.low].name}">${elev(k,v)}<div><b>${t.short} + ${OPTS[v.up||v.low].short}</b><small>${OPTS[v.up||v.low].name} ${OPTS[v.up||v.low].size} 포함</small><div class="chips"><button class="chip" data-t="${k}" data-v="${vi}" aria-label="${t.name} + ${OPTS[v.up||v.low].name} 추가">80cm 추가</button></div></div></div>`:`<div class="cat${t.kind==='free'?' free':''}" title="${t.desc}">${elev(k)}<div><b>${t.name}</b><small>${t.desc}</small><div class="chips">${
+$('catalog').innerHTML=CAT.map(([k,t,v,vi])=>v?`<div class="cat" title="${VAR_DESC[k+':'+(v.up||v.low)]}">${elev(k,v)}<div><b>${v.up==='drawer2top'?'2단 서랍·바지걸이장형':varName(k,v,true)}</b><small>${VAR_DESC[k+':'+(v.up||v.low)]}</small><div class="chips"><button class="chip" data-t="${k}" data-v="${vi}" aria-label="${varName(k,v)} 추가">80cm 추가</button></div></div></div>`:`<div class="cat${t.kind==='free'?' free':''}" title="${t.desc}">${elev(k)}<div><b>${t.name}</b><small>${t.desc}</small><div class="chips">${
   t.kind==='corner'?`<button class="chip" data-t="corner" aria-label="코너장 추가">80×80 추가</button>`:
   t.kind==='free'?`<button class="chip" data-t="${k}" data-w="0" aria-label="${t.name} 추가">${fmt(t.fw)}×${fmt(t.fd)} 추가</button>`:
   `<button class="chip" data-t="${k}" aria-label="${t.name} 추가">${k==='shelf5'?40:80}cm 추가</button>`}</div></div></div>`).join('');
