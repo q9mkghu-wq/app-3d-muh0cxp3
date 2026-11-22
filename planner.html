@@ -204,6 +204,7 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
   <details class="adm-sec" id="secPrice" open>
     <summary>단가 변경</summary>
     <div class="admin-grid" id="priceRows"></div>
+    <div class="admin-grid" style="margin-top:8px"><div class="pgrp">예상 금액 보기 비밀번호 (처음 값 1234)</div><label class="prow"><span>새 비밀번호 (바꿀 때만)</span><input id="vpw" type="password" autocomplete="new-password" style="width:140px;text-align:left"></label></div>
     <div class="admin-f" style="justify-content:flex-start;margin-top:8px"><button class="btn" id="adminReset">기본 단가로</button></div>
   </details>
   <details class="adm-sec" id="secSet" open>
@@ -251,6 +252,15 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
     <p class="err" id="shErr" role="alert"></p>
     <div id="shOut" hidden><label class="field">만든 링크<input id="shLink" readonly></label><p class="muted" id="shLen"></p></div>
     <div class="acts" style="justify-content:flex-end;margin-top:10px"><button class="btn" value="close">닫기</button><button class="btn" type="button" id="shCopy" hidden>링크 복사</button><button class="btn" type="button" id="shNative" hidden>공유하기</button><button class="btn primary" type="button" id="shMake">링크 만들기</button></div>
+  </form>
+</dialog>
+<dialog id="priceDlg" aria-labelledby="priceTitle">
+  <form method="dialog" class="dlg">
+    <h3 id="priceTitle">예상 금액 보기</h3>
+    <p class="muted">금액을 보려면 비밀번호를 넣어 주세요.</p>
+    <label class="field">비밀번호<input id="pvPw" type="password" autocomplete="off"></label>
+    <p class="err" id="pvErr" role="alert"></p>
+    <div class="acts" style="justify-content:flex-end;margin-top:10px"><button class="btn" value="close">닫기</button><button class="btn primary" type="button" id="pvGo">확인</button></div>
   </form>
 </dialog>
 <dialog id="unlockDlg" aria-labelledby="unlockTitle">
@@ -307,7 +317,7 @@ const ALLOW={hang2:{up:['acc1','drawer2top','pants2'],low:['drawer2bot','quilt']
 const OPT_KEYS=['acc1','drawer2top','pants2','drawer2bot','quilt','drawer3','shelf5','pullMirror','cornerShelf','island4','chest4','islandOpen','mirrorCab','measure'];
 const optSize=k=>OPTS[k]?OPTS[k].size:`W${TYPES[k].fw/10}×D${TYPES[k].fd/10}×H${TYPES[k].fh/10}cm`;
 const optName=k=>OPTS[k]?OPTS[k].name:TYPES[k].name;
-const DEFAULT_PRICE={"unit-white":12000,"unit-warmbeige":12000,"unit-babypink":12000,"unit-cottonblue":12000,"unit-browngray":12000,"unit-walnut":12000,"unit-lightoak":12000,"unit-marble":12000,"pillar-white":0,"pillar-black":0,"pillar-silver":0,"fee-under24":50000,"fee-under15":80000};
+const DEFAULT_PRICE={"unit-white":12000,"unit-warmbeige":12000,"unit-babypink":12000,"unit-cottonblue":12000,"unit-browngray":12000,"unit-walnut":12000,"unit-lightoak":12000,"unit-marble":12000,"pillar-white":0,"pillar-black":0,"pillar-silver":0,"fee-under24":50000,"fee-under15":80000,"view-pw":"3hHKPfGfqubJr2G4C1WVTobIVamp98AhnAYr45IY1tI"};
 const HAS_RT=!!(window.claude&&window.claude.use);
 const EMBED=/[?&]embed=1/.test(location.search);
 const STORE=window.PLANNER_STORE===true;
@@ -1003,6 +1013,7 @@ function calc(){
   const fee=!qty?0:L<1500?(PRICE['fee-under15']||0):L<2400?(PRICE['fee-under24']||0):0;
   return{L,cm,qty,unit,bays,opts,fee};
 }
+let priceOpen=false;
 function renderParts(){
   const dot=h=>`<i style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${h};border:1px solid rgba(0,0,0,.25);vertical-align:-1px;margin-right:6px"></i>`;
   const colors=`<ul class="parts" style="margin-bottom:6px"><li><span>기둥 색상</span><span>${dot(PILLAR[S.pillar].hex)}${PILLAR[S.pillar].name}</span></li><li><span>선반 색상</span><span>${dot(SHELF[S.shelf].hex)}${SHELF[S.shelf].name}</span></li></ul>`;
@@ -1011,16 +1022,18 @@ function renderParts(){
   const hasCorner=S.items.some(it=>it.type==='corner');
   const bayRows=[...c.bays].map(([k,n])=>`<li><span>${k}</span><span>${n}칸</span></li>`).join('');
   const optRows=[...c.opts].sort((a,b)=>OPT_KEYS.indexOf(a[0])-OPT_KEYS.indexOf(b[0])).map(([k,n])=>{const p=PRICE['opt-'+k];if(p==null)missing=true;else total+=p*n;
+    if(!priceOpen)return `<li><span>${optName(k)}</span><span>${n}개</span></li>`;
     return `<li style="display:block"><div style="display:flex;justify-content:space-between;gap:8px"><span>${optName(k)}</span><span style="white-space:nowrap">${p==null?'가격 미정':won(p*n)}</span></div>
     <div class="muted" style="font-size:12px">${p==null?`${n}개`:`${won(p)} × ${n}개`}</div></li>`}).join('');
   const nb=S.items.filter(bad).length;
   $('parts').innerHTML=colors+(bayRows?`<h4>벽면 시스템</h4><ul class="parts">${bayRows}</ul>
   <div class="calc">설치 길이 합계 <b>${fmt(c.L)}cm</b><br><span class="muted" style="font-size:12px">칸마다 선반 양 끝 캡 1.5cm씩(합 3cm)을 포함한 길이예요.${hasCorner?' 코너장은 두 변을 더하고 겹치는 40cm를 빼서 계산해요.':''}</span></div>
-  <ul class="parts"><li><span>시스템 (설치 길이 ${fmt(c.L)}cm)</span><span>${won(sys)}</span></li>${c.fee?`<li><span>소량 주문 추가비용 (${c.L<1500?'150cm 미만':'150~240cm 미만'})</span><span>${won(c.fee)}</span></li>`:''}</ul>${c.fee?`<p class="muted" style="font-size:12px;margin:4px 0 0">설치 길이가 240cm보다 짧으면 추가비용이 붙어요.</p>`:''}`:'')+
+  ${priceOpen?`<ul class="parts"><li><span>시스템 (설치 길이 ${fmt(c.L)}cm)</span><span>${won(sys)}</span></li>${c.fee?`<li><span>소량 주문 추가비용 (${c.L<1500?'150cm 미만':'150~240cm 미만'})</span><span>${won(c.fee)}</span></li>`:''}</ul>${c.fee?`<p class="muted" style="font-size:12px;margin:4px 0 0">설치 길이가 240cm보다 짧으면 추가비용이 붙어요.</p>`:''}`:''}`:'')+
   (optRows?`<h4>옵션과 가구</h4><ul class="parts">${optRows}</ul>`:'')+
-  `<div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid var(--ink);margin-top:6px;padding-top:9px">
+  (priceOpen?`<div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid var(--ink);margin-top:6px;padding-top:9px">
     <span style="font-weight:600">예상 금액</span><span style="font-weight:600;font-size:17px">${won(total)}</span></div>
-  ${missing?`<p class="status bad" style="margin:4px 0 0">가격이 정해지지 않은 옵션은 금액에서 빠졌어요.</p>`:''}
+  ${missing?`<p class="status bad" style="margin:4px 0 0">가격이 정해지지 않은 옵션은 금액에서 빠졌어요.</p>`:''}<button class="btn" id="priceHide" style="margin-top:8px;font-size:12px;padding:4px 10px">금액 숨기기</button>`
+  :`<button class="btn" id="priceShow" style="width:100%;margin-top:10px;padding:10px;border-style:dashed">예상 금액 보기 (비밀번호)</button>`)+`
   ${nb?`<p class="status bad" style="margin:4px 0 0">겹치거나, 벽 간격 2cm가 안 되거나, 문이 열리는 자리에 있거나, 옵션이 맞지 않는 칸이 ${nb}개 있어요.</p>`:''}
   ${S.items.some(winBlock)?`<p class="muted" style="font-size:12.5px;margin:4px 0 0">창문 앞을 가리는 칸이 ${S.items.filter(winBlock).length}개 있어요. 그대로 설치할지 확인해 주세요.</p>`:''}
   ${cboxPosts().length?`<p class="muted" style="font-size:12.5px;margin:4px 0 0;color:#C0612B">커튼박스 안으로 들어가는 기둥 ${cboxPosts().length}개는 커튼박스 천고(${[...new Set(cboxPosts())].map(h=>fmt(h)+'cm').join(', ')})로 만들어요.</p>`:''}
@@ -1028,6 +1041,8 @@ function renderParts(){
   ${EMBED?`<button class="btn primary" id="orderBtn" style="width:100%;margin-top:12px;padding:10px">이 배치로 주문 담기</button>`:''}${STORE?`<button class="btn primary" id="orderBtn" style="width:100%;margin-top:12px;padding:12px;font-size:15px">이 배치 그대로 장바구니 담기</button>${storeAdded?`<a class="btn" href="cart.html" style="display:block;text-align:center;margin-top:6px;padding:10px;text-decoration:none">장바구니 보기 (${storeCart().length})</a>`:''}`:''}
   <p class="muted" style="font-size:12px;margin:8px 0 0">치수 오차 ±5%. 실제 설치 시 기둥은 천장에 고정해요.</p>`;
 }
+document.addEventListener('click',e=>{if(e.target.closest('#priceShow')){$('pvErr').textContent='';$('pvPw').value='';$('priceDlg').showModal();setTimeout(()=>$('pvPw').focus(),50)}
+  if(e.target.closest('#priceHide')){priceOpen=false;renderParts()}});
 function refreshAll(){renderPlan();sync3D();syncOps();renderSel();renderParts();save()}
 function sendOrder(){
   if(!S.items.length){toast('먼저 칸을 배치해 주세요.');return}
@@ -1238,6 +1253,7 @@ const safeJson=v=>JSON.stringify(v).replace(/</g,'\\u003c');
 $('adminSave').onclick=async()=>{
   const p=readAdmin();if(!p)return;const sets=readSets();if(!sets)return;
   if(!sets.length){$('adminErr').textContent='세트를 하나 이상 남겨 주세요.';return}
+  p['view-pw']=PRICE['view-pw'];{const nv=$('vpw').value;if(nv){if(nv.length<4){$('adminErr').textContent='금액 보기 비밀번호는 4자 이상으로 정해 주세요.';$('vpw').focus();return}try{p['view-pw']=await sha('broad-price:'+nv)}catch(e){$('adminErr').textContent='이 주소에서는 비밀번호를 바꿀 수 없어요. https 주소에서 열어 주세요.';return}$('vpw').value=''}}
   if(adminMode==='firebase'){const btn=$('adminSave');btn.disabled=true;btn.textContent='저장 중…';
     try{
       if(!fbToken){const em=$('fbEmail').value.trim(),pw=$('fbPw').value;if(!em||!pw)throw{msg:'관리자 이메일과 비밀번호를 입력해 주세요.'};
@@ -1327,6 +1343,10 @@ $('ulGo').onclick=async()=>{try{if(!SHARE)return;const h=await sha(SHARE.salt+$(
   if(h!==SHARE.ph){$('ulErr').textContent='비밀번호가 맞지 않아요.';return}
   $('unlockDlg').close();setReadonly(false);try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}hist=[];save();toast('수정할 수 있어요. 고친 뒤 \'링크로 보내기\'로 새 링크를 만들어 보내 주세요.')}catch(e){$('ulErr').textContent='이 주소에서는 확인할 수 없어요. https 주소에서 열어 주세요.'}};
 $('ulPw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('ulGo').click()}});
+$('pvGo').onclick=async()=>{try{const h=await sha('broad-price:'+$('pvPw').value);
+  if(h!==(PRICE['view-pw']||DEFAULT_PRICE['view-pw'])){$('pvErr').textContent='비밀번호가 맞지 않아요.';return}
+  $('priceDlg').close();priceOpen=true;renderParts();const t=$('priceHide');if(t)t.scrollIntoView({block:'nearest'})}catch(e){$('pvErr').textContent='이 주소에서는 확인할 수 없어요. https 주소에서 열어 주세요.'}};
+$('pvPw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('pvGo').click()}});
 (async function openShared(){const m=location.hash.match(/^#s=([zj][A-Za-z0-9_-]+)$/);if(!m)return;
   try{const d=await unpackShare(m[1]);if(!d||!d.S||!Array.isArray(d.S.items))throw 0;SHARE=d;
     READONLY=true;
