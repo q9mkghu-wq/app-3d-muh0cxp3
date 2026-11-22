@@ -66,6 +66,15 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px;padding:14p
 #plan.mode-op [data-id],#plan.mode-op [data-h]{pointer-events:none}
 #plan.mode-op [data-id]{opacity:.55}
 @media (hover:none){.keyhint{display:none}}
+.robar{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:10px 20px;background:#FFF4E5;border-bottom:1px solid #F0C98E;color:#5A3B0C;font-size:13.5px}
+.robar b{display:block;font-size:14.5px}
+.readonly .bar,.readonly #undoBtn,.readonly #clearBtn,.readonly #shareBtn,.readonly [data-selbar],.readonly .pick,.readonly #orderBtn{display:none!important}
+.readonly #selPanel input,.readonly #selPanel select,.readonly #selPanel button{pointer-events:none;opacity:.6}
+dialog{border:0;border-radius:12px;padding:0;max-width:min(520px,calc(100vw - 32px));width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);background:var(--sheet);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg{padding:20px 22px}.dlg h3{font-size:17px;margin:0 0 8px}.dlg .muted{margin:0 0 12px}
+.dlg textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--room);border:1px solid var(--rule);border-radius:5px;padding:7px 9px;width:100%;resize:vertical}
+.dlg .err{margin:6px 0 0}
 .selbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--sheet);border-radius:28px;padding:6px 6px 6px 16px;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:calc(100% - 24px);z-index:5}
 .selbar span{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;margin-right:4px}
 .selbar button{flex:none;height:40px;min-width:52px;padding:0 14px;border-radius:20px;border:0;background:rgba(255,255,255,.14);color:inherit;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
@@ -146,6 +155,7 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
     <p>칸 폭은 선반 폭 + 양 끝 캡 3cm, 벽과는 2cm 띄워요.</p>
   </div>
   <div class="tools">
+    <button class="btn primary" id="shareBtn">링크로 보내기</button>
     <button class="btn" id="undoBtn" title="Ctrl+Z">되돌리기</button>
     <button class="btn" id="adminBtn" hidden>관리자 설정</button>
     <button class="btn danger" id="clearBtn">모두 지우기</button>
@@ -231,6 +241,27 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
     <div class="card"><h3>구성 목록과 예상 금액</h3><div id="parts"></div></div>
   </div>
 </main>
+<div class="robar" id="robar" hidden><div><b>공유받은 배치예요 (보기 전용)</b><span id="roMeta"></span></div><button class="btn primary" id="unlockBtn">비밀번호 넣고 수정하기</button></div>
+<dialog id="shareDlg" aria-labelledby="shareTitle">
+  <form method="dialog" class="dlg">
+    <h3 id="shareTitle">배치를 링크로 보내기</h3>
+    <p class="muted">지금 방 크기, 문·창·커튼박스, 칸 배치, 색상을 그대로 담은 링크를 만들어요. 받은 사람은 볼 수만 있고, 비밀번호를 넣어야 고칠 수 있어요.</p>
+    <label class="field">현장 메모 (선택)<textarea id="shMemo" rows="2" maxlength="300" placeholder="예: 101동 1203호 안방 드레스룸, 11/22 실측"></textarea></label>
+    <div class="pos"><label class="field">수정 비밀번호<input id="shPw" type="password" autocomplete="new-password" minlength="4"></label><label class="field">비밀번호 확인<input id="shPw2" type="password" autocomplete="new-password"></label></div>
+    <p class="err" id="shErr" role="alert"></p>
+    <div id="shOut" hidden><label class="field">만든 링크<input id="shLink" readonly></label><p class="muted" id="shLen"></p></div>
+    <div class="acts" style="justify-content:flex-end;margin-top:10px"><button class="btn" value="close">닫기</button><button class="btn" type="button" id="shCopy" hidden>링크 복사</button><button class="btn" type="button" id="shNative" hidden>공유하기</button><button class="btn primary" type="button" id="shMake">링크 만들기</button></div>
+  </form>
+</dialog>
+<dialog id="unlockDlg" aria-labelledby="unlockTitle">
+  <form method="dialog" class="dlg">
+    <h3 id="unlockTitle">비밀번호 넣고 수정하기</h3>
+    <p class="muted">링크를 만들 때 정한 비밀번호를 넣어 주세요.</p>
+    <label class="field">비밀번호<input id="ulPw" type="password" autocomplete="current-password"></label>
+    <p class="err" id="ulErr" role="alert"></p>
+    <div class="acts" style="justify-content:flex-end;margin-top:10px"><button class="btn" value="close">닫기</button><button class="btn primary" type="button" id="ulGo">확인</button></div>
+  </form>
+</dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -364,14 +395,15 @@ function varName(t,o,short){o=o||{};
 const VAR_DESC={'hangTop:drawer2bot':'2단 서랍장(하단) W80×H43cm + 긴 옷','hangBot:acc1':'1단 악세서리장 W80×H14cm + 위아래 행거','hangBot:drawer2top':'2단 서랍장(상단)이나 2단 바지걸이장 W80×H26cm + 위아래 행거','hangBot:quilt':'이불 수납장 W80×H80cm + 긴 옷'};
 function nameOf(it){const T=TYPES[it.type];return T.kind==='bay'?`${varName(it.type,it.o)||T.name} ${fmt(it.w)}cm`:T.kind==='corner'?`코너장 ${fmt(it.w)}×${fmt(it.w2||it.w)}cm`:T.name}
 
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(){if(READONLY)return;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.room&&Array.isArray(s.items)){
   S=Object.assign(S,s);if(!S.room.h)S.room.h=2300;
   S.openings=(Array.isArray(S.openings)?S.openings:[]).filter(o=>o&&(o.kind==='door'||o.kind==='window'||o.kind==='cbox')&&WALLS[o.wall]&&isFinite(o.pos)&&o.w>=300&&o.w<=4000);if(!PILLAR[S.pillar])S.pillar='white';if(!SHELF[S.shelf])S.shelf='white';
   const n=S.items.length;S.items=S.items.filter(it=>validItem({t:it.type,w:FIXW[it.type]||it.w,w2:it.w2,r:it.rot,x:it.x,y:it.y}));S.items.forEach(it=>{it.o=normO(it.type,it.o);if(it.type==='corner'&&!it.w2)it.w2=it.w;if(FIXW[it.type])it.w=FIXW[it.type];if(TYPES[it.type].kind==='free')it.w=TYPES[it.type].fw});
   if(S.items.length<n)setTimeout(()=>toast(`판매하지 않는 칸 ${n-S.items.length}개를 저장된 배치에서 뺐어요`),600);
   nextId=S.items.reduce((m,i)=>Math.max(m,i.id),0)+1}}catch(e){}}
-function snapshot(){hist.push(JSON.stringify(S));if(hist.length>80)hist.shift()}
+let READONLY=false;
+function snapshot(){if(READONLY){toast('보기 전용이에요. 위의 \'비밀번호 넣고 수정하기\'를 눌러 주세요.');throw new Error('readonly')}hist.push(JSON.stringify(S));if(hist.length>80)hist.shift()}
 function undo(){if(!hist.length){toast('되돌릴 작업이 없어요');return}S=JSON.parse(hist.pop());if(!Array.isArray(S.openings))S.openings=[];if(sel&&!get(sel))sel=null;if(selO!=null&&!getO(selO))selO=null;syncInputs();applyColors();buildRoom();refreshAll()}
 let tt;function toast(m){if(EMBED&&window.parent!==window){toShop({type:'toast',msg:m});return}const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3000)}
 
@@ -475,7 +507,7 @@ function autoRot(it,px,py){
   if(best!==it.rot&&bd>wallDist(it.rot,px,py)-120)return it.rot;
   return best;
 }
-function startDrag(it,px,py,src){snapshot();const f=fp(it);drag={id:it.id,off:{x:it.x+f.w/2-px,y:it.y+f.h/2-py},moved:false,src}}
+function startDrag(it,px,py,src){if(READONLY){drag=null;return}snapshot();const f=fp(it);drag={id:it.id,off:{x:it.x+f.w/2-px,y:it.y+f.h/2-py},moved:false,src}}
 function moveDrag(px,py,thr){
   const it=get(drag.id);if(!it)return;
   if(S.autoRot){const r=autoRot(it,px,py);if(r!==it.rot){it.rot=r;drag.off={x:0,y:0}}}
@@ -1020,7 +1052,7 @@ if(STORE){
 @media (max-width:600px){.storebar{padding:0 14px}.storebar .hide-s{display:none}}`;document.head.appendChild(st);
   const bar=document.createElement('div');bar.className='storebar';bar.innerHTML='<a class="lg" href="index.html">드레스룸 스토어</a><nav><a class="hide-s" href="index.html#sets">추천 세트</a><a class="hide-s" href="index.html#colors">컬러</a><a href="cart.html">장바구니<b id="sbCnt">0</b></a><a href="planner.html#admin" id="sbAdmin" style="font-size:13px;opacity:.7">관리자</a></nav>';
   document.body.insertBefore(bar,document.body.firstChild);updateStoreBar();
-  document.getElementById('sbAdmin').addEventListener('click',e=>{e.preventDefault();if(/admin/.test(location.hash)&&!$('adminBtn').hidden){openAdmin();return}location.hash='admin';location.reload()});
+  document.getElementById('sbAdmin').addEventListener('click',e=>{e.preventDefault();if(/^#admin/.test(location.hash)&&!$('adminBtn').hidden){openAdmin();return}location.hash='admin';location.reload()});
   window.addEventListener('storage',e=>{if(e.key===CART_KEY)updateStoreBar()});
 }
 function postPrices(){toShop({type:'prices',prices:Object.assign({},PRICE),opts:OPT_KEYS.map(k=>({k,name:optName(k),size:optSize(k)}))})}
@@ -1049,8 +1081,8 @@ function renderSwatches(){if(typeof renderCatalog==='function')renderCatalog();
   $('pillarSw').innerHTML=Object.entries(PILLAR).map(([k,v])=>`<button class="sw" data-p="${k}" aria-pressed="${S.pillar===k}"><i style="background:${v.hex}"></i>${v.name}</button>`).join('');
   $('shelfSw').innerHTML=Object.entries(SHELF).map(([k,v])=>`<button class="sw" data-s="${k}" aria-pressed="${S.shelf===k}"><i style="background:${v.hex}"></i>${v.name}</button>`).join('');
 }
-$('pillarSw').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;S.pillar=b.dataset.p;renderSwatches();applyColors();refreshAll()};
-$('shelfSw').onclick=e=>{const b=e.target.closest('[data-s]');if(!b)return;S.shelf=b.dataset.s;renderSwatches();applyColors();refreshAll()};
+$('pillarSw').onclick=e=>{const b=e.target.closest('[data-p]');if(!b||READONLY)return;S.pillar=b.dataset.p;renderSwatches();applyColors();refreshAll()};
+$('shelfSw').onclick=e=>{const b=e.target.closest('[data-s]');if(!b||READONLY)return;S.shelf=b.dataset.s;renderSwatches();applyColors();refreshAll()};
 $('autoRot').onchange=e=>{S.autoRot=e.target.checked;save()};
 function elev(type,v){
   const ln=(x1,y1,x2,y2,w=1.2,dash='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
@@ -1244,9 +1276,9 @@ $('adminSave').onclick=async()=>{
 };
 (async function initAdmin(){
   if(!HAS_RT){
-    if(FB&&/admin/.test(location.hash)){adminMode='firebase';$('adminBtn').hidden=false;$('fbLogin').hidden=false;$('adminSave').textContent='저장하고 모두에게 적용';
+    if(FB&&/^#admin/.test(location.hash)){adminMode='firebase';$('adminBtn').hidden=false;$('fbLogin').hidden=false;$('adminSave').textContent='저장하고 모두에게 적용';
       $('adminNote').textContent='관리자 이메일로 로그인해 저장하면 모든 컴퓨터에 바로 반영돼요.';if(STORE)setTimeout(openAdmin,0);return}
-    if(/admin/.test(location.hash)){adminMode='local';$('adminBtn').hidden=false;$('adminCopy').hidden=false;
+    if(/^#admin/.test(location.hash)){adminMode='local';$('adminBtn').hidden=false;$('adminCopy').hidden=false;
       $('adminNote').textContent='이 브라우저에만 저장돼요. 모든 컴퓨터에 반영하려면 Firebase를 연결하거나 JSON 복사로 전달해 주세요.';if(STORE)setTimeout(openAdmin,0)}
     return;
   }
@@ -1264,6 +1296,47 @@ if(STORE){const q=new URLSearchParams(location.search);let used=false;
   const si=q.get('set');if(si!=null&&SETS[+si]){used=true;setTimeout(()=>{$('setSel').value=+si;placeSet(+si)},0)}
   if(used)try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}}
 syncInputs();applyColors();buildRoom();resetCam();size3();refreshAll();
+/* ---------- 링크로 보내기 (주소에 배치를 담고, 수정은 비밀번호로) ---------- */
+const b64u=a=>{let s='';const u=new Uint8Array(a);for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+const unb64u=t=>{const s=atob(t.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((t.length+3)%4));const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u};
+async function packShare(obj){const raw=new TextEncoder().encode(JSON.stringify(obj));
+  if(window.CompressionStream){const z=await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();return 'z'+b64u(z)}return 'j'+b64u(raw)}
+async function unpackShare(code){const kind=code[0],u=unb64u(code.slice(1));let raw=u;
+  if(kind==='z'){if(!window.DecompressionStream)throw new Error('old');raw=new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer())}
+  return JSON.parse(new TextDecoder().decode(raw))}
+async function sha(t){if(!(window.crypto&&crypto.subtle))throw new Error('nocrypto');return b64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))}
+let SHARE=null;
+$('shareBtn').onclick=()=>{if(!S.items.length&&!(S.openings||[]).length){toast('먼저 방 크기를 넣고 칸을 배치해 주세요.');return}
+  $('shErr').textContent='';$('shOut').hidden=true;$('shCopy').hidden=true;$('shNative').hidden=true;$('shMake').hidden=false;$('shPw').value='';$('shPw2').value='';
+  if(SHARE&&SHARE.memo&&!$('shMemo').value)$('shMemo').value=SHARE.memo;$('shareDlg').showModal()};
+$('shMake').onclick=async()=>{const pw=$('shPw').value,pw2=$('shPw2').value,err=$('shErr');
+  if(pw.length<4){err.textContent='비밀번호는 4자 이상으로 정해 주세요.';$('shPw').focus();return}
+  if(pw!==pw2){err.textContent='비밀번호 두 칸이 서로 달라요.';$('shPw2').focus();return}
+  try{const salt=b64u(crypto.getRandomValues(new Uint8Array(9)));
+    const data={v:1,at:new Date().toISOString().slice(0,10),memo:$('shMemo').value.trim().slice(0,300),salt,ph:await sha(salt+pw),
+      S:{room:S.room,pillar:S.pillar,shelf:S.shelf,items:S.items.map(({id,type,w,w2,rot,x,y,o})=>({id,type,w,w2,rot,x,y,o})),openings:S.openings||[]}};
+    const url=location.origin+location.pathname+location.search+'#s='+await packShare(data);
+    $('shLink').value=url;$('shOut').hidden=false;$('shLen').textContent=`링크 길이 ${url.length.toLocaleString('ko-KR')}자. 카카오톡이나 문자로 보내면 돼요. 비밀번호는 따로 알려 주세요.`;
+    $('shCopy').hidden=false;$('shNative').hidden=!navigator.share;$('shMake').hidden=true;err.textContent='';$('shLink').select();
+  }catch(e){err.textContent=e&&e.message==='nocrypto'?'이 주소에서는 링크를 만들 수 없어요. https 주소에서 열어 주세요.':'링크를 만들지 못했어요. 다시 시도해 주세요.'}};
+$('shCopy').onclick=async()=>{try{await navigator.clipboard.writeText($('shLink').value);toast('링크를 복사했어요.')}catch(e){$('shLink').select();toast('링크를 길게 눌러 복사해 주세요.')}};
+$('shNative').onclick=async()=>{try{await navigator.share({title:'드레스룸 배치 도면',text:$('shMemo').value.trim()||'드레스룸 배치 도면',url:$('shLink').value})}catch(e){}};
+function setReadonly(on){READONLY=on;const tp=document.querySelector('header.top');if(tp&&$('robar').nextElementSibling!==tp)tp.before($('robar'));document.documentElement.classList.toggle('readonly',on);$('robar').hidden=!on;if(on){sel=null;selO=null}refreshAll()}
+$('unlockBtn').onclick=()=>{$('ulErr').textContent='';$('ulPw').value='';$('unlockDlg').showModal();setTimeout(()=>$('ulPw').focus(),50)};
+$('ulGo').onclick=async()=>{try{if(!SHARE)return;const h=await sha(SHARE.salt+$('ulPw').value);
+  if(h!==SHARE.ph){$('ulErr').textContent='비밀번호가 맞지 않아요.';return}
+  $('unlockDlg').close();setReadonly(false);try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}hist=[];save();toast('수정할 수 있어요. 고친 뒤 \'링크로 보내기\'로 새 링크를 만들어 보내 주세요.')}catch(e){$('ulErr').textContent='이 주소에서는 확인할 수 없어요. https 주소에서 열어 주세요.'}};
+$('ulPw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('ulGo').click()}});
+(async function openShared(){const m=location.hash.match(/^#s=([zj][A-Za-z0-9_-]+)$/);if(!m)return;
+  try{const d=await unpackShare(m[1]);if(!d||!d.S||!Array.isArray(d.S.items))throw 0;SHARE=d;
+    READONLY=true;
+    S.room=Object.assign({w:3400,d:2800,h:2300},d.S.room);if(PILLAR[d.S.pillar])S.pillar=d.S.pillar;if(SHELF[d.S.shelf])S.shelf=d.S.shelf;
+    S.items=d.S.items.filter(it=>it&&TYPES[it.type]&&validItem({t:it.type,w:it.w,w2:it.w2,r:it.rot,x:it.x,y:it.y})).map(it=>Object.assign(it,{o:normO(it.type,it.o)}));
+    S.openings=(Array.isArray(d.S.openings)?d.S.openings:[]).filter(o=>o&&WALLS[o.wall]);
+    nextId=S.items.reduce((m,i)=>Math.max(m,i.id||0),0)+1;
+    $('roMeta').textContent=[d.memo,d.at?`${d.at} 만듦`:''].filter(Boolean).join(' · ');
+    syncInputs();applyColors();buildRoom();resetCam();setReadonly(true);
+  }catch(e){toast('링크가 잘렸거나 이 브라우저에서 열 수 없어요. 링크 전체를 다시 받아 주세요.')}})();
 let fbStamp='';
 async function loadRemote(quiet){if(!FB)return;
   try{const r=await fetch(FB_DOC+'?key='+encodeURIComponent(FB.apiKey),{cache:'no-store'});if(r.status===404)return;if(!r.ok)throw 0;
