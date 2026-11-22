@@ -59,6 +59,13 @@ select{font:inherit;font-size:13px;color:var(--ink);background:var(--room);borde
 main{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px;padding:14px 20px 24px}
 .views{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;min-width:0}
 .pane{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;min-width:0;position:relative}
+.pick{display:inline-flex;border:1px solid var(--rule);border-radius:16px;overflow:hidden;font-weight:400}
+.pick button{font:inherit;font-size:12.5px;border:0;background:var(--sheet);color:var(--ink2);padding:5px 12px;cursor:pointer;min-height:30px}
+.pick button[aria-pressed="true"]{background:var(--ink);color:var(--sheet);font-weight:600}
+#plan.mode-item [data-op]{pointer-events:none}
+#plan.mode-op [data-id],#plan.mode-op [data-h]{pointer-events:none}
+#plan.mode-op [data-id]{opacity:.55}
+@media (hover:none){.keyhint{display:none}}
 .selbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--sheet);border-radius:28px;padding:6px 6px 6px 16px;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:calc(100% - 24px);z-index:5}
 .selbar span{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;margin-right:4px}
 .selbar button{flex:none;height:40px;min-width:52px;padding:0 14px;border-radius:20px;border:0;background:rgba(255,255,255,.14);color:inherit;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
@@ -209,8 +216,8 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
 <main>
   <div class="views">
     <div class="pane">
-      <div class="pane-h"><span style="display:flex;gap:12px;align-items:center;font-weight:600;color:var(--ink)">평면도<label class="check" style="font-weight:400"><input type="checkbox" id="autoRot" checked> 벽에 끌면 자동 회전</label></span><span>끌어서 이동, 파란 화살표로 폭 조절 (<kbd>Alt</kbd>+방향키 1cm), <kbd>R</kbd> 회전, <kbd>Del</kbd> 삭제</span></div>
-      <svg id="plan" role="img" aria-label="방 평면도와 배치된 칸"><g id="planG"></g></svg>
+      <div class="pane-h"><span style="display:flex;gap:12px;align-items:center;font-weight:600;color:var(--ink)">평면도<span class="pick" role="group" aria-label="평면도에서 누를 대상"><button data-mode="item" aria-pressed="true">칸 선택</button><button data-mode="op" aria-pressed="false">문·창 선택</button></span><label class="check" style="font-weight:400"><input type="checkbox" id="autoRot" checked> 벽에 끌면 자동 회전</label></span><span class="keyhint">끌어서 이동, 파란 화살표로 폭 조절 (<kbd>Alt</kbd>+방향키 1cm), <kbd>R</kbd> 회전, <kbd>Del</kbd> 삭제</span></div>
+      <svg id="plan" class="mode-item" role="img" aria-label="방 평면도와 배치된 칸"><g id="planG"></g></svg>
       <div class="selbar" data-selbar hidden role="toolbar" aria-label="선택한 칸"></div>
     </div>
     <div class="pane">
@@ -343,7 +350,11 @@ function setSize(st){const b=setBox(st);return b.h>DEPTH+1?`${fmt(b.w)} × ${fmt
 function setLabel(st){return `${st.k}: ${setMods(st)} (${setSize(st)})`}
 
 let S={room:{w:3400,d:2800,h:2300},pillar:'white',shelf:'white',autoRot:true,items:[],openings:[]};
-let sel=null,nextId=1,hist=[],drag=null,guides=null,rsz=null,selO=null,opDrag=null;
+let sel=null,nextId=1,hist=[],drag=null,guides=null,rsz=null,selO=null,opDrag=null,pickMode='item';
+function setMode(m){if(m===pickMode)return;pickMode=m;const pl=document.getElementById('plan');pl.classList.toggle('mode-item',m==='item');pl.classList.toggle('mode-op',m==='op');
+  document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));
+  if(m==='op')sel=null;else selO=null;if(typeof refreshAll==='function'&&S)refreshAll()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b){setMode(b.dataset.mode);if(b.dataset.mode==='op'&&!(S.openings||[]).length)toast('먼저 + 방문, + 창문, + 커튼박스로 달아 주세요.')}});
 const get=id=>S.items.find(i=>i.id===id);
 const VARIANTS={hangTop:[{low:'drawer2bot'}],hangBot:[{up:'acc1'},{up:'drawer2top'},{low:'quilt'}]};
 function varName(t,o,short){o=o||{};
@@ -407,10 +418,11 @@ function findSpot(it){
   it.rot=0;const f=fp(it);it.x=Math.max(0,Math.round((RW-f.w)/2));it.y=Math.max(0,Math.round((RD-f.h)/2));return false;
 }
 function addModule(type,w,preset){
+  setMode('item');
   const T=TYPES[type];snapshot();const it={id:nextId++,type,w:T.kind==='free'?T.fw:w,rot:0,x:0,y:0,o:normO(type,preset)};if(T.kind==='corner')it.w2=w;const ok=findSpot(it);S.items.push(it);sel=it.id;selO=null;refreshAll();
   toast(ok?`추가했어요: ${nameOf(it)}`:'빈 벽 공간이 없어 방 가운데에 놓았어요. 끌어서 옮겨 주세요.');
 }
-function placeSetObj(st){
+function placeSetObj(st){setMode("item");
   snapshot();const had=S.items.length;S.items=[];let last=null;
   st.items.forEach(m=>{const it={id:nextId++,type:m.t,w:m.w,w2:m.t==='corner'?(m.w2||m.w):undefined,rot:m.r,x:st.ax==='r'?S.room.w-G+m.x:G+m.x,y:st.ay==='b'?S.room.d-G+m.y:G+m.y,o:normO(m.t,m.o)};S.items.push(it);last=it});
   sel=last?last.id:null;selO=null;refreshAll();
@@ -526,7 +538,7 @@ function renderPlan(){
       s+=`<g stroke="#C0612B" stroke-width="${px(1)}"><line x1="${p1[0]}" y1="${p1[1]}" x2="${p2[0]}" y2="${p2[1]}"/>`+(hz?`<line x1="${p1[0]}" y1="${p1[1]-k}" x2="${p1[0]}" y2="${p1[1]+k}"/><line x1="${p2[0]}" y1="${p2[1]-k}" x2="${p2[0]}" y2="${p2[1]+k}"/>`:`<line x1="${p1[0]-k}" y1="${p1[1]}" x2="${p1[0]+k}" y2="${p1[1]}"/><line x1="${p2[0]-k}" y1="${p2[1]}" x2="${p2[0]+k}" y2="${p2[1]}"/>`)+`</g>`;
       if((b-a)/mmpp>26){const tx=hz?m[0]:m[0]+(wl==='left'?-px(4):px(4)),ty=hz?m[1]+(wl==='top'?-px(4):px(12)):m[1];
         s+=`<text x="${tx}" y="${ty}" text-anchor="middle" font-size="${fs*.9}" font-weight="600" fill="#C0612B" ${hz?'':`transform="rotate(-90 ${tx} ${ty})"`} style="pointer-events:none">${fmt(b-a)}</text>`}})});
-  (S.openings||[]).forEach(op=>{
+  [...(S.openings||[])].sort((a,b)=>(a.kind==='cbox'?0:1)-(b.kind==='cbox'?0:1)).forEach(op=>{
     const O=op.wall==='top'?[op.pos,0]:op.wall==='bottom'?[op.pos,RD]:op.wall==='left'?[0,op.pos]:[RW,op.pos],U=op.wall==='top'||op.wall==='bottom'?[1,0]:[0,1],N={top:[0,1],bottom:[0,-1],left:[1,0],right:[-1,0]}[op.wall];
     const P=(a,d)=>[O[0]+U[0]*a+N[0]*d,O[1]+U[1]*a+N[1]*d],pl=pts=>pts.map(q=>q.join(',')).join(' '),w=op.w,isSel=op.id===selO;
     const hd=op.kind==='cbox'?(op.depth||200):Math.max(260,px(26));
@@ -830,7 +842,7 @@ box3.addEventListener('pointerdown',e=>{
   setNdc(e);box3.setPointerCapture(e.pointerId);
   const hit=ray.intersectObjects(itemsRoot.children,true).find(h=>h.object.type==='Mesh');
   if(hit){let o=hit.object;while(o&&o.userData.id==null)o=o.parent;const it=o&&get(o.userData.id);const p=floorPt();
-    if(it&&p){sel=it.id;selO=null;startDrag(it,p.x,p.y,'3d');box3.style.cursor='grabbing';refreshAll();return}}
+    if(it&&p){setMode('item');sel=it.id;selO=null;startDrag(it,p.x,p.y,'3d');box3.style.cursor='grabbing';refreshAll();return}}
   orbit={x:e.clientX,y:e.clientY,moved:false};
 });
 box3.addEventListener('pointermove',e=>{
@@ -855,6 +867,7 @@ function renderSelBar(){const it=get(sel),op=getO(selO);document.querySelectorAl
 document.addEventListener('click',e=>{const b=e.target.closest('[data-sb]');if(!b)return;e.stopPropagation();({rot:rotateSel,dup:dupSel,del:deleteSel,flip:flipDoor,odel:deleteOp})[b.dataset.sb]()});
 ['pointerdown','touchstart'].forEach(ev=>document.querySelectorAll('[data-selbar]').forEach(b=>b.addEventListener(ev,e=>e.stopPropagation(),{passive:true})));
 function addOpening(kind){
+  setMode('op');
   if(kind==='cbox'){snapshot();const win=S.openings.find(o=>o.kind==='window'),wall=win?win.wall:'top';
     const op={id:Date.now()%1e9+Math.floor(Math.random()*1000),kind:'cbox',wall,pos:0,w:wallLen(wall),depth:200,hc:S.room.h+150};
     S.openings.push(op);selO=op.id;sel=null;refreshAll();toast(`커튼박스를 ${WALLS[wall]} 벽에 표시했어요. 아래에서 폭과 천고를 실측값으로 맞춰 주세요.`);return}
