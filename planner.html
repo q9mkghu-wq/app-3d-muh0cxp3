@@ -428,7 +428,7 @@ function needW(a){if(TYPES[a.type].kind!=='bay')return 0;let n=0,by='';const o=a
   if(o.up&&800>n){n=800;by=OPTS[o.up].name}if(o.low&&800>n){n=800;by=OPTS[o.low].name}if(a.type==='drawer3'&&800>n){n=800;by='3단 서랍장'}return n?{n,by}:0}
 function optClash(a){if(TYPES[a.type].kind!=='bay'||!a.o||!a.o.up||!a.o.low)return false;const Lo=bayLayout(a);return !!(Lo.up&&Lo.low&&Lo.up.y0<Lo.low.h+50+t*1000)}
 function optBad(a){const q=needW(a);return (!!q&&a.w<q.n)||optClash(a)}
-const WALLS={top:'위쪽',right:'오른쪽',bottom:'아래쪽',left:'왼쪽'};
+const WALLS={top:'A',right:'B',bottom:'C',left:'D'};
 const getO=id=>(S.openings||[]).find(o=>o.id===id);
 const wallLen=w=>w==='top'||w==='bottom'?S.room.w:S.room.d;
 function opZone(op,d){const RW=S.room.w,RD=S.room.d,a=op.pos,b=op.w;return op.wall==='top'?{x:a,y:0,w:b,h:d}:op.wall==='bottom'?{x:a,y:RD-d,w:b,h:d}:op.wall==='left'?{x:0,y:a,w:d,h:b}:{x:RW-d,y:a,w:d,h:b}}
@@ -560,9 +560,10 @@ function toWorld(it,u,v,w,h){const f=fp(it),r=it.rot;
   return{x:it.x+v,y:it.y+f.h-u-w,w:h,h:w}}
 function optTags(it){const o=it.o||{},t=[];if(o.up)t.push(OPTS[o.up].short);if(o.low)t.push(OPTS[o.low].short);if(o.mir)t.push('거울');if(o.cs)t.push(`코너선반 ${o.cs}`);return t.join(', ')}
 function renderPlan(){
-  const RW=S.room.w,RD=S.room.d,T=100,M=Math.max(RW,RD)*0.08+320;
+  const RW=S.room.w,RD=S.room.d,T=100,sw0=svg.clientWidth||600,sh0=svg.clientHeight||450;
+  const wf=Math.min(1,Math.max(.62,Math.min(sw0,sh0)/620)),mp=104*wf;
+  mmpp=Math.max((RW+2*T)/Math.max(120,sw0-2*mp),(RD+2*T)/Math.max(120,sh0-2*mp));const M=T+mp*mmpp;
   svg.setAttribute('viewBox',`${-M} ${-M} ${RW+2*M} ${RD+2*M}`);
-  const sw0=svg.clientWidth||600,sh0=svg.clientHeight||450;mmpp=Math.max((RW+2*M)/sw0,(RD+2*M)/sh0);
   const px=n=>n*mmpp,fs=px(12);
   let s='';
   s+=`<rect x="${-T}" y="${-T}" width="${RW+2*T}" height="${RD+2*T}" fill="var(--ink)"/>`;
@@ -570,12 +571,14 @@ function renderPlan(){
   const step=100/mmpp>7?100:500;
   for(let x=step;x<RW;x+=step)s+=`<line x1="${x}" y1="0" x2="${x}" y2="${RD}" stroke="var(--grid)" stroke-width="${px(x%500===0?1:.6)}"/>`;
   for(let y=step;y<RD;y+=step)s+=`<line x1="0" y1="${y}" x2="${RW}" y2="${y}" stroke="var(--grid)" stroke-width="${px(y%500===0?1:.6)}"/>`;
-  const dy=-T-px(44),dx=-T-px(44),tk=px(5);
+  const dy=-T-px(86*wf),dx=-T-px(86*wf),tk=px(5);
   s+=`<g stroke="var(--ink2)" stroke-width="${px(1)}"><line x1="0" y1="${dy}" x2="${RW}" y2="${dy}"/><line x1="${-tk}" y1="${dy+tk}" x2="${tk}" y2="${dy-tk}"/><line x1="${RW-tk}" y1="${dy+tk}" x2="${RW+tk}" y2="${dy-tk}"/>
   <line x1="${dx}" y1="0" x2="${dx}" y2="${RD}"/><line x1="${dx-tk}" y1="${tk}" x2="${dx+tk}" y2="${-tk}"/><line x1="${dx-tk}" y1="${RD+tk}" x2="${dx+tk}" y2="${RD-tk}"/></g>`;
   s+=`<text x="${RW/2}" y="${dy-px(6)}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" font-weight="500">가로 ${fmt(RW)} cm</text>`;
   s+=`<text x="${dx-px(6)}" y="${RD/2}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" font-weight="500" transform="rotate(-90 ${dx-px(6)} ${RD/2})">세로 ${fmt(RD)} cm</text>`;
   s+=`<rect x="${G}" y="${G}" width="${RW-2*G}" height="${RD-2*G}" fill="none" stroke="var(--warn)" stroke-width="${px(.8)}" stroke-dasharray="${px(3)} ${px(3)}" opacity=".55"/>`;
+  {const r=px(17*wf),o=T+px(52*wf);[['top',RW/2,-o],['right',RW+o,RD/2],['bottom',RW/2,RD+o],['left',-o,RD/2]].forEach(([wl,x,y])=>{
+    s+=`<g style="pointer-events:none"><circle cx="${x}" cy="${y}" r="${r}" fill="var(--ink)"/><text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="${r*1.25}" font-weight="700" fill="#fff">${WALLS[wl]}</text></g>`})}
   const late=[];
   ['top','right','bottom','left'].forEach(wl=>{const ops=(S.openings||[]).filter(o=>o.wall===wl&&o.kind!=='cbox').sort((a,b)=>a.pos-b.pos);if(!ops.length)return;
     const L=wallLen(wl),hz=wl==='top'||wl==='bottom',off=T+px(14),k=px(4);
@@ -804,6 +807,11 @@ function textSprite(txt,k){
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
   const h=0.16*k;sp.scale.set(h*w/72,h,1);sp.renderOrder=10;return sp;
 }
+function wallBadge(t,k){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+  x.fillStyle='#1C1A17';x.beginPath();x.arc(64,64,60,0,Math.PI*2);x.fill();x.strokeStyle='#fff';x.lineWidth=5;x.stroke();
+  x.fillStyle='#fff';x.font='700 76px "IBM Plex Sans KR","Apple SD Gothic Neo",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(t,64,69);
+  const tex=new THREE.CanvasTexture(c);tex.minFilter=THREE.LinearFilter;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));
+  const h=0.34*k;sp.scale.set(h,h,1);sp.renderOrder=11;return sp}
 function buildDims(){
   if(dimGroup)scene.remove(dimGroup);dimGroup=new THREE.Group();
   const RW=S.room.w/1000,RD=S.room.d/1000,k=Math.max(1,Math.max(RW,RD)/3),o=0.28*k,tk=0.07*k,y=0.01;
@@ -814,7 +822,8 @@ function buildDims(){
   const a=textSprite(`가로 ${fmt(S.room.w)} cm`,k);a.position.set(RW/2,0.12*k,zf);dimGroup.add(a);
   const b=textSprite(`세로 ${fmt(S.room.d)} cm`,k);b.position.set(xl,0.12*k,RD/2);dimGroup.add(b);
   {const WH=S.room.h/1000,xh=RW+o*.22,zh=0;seg([xh,0,zh],[xh,WH,zh]);seg([xh-tk,0,zh],[xh+tk,0,zh]);seg([xh-tk,WH,zh],[xh+tk,WH,zh]);seg([RW,WH,0],[xh+tk,WH,zh]);seg([RW,0,0],[xh+tk,0,zh]);
-   const c=textSprite(`천고 ${fmt(S.room.h)} cm`,k);c.position.set(xh,WH*.55,zh);dimGroup.add(c)}
+   const c=textSprite(`천고 ${fmt(S.room.h)} cm`,k);c.position.set(xh,WH*.55,zh);dimGroup.add(c);
+   const yt=WH+0.5*k;[['top',RW/2,yt,0],['right',RW,yt,RD/2],['bottom',RW/2,0.2*k,RD+o*2.3],['left',0,yt,RD/2]].forEach(([wl,x,y,z])=>{const sp=wallBadge(WALLS[wl],k);sp.position.set(x,y,z);dimGroup.add(sp)})}
   scene.add(dimGroup);
 }
 function buildRoom(){
@@ -905,8 +914,8 @@ new ResizeObserver(()=>renderPlan()).observe(svg);
 (function loop(){placeCam();R.render(scene,cam);requestAnimationFrame(loop)})();
 
 /* ---------- 패널 ---------- */
-const DIR={0:'위쪽 벽을 등지고 있어요',90:'오른쪽 벽을 등지고 있어요',180:'아래쪽 벽을 등지고 있어요',270:'왼쪽 벽을 등지고 있어요'};
-const CDIR={0:'왼쪽 위 모서리용',90:'오른쪽 위 모서리용',180:'오른쪽 아래 모서리용',270:'왼쪽 아래 모서리용'};
+const DIR={0:'A 벽을 등지고 있어요',90:'B 벽을 등지고 있어요',180:'C 벽을 등지고 있어요',270:'D 벽을 등지고 있어요'};
+const CDIR={0:'D·A 벽 모서리용',90:'A·B 벽 모서리용',180:'B·C 벽 모서리용',270:'C·D 벽 모서리용'};
 function renderSelBar(){const it=get(sel),op=getO(selO);document.querySelectorAll('[data-selbar]').forEach(b=>{
   if(op&&!opDrag){b.hidden=false;b.innerHTML=`<span>${esc(opName(op))}</span>${op.kind==='door'?'<button data-sb="flip">반대로 열기</button>':''}<button data-sb="odel" class="del">삭제</button>`;return}
   if(!it||drag||rsz){b.hidden=true;return}b.hidden=false;
@@ -928,9 +937,9 @@ function addOpening(kind){
   S.openings.push(op);selO=op.id;sel=null;refreshAll();toast(`${opName(op)}을 ${WALLS[op.wall]} 벽에 달았어요. 끌어서 옮기거나 아래에서 위치를 맞춰 주세요.`)}
 function deleteOp(){const op=getO(selO);if(!op)return;snapshot();S.openings=S.openings.filter(o=>o!==op);selO=null;refreshAll();toast(`삭제했어요: ${opName(op)}`)}
 function flipDoor(){const op=getO(selO);if(!op||op.kind!=='door')return;snapshot();op.hinge=op.hinge==='e'?'s':'e';refreshAll()}
-function renderOpPanel(op){const el=$('selPanel'),L=wallLen(op.wall),from=op.wall==='top'||op.wall==='bottom'?'왼쪽 벽':'위쪽 벽';
+function renderOpPanel(op){const el=$('selPanel'),L=wallLen(op.wall),from=op.wall==='top'||op.wall==='bottom'?'D 벽':'A 벽';
   if(op.kind==='cbox'){const n=cboxPosts().length,hc=op.hc||S.room.h+150;
-    el.innerHTML=`<h3>${opName(op)}</h3><p class="muted" style="margin:0">${WALLS[op.wall]} 벽, ${from}에서 ${fmt(op.pos)}cm, ${op.wall==='top'||op.wall==='bottom'?'오른쪽 벽':'아래쪽 벽'}까지 ${fmt(L-op.pos-op.w)}cm</p>
+    el.innerHTML=`<h3>${opName(op)}</h3><p class="muted" style="margin:0">${WALLS[op.wall]} 벽, ${from}에서 ${fmt(op.pos)}cm, ${op.wall==='top'||op.wall==='bottom'?'B 벽':'C 벽'}까지 ${fmt(L-op.pos-op.w)}cm</p>
     <div class="pos"><label class="field">달린 벽<select id="opWall">${Object.entries(WALLS).map(([k,v])=>`<option value="${k}" ${op.wall===k?'selected':''}>${v} 벽</option>`).join('')}</select></label>
     <label class="field">길이 (cm)<input id="opW" type="number" step="1" min="30" value="${op.w/10}"></label>
     <label class="field">${from}에서 (cm)<input id="opPos" type="number" step="1" value="${op.pos/10}"></label>
@@ -946,7 +955,7 @@ function renderOpPanel(op){const el=$('selPanel'),L=wallLen(op.wall),from=op.wal
     $('opHc').onchange=()=>num('opHc',v=>{op.hc=Math.max(v,S.room.h+10);if(v<=S.room.h)toast('커튼박스 천고는 방 천고보다 높아야 해요.')});
     $('opFull').onclick=()=>{snapshot();op.pos=0;op.w=wallLen(op.wall);refreshAll()};$('opDel').onclick=deleteOp;return}
   const blocked=S.items.filter(it=>hitZ(it,opZone(op,op.kind==='door'?op.w:450))).length,ov=S.openings.some(o=>o!==op&&o.kind!=='cbox'&&o.wall===op.wall&&o.pos<op.pos+op.w&&o.pos+o.w>op.pos);
-  el.innerHTML=`<h3>${opName(op)}</h3><p class="muted" style="margin:0">${WALLS[op.wall]} 벽, ${from}에서 ${fmt(op.pos)}cm, ${op.wall==='top'||op.wall==='bottom'?'오른쪽 벽':'아래쪽 벽'}까지 ${fmt(L-op.pos-op.w)}cm${op.kind==='window'?`, 바닥에서 ${fmt(op.sill??900)}cm`:''}</p>
+  el.innerHTML=`<h3>${opName(op)}</h3><p class="muted" style="margin:0">${WALLS[op.wall]} 벽, ${from}에서 ${fmt(op.pos)}cm, ${op.wall==='top'||op.wall==='bottom'?'B 벽':'C 벽'}까지 ${fmt(L-op.pos-op.w)}cm${op.kind==='window'?`, 바닥에서 ${fmt(op.sill??900)}cm`:''}</p>
   <div class="pos"><label class="field">달린 벽<select id="opWall">${Object.entries(WALLS).map(([k,v])=>`<option value="${k}" ${op.wall===k?'selected':''}>${v} 벽</option>`).join('')}</select></label>
   <label class="field">${op.kind==='window'?'창 가로':'문 폭'} (cm)<input id="opW" type="number" step="1" min="30" max="400" value="${op.w/10}"></label>
   <label class="field">${from}에서 (cm)<input id="opPos" type="number" step="1" value="${op.pos/10}"></label>
@@ -988,11 +997,11 @@ function renderSel(){renderSelBar();
   else if(b)st='다른 칸과 겹쳐 있어요. 옆으로 옮겨 주세요.';
   el.innerHTML=`<h3>${nameOf(it)}</h3><p class="muted" style="margin:0">${size}${dir?', '+dir:''}</p>
   <div class="pos">${wField}${wField&&T.kind==='bay'&&!FIXW[it.type]?`<div class="field">&nbsp;<span class="acts"><button class="btn" id="wMinus" aria-label="선반 1cm 줄이기">−1cm</button><button class="btn" id="wPlus" aria-label="선반 1cm 늘리기">+1cm</button><button class="btn" id="fillB">빈 곳까지</button></span></div>`:''}
-  <label class="field">왼쪽 벽에서 (cm)<input id="posX" type="number" step="1" value="${fmt(it.x).replace(/,/g,'')}"></label>
-  <label class="field">위쪽 벽에서 (cm)<input id="posY" type="number" step="1" value="${fmt(it.y).replace(/,/g,'')}"></label></div>
+  <label class="field">D 벽에서 (cm)<input id="posX" type="number" step="1" value="${fmt(it.x).replace(/,/g,'')}"></label>
+  <label class="field">A 벽에서 (cm)<input id="posY" type="number" step="1" value="${fmt(it.y).replace(/,/g,'')}"></label></div>
   <div class="acts"><button class="btn" id="rotB">회전 <kbd>R</kbd></button><button class="btn" id="dupB">복제 <kbd>D</kbd></button><button class="btn danger" id="delB">삭제</button></div>
   ${opt}
-  <div class="status ${b?'bad':'ok'}">${b?st:`${winBlock(it)?'창문 앞을 가리고 있어요. ':''}오른쪽 벽까지 ${fmt(S.room.w-it.x-f.w)}cm, 아래쪽 벽까지 ${fmt(S.room.d-it.y-f.h)}cm`}</div>`;
+  <div class="status ${b?'bad':'ok'}">${b?st:`${winBlock(it)?'창문 앞을 가리고 있어요. ':''}B 벽까지 ${fmt(S.room.w-it.x-f.w)}cm, C 벽까지 ${fmt(S.room.d-it.y-f.h)}cm`}</div>`;
   $('rotB').onclick=rotateSel;$('dupB').onclick=dupSel;$('delB').onclick=deleteSel;
   if($('fillB'))$('fillB').onclick=fillGap;if($('wMinus')){$('wMinus').onclick=()=>resizeBy(-10);$('wPlus').onclick=()=>resizeBy(10)}
   const onPos=(k,v)=>{const n=parseFloat(v);if(!isFinite(n))return;snapshot();it[k]=Math.round(n)*10;refreshAll()};
@@ -1055,7 +1064,7 @@ function sendOrder(){
   if(S.room.h>=2700){toast('천고 270cm 이상은 시공할 수 없어요. 천고를 확인해 주세요.');return}
   const c=calc();if(!c.qty){toast('벽면 시스템 칸을 하나 이상 배치해 주세요.');return}
   const data={qty:c.qty,lengthCm:Math.round(c.L)/10,pillar:S.pillar,shelf:S.shelf,room:{w:S.room.w/10,d:S.room.d/10,h:S.room.h/10},
-    openings:(S.openings||[]).map(op=>op.kind==='cbox'?`커튼박스: ${WALLS[op.wall]} 벽, ${op.wall==='top'||op.wall==='bottom'?'왼쪽':'위쪽'}에서 ${fmt(op.pos)}cm, 길이 ${fmt(op.w)}cm, 폭 ${fmt(op.depth||200)}cm, 천고 ${fmt(op.hc||S.room.h+150)}cm (들어가는 기둥 ${cboxPosts().filter(h=>h===(op.hc||S.room.h+150)).length}개)`:`${op.kind==='door'?'방문':'창문'}: ${WALLS[op.wall]} 벽, ${op.wall==='top'||op.wall==='bottom'?'왼쪽':'위쪽'}에서 ${fmt(op.pos)}cm, 폭 ${fmt(op.w)}cm${op.kind==='window'?`, 바닥에서 ${fmt(op.sill??900)}cm, 높이 ${fmt(op.h??1200)}cm`:''}`),
+    openings:(S.openings||[]).map(op=>op.kind==='cbox'?`커튼박스: ${WALLS[op.wall]} 벽, ${op.wall==='top'||op.wall==='bottom'?'D 벽':'A 벽'}에서 ${fmt(op.pos)}cm, 길이 ${fmt(op.w)}cm, 폭 ${fmt(op.depth||200)}cm, 천고 ${fmt(op.hc||S.room.h+150)}cm (들어가는 기둥 ${cboxPosts().filter(h=>h===(op.hc||S.room.h+150)).length}개)`:`${op.kind==='door'?'방문':'창문'}: ${WALLS[op.wall]} 벽, ${op.wall==='top'||op.wall==='bottom'?'D 벽':'A 벽'}에서 ${fmt(op.pos)}cm, 폭 ${fmt(op.w)}cm${op.kind==='window'?`, 바닥에서 ${fmt(op.sill??900)}cm, 높이 ${fmt(op.h??1200)}cm`:''}`),
     bays:[...c.bays],opts:[...c.opts].sort((a,b)=>OPT_KEYS.indexOf(a[0])-OPT_KEYS.indexOf(b[0]))};
   if(STORE){const a=storeCart();a.push(Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),kind:'design',title:'내가 배치한 드레스룸',at:Date.now()},data));
     try{localStorage.setItem(CART_KEY,JSON.stringify(a))}catch(e){toast('이 브라우저에서는 장바구니를 저장할 수 없어요.');return}
