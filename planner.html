@@ -41,7 +41,9 @@ h1{font-size:20px;font-weight:600;letter-spacing:-.015em;margin:0;white-space:no
 .sw i{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,.25);display:block}
 .sw[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 select{font:inherit;font-size:13px;color:var(--ink);background:var(--room);border:1px solid var(--rule);border-radius:5px;padding:6px 8px;flex:1 1 220px;min-width:0;max-width:560px}
-#catalog{flex:1 1 600px;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;min-width:0}
+.catrow{padding:10px 0 12px}
+#catalog{flex:1 1 100%;display:flex;gap:8px;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:2px 2px 8px;scrollbar-width:thin}
+#catalog .cat{flex:0 0 112px;scroll-snap-align:start}
 .cat{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;padding:10px 6px 9px;border:1px solid var(--rule);border-radius:10px;background:var(--room);cursor:pointer;font:inherit;color:var(--ink);text-align:center;min-width:0;transition:border-color .12s,box-shadow .12s}
 .cat:hover,.cat:focus-visible{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .cat:active{transform:translateY(1px)}
@@ -120,7 +122,7 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
 @media (max-width:1100px){.views{grid-template-columns:minmax(0,1fr)}.sep{display:none}}
 @media (max-width:820px){.srow{grid-template-columns:1fr 1fr}.srow .sum,.srow .acts{grid-column:1/-1}.srow .acts{justify-content:flex-start}.top{padding:12px 16px}.top p{display:none}h1{font-size:18px;white-space:normal}.bar{padding:0 14px}.grp,.grp.grow{flex:1 1 100%}
  main{padding:12px 12px 24px}.below{grid-template-columns:1fr}#plan{height:62vw;min-height:280px;max-height:420px}#three{height:70vw;min-height:300px;max-height:440px}
- .inl input,select{font-size:16px}.field input,.field select{font-size:16px}#catalog{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}.cat svg{width:62px;height:104px}}
+ .inl input,select{font-size:16px}.field input,.field select{font-size:16px}#catalog .cat{flex-basis:100px}.cat svg{width:62px;height:104px}}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 .embed body{background:transparent}
 .embed .top-l{display:none}
@@ -149,9 +151,10 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
       <b><span class="n">1</span>방 크기</b>
       <label class="inl">가로<input id="roomW" type="number" inputmode="decimal" min="50" max="2000" step="0.1" aria-label="방 가로 cm"></label>
       <label class="inl">세로<input id="roomD" type="number" inputmode="decimal" min="50" max="2000" step="0.1" aria-label="방 세로 cm"></label>
-      <label class="inl">층고<input id="roomH" type="number" inputmode="decimal" min="200" max="300" step="0.1" aria-label="층고 cm"></label>
+      <label class="inl">천고<input id="roomH" type="number" inputmode="decimal" min="200" max="300" step="0.1" aria-label="천고 cm"></label>
       <span class="lbl">cm</span>
       <button class="btn primary" id="roomApply">적용</button>
+      <button class="btn" id="addDoor" title="방문을 벽에 달아요">+ 방문</button><button class="btn" id="addWin" title="창문을 벽에 달아요">+ 창문</button>
       <span class="err" id="roomErr" role="alert"></span>
     </div>
     <span class="sep"></span>
@@ -170,10 +173,8 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
       <span class="lbl">선반</span><div class="swatches" id="shelfSw"></div>
     </div>
   </div>
-  <div class="bar-row">
-    <div class="grp"><b><span class="n">3</span>칸 추가</b><span class="lbl" style="white-space:normal">선반 80cm로 추가돼요. 평면도에서 파란 화살표를 끌어 길이를 바꿔요.</span></div>
-    <div id="catalog"></div>
-    <label class="check"><input type="checkbox" id="autoRot" checked> 벽에 끌면 자동 회전</label>
+  <div class="bar-row catrow">
+    <div id="catalog" role="list" aria-label="칸 추가"></div>
   </div>
 </div>
 
@@ -208,7 +209,7 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
 <main>
   <div class="views">
     <div class="pane">
-      <div class="pane-h">평면도<span>끌어서 이동, 파란 화살표로 폭 조절 (<kbd>Alt</kbd>+방향키 1cm), <kbd>R</kbd> 회전, <kbd>Del</kbd> 삭제</span></div>
+      <div class="pane-h"><span style="display:flex;gap:12px;align-items:center;font-weight:600;color:var(--ink)">평면도<label class="check" style="font-weight:400"><input type="checkbox" id="autoRot" checked> 벽에 끌면 자동 회전</label></span><span>끌어서 이동, 파란 화살표로 폭 조절 (<kbd>Alt</kbd>+방향키 1cm), <kbd>R</kbd> 회전, <kbd>Del</kbd> 삭제</span></div>
       <svg id="plan" role="img" aria-label="방 평면도와 배치된 칸"><g id="planG"></g></svg>
       <div class="selbar" data-selbar hidden role="toolbar" aria-label="선택한 칸"></div>
     </div>
@@ -341,8 +342,8 @@ function setMods(st){return [...st.items].sort((a,b)=>(a.y-b.y)||(a.x-b.x)).map(
 function setSize(st){const b=setBox(st);return b.h>DEPTH+1?`${fmt(b.w)} × ${fmt(b.h)}cm`:`${fmt(b.w)}cm`}
 function setLabel(st){return `${st.k}: ${setMods(st)} (${setSize(st)})`}
 
-let S={room:{w:3400,d:2800,h:2300},pillar:'white',shelf:'white',autoRot:true,items:[]};
-let sel=null,nextId=1,hist=[],drag=null,guides=null,rsz=null;
+let S={room:{w:3400,d:2800,h:2300},pillar:'white',shelf:'white',autoRot:true,items:[],openings:[]};
+let sel=null,nextId=1,hist=[],drag=null,guides=null,rsz=null,selO=null,opDrag=null;
 const get=id=>S.items.find(i=>i.id===id);
 const VARIANTS={hangTop:[{low:'drawer2bot'}],hangBot:[{up:'acc1'},{up:'drawer2top'},{low:'quilt'}]};
 function varName(t,o,short){o=o||{};
@@ -354,12 +355,13 @@ function nameOf(it){const T=TYPES[it.type];return T.kind==='bay'?`${varName(it.t
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.room&&Array.isArray(s.items)){
-  S=Object.assign(S,s);if(!S.room.h)S.room.h=2300;if(!PILLAR[S.pillar])S.pillar='white';if(!SHELF[S.shelf])S.shelf='white';
+  S=Object.assign(S,s);if(!S.room.h)S.room.h=2300;
+  S.openings=(Array.isArray(S.openings)?S.openings:[]).filter(o=>o&&(o.kind==='door'||o.kind==='window')&&WALLS[o.wall]&&isFinite(o.pos)&&o.w>=300&&o.w<=4000);if(!PILLAR[S.pillar])S.pillar='white';if(!SHELF[S.shelf])S.shelf='white';
   const n=S.items.length;S.items=S.items.filter(it=>validItem({t:it.type,w:FIXW[it.type]||it.w,w2:it.w2,r:it.rot,x:it.x,y:it.y}));S.items.forEach(it=>{it.o=normO(it.type,it.o);if(it.type==='corner'&&!it.w2)it.w2=it.w;if(FIXW[it.type])it.w=FIXW[it.type];if(TYPES[it.type].kind==='free')it.w=TYPES[it.type].fw});
   if(S.items.length<n)setTimeout(()=>toast(`판매하지 않는 칸 ${n-S.items.length}개를 저장된 배치에서 뺐어요`),600);
   nextId=S.items.reduce((m,i)=>Math.max(m,i.id),0)+1}}catch(e){}}
 function snapshot(){hist.push(JSON.stringify(S));if(hist.length>80)hist.shift()}
-function undo(){if(!hist.length){toast('되돌릴 작업이 없어요');return}S=JSON.parse(hist.pop());if(sel&&!get(sel))sel=null;syncInputs();applyColors();buildRoom();refreshAll()}
+function undo(){if(!hist.length){toast('되돌릴 작업이 없어요');return}S=JSON.parse(hist.pop());if(!Array.isArray(S.openings))S.openings=[];if(sel&&!get(sel))sel=null;if(selO!=null&&!getO(selO))selO=null;syncInputs();applyColors();buildRoom();refreshAll()}
 let tt;function toast(m){if(EMBED&&window.parent!==window){toShop({type:'toast',msg:m});return}const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3000)}
 
 function hits(a,b){const fa=fp(a),fb=fp(b);return a.x<b.x+fb.w-1&&a.x+fa.w>b.x+1&&a.y<b.y+fb.h-1&&a.y+fa.h>b.y+1}
@@ -368,9 +370,17 @@ function needW(a){if(TYPES[a.type].kind!=='bay')return 0;let n=0,by='';const o=a
   if(o.up&&800>n){n=800;by=OPTS[o.up].name}if(o.low&&800>n){n=800;by=OPTS[o.low].name}if(a.type==='drawer3'&&800>n){n=800;by='3단 서랍장'}return n?{n,by}:0}
 function optClash(a){if(TYPES[a.type].kind!=='bay'||!a.o||!a.o.up||!a.o.low)return false;const Lo=bayLayout(a);return !!(Lo.up&&Lo.low&&Lo.up.y0<Lo.low.h+50+t*1000)}
 function optBad(a){const q=needW(a);return (!!q&&a.w<q.n)||optClash(a)}
-function bad(a){return outside(a)||optBad(a)||S.items.some(o=>o!==a&&hits(a,o))}
+const WALLS={top:'위쪽',right:'오른쪽',bottom:'아래쪽',left:'왼쪽'};
+const getO=id=>(S.openings||[]).find(o=>o.id===id);
+const wallLen=w=>w==='top'||w==='bottom'?S.room.w:S.room.d;
+function opZone(op,d){const RW=S.room.w,RD=S.room.d,a=op.pos,b=op.w;return op.wall==='top'?{x:a,y:0,w:b,h:d}:op.wall==='bottom'?{x:a,y:RD-d,w:b,h:d}:op.wall==='left'?{x:0,y:a,w:d,h:b}:{x:RW-d,y:a,w:d,h:b}}
+function hitZ(it,z){const f=fp(it);return it.x<z.x+z.w-1&&it.x+f.w>z.x+1&&it.y<z.y+z.h-1&&it.y+f.h>z.y+1}
+function doorBlock(it){return (S.openings||[]).some(op=>op.kind==='door'&&hitZ(it,opZone(op,op.w)))}
+function winBlock(it){return (S.openings||[]).some(op=>op.kind==='window'&&hitZ(it,opZone(op,450)))}
+function opName(op){return `${op.kind==='door'?'방문':'창문'} ${fmt(op.w)}cm`}
+function bad(a){return outside(a)||optBad(a)||doorBlock(a)||S.items.some(o=>o!==a&&hits(a,o))}
 function clampIn(it){const f=fp(it);if(f.w<=S.room.w-2*G)it.x=Math.min(Math.max(it.x,G),S.room.w-G-f.w);if(f.h<=S.room.d-2*G)it.y=Math.min(Math.max(it.y,G),S.room.d-G-f.h)}
-function badPos(a){return outside(a)||S.items.some(o=>o!==a&&hits(a,o))}
+function badPos(a){return outside(a)||doorBlock(a)||S.items.some(o=>o!==a&&hits(a,o))}
 
 function findSpot(it){
   const RW=S.room.w,RD=S.room.d,T=TYPES[it.type];
@@ -389,13 +399,13 @@ function findSpot(it){
   it.rot=0;const f=fp(it);it.x=Math.max(0,Math.round((RW-f.w)/2));it.y=Math.max(0,Math.round((RD-f.h)/2));return false;
 }
 function addModule(type,w,preset){
-  const T=TYPES[type];snapshot();const it={id:nextId++,type,w:T.kind==='free'?T.fw:w,rot:0,x:0,y:0,o:normO(type,preset)};if(T.kind==='corner')it.w2=w;const ok=findSpot(it);S.items.push(it);sel=it.id;refreshAll();
+  const T=TYPES[type];snapshot();const it={id:nextId++,type,w:T.kind==='free'?T.fw:w,rot:0,x:0,y:0,o:normO(type,preset)};if(T.kind==='corner')it.w2=w;const ok=findSpot(it);S.items.push(it);sel=it.id;selO=null;refreshAll();
   toast(ok?`추가했어요: ${nameOf(it)}`:'빈 벽 공간이 없어 방 가운데에 놓았어요. 끌어서 옮겨 주세요.');
 }
 function placeSetObj(st){
   snapshot();const had=S.items.length;S.items=[];let last=null;
   st.items.forEach(m=>{const it={id:nextId++,type:m.t,w:m.w,w2:m.t==='corner'?(m.w2||m.w):undefined,rot:m.r,x:st.ax==='r'?S.room.w-G+m.x:G+m.x,y:st.ay==='b'?S.room.d-G+m.y:G+m.y,o:normO(m.t,m.o)};S.items.push(it);last=it});
-  sel=last?last.id:null;refreshAll();
+  sel=last?last.id:null;selO=null;refreshAll();
   const b=setBox(st),msgs=[];if(b.w+2*G>S.room.w+1)msgs.push(`벽 간격 2cm를 두면 가로가 ${fmt(b.w+2*G-S.room.w)}cm 부족해요`);if(b.h+2*G>S.room.d+1)msgs.push(`벽 간격 2cm를 두면 세로가 ${fmt(b.h+2*G-S.room.d)}cm 부족해요`);
   toast(`'${st.k}' 세트를 배치했어요. `+(msgs.length?msgs.join(', ')+'.':'방에 잘 들어가요.')+(had?' 이전 배치는 되돌리기로 복구할 수 있어요.':''));
 }
@@ -499,7 +509,20 @@ function renderPlan(){
   s+=`<text x="${RW/2}" y="${dy-px(6)}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" font-weight="500">가로 ${fmt(RW)} cm</text>`;
   s+=`<text x="${dx-px(6)}" y="${RD/2}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" font-weight="500" transform="rotate(-90 ${dx-px(6)} ${RD/2})">세로 ${fmt(RD)} cm</text>`;
   s+=`<rect x="${G}" y="${G}" width="${RW-2*G}" height="${RD-2*G}" fill="none" stroke="var(--warn)" stroke-width="${px(.8)}" stroke-dasharray="${px(3)} ${px(3)}" opacity=".55"/>`;
-  if(!S.items.length)s+=`<text x="${RW/2}" y="${RD/2}" text-anchor="middle" font-size="${fs*1.15}" fill="var(--ink2)">위쪽 목록에서 폭을 눌러 칸을 추가해 보세요</text>`;
+  (S.openings||[]).forEach(op=>{
+    const O=op.wall==='top'?[op.pos,0]:op.wall==='bottom'?[op.pos,RD]:op.wall==='left'?[0,op.pos]:[RW,op.pos],U=op.wall==='top'||op.wall==='bottom'?[1,0]:[0,1],N={top:[0,1],bottom:[0,-1],left:[1,0],right:[-1,0]}[op.wall];
+    const P=(a,d)=>[O[0]+U[0]*a+N[0]*d,O[1]+U[1]*a+N[1]*d],pl=pts=>pts.map(q=>q.join(',')).join(' '),w=op.w,isSel=op.id===selO;
+    s+=`<g data-op="${op.id}" style="cursor:grab"><polygon points="${pl([P(0,-T),P(w,-T),P(w,Math.max(260,px(26))),P(0,Math.max(260,px(26)))])}" fill="transparent"/>`;
+    if(op.kind==='door'){const hs=op.hinge!=='e',H0=P(hs?0:w,0),dir=hs?1:-1,arc=[];for(let i=0;i<=18;i++){const t=i/18*Math.PI/2;arc.push([H0[0]+(N[0]*Math.cos(t)+U[0]*dir*Math.sin(t))*w,H0[1]+(N[1]*Math.cos(t)+U[1]*dir*Math.sin(t))*w])}
+      s+=`<polygon points="${pl([P(0,0),P(w,0),P(w,-T),P(0,-T)])}" fill="var(--room)"/>`;
+      s+=`<polygon points="${pl([H0,...arc])}" fill="var(--accent)" opacity=".07"/><polyline points="${pl(arc)}" fill="none" stroke="var(--ink2)" stroke-width="${px(1)}" stroke-dasharray="${px(4)} ${px(3)}"/>`;
+      s+=`<line x1="${H0[0]}" y1="${H0[1]}" x2="${arc[0][0]}" y2="${arc[0][1]}" stroke="var(--ink)" stroke-width="${px(2.4)}" stroke-linecap="round"/>`;
+      const L=P(w/2,w*.42);s+=`<text x="${L[0]}" y="${L[1]}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" style="pointer-events:none">방문 ${fmt(w)}</text>`}
+    else{s+=`<polygon points="${pl([P(0,0),P(w,0),P(w,-T),P(0,-T)])}" fill="#CFE3EE" stroke="#6F9AB2" stroke-width="${px(1)}"/>`;const m1=P(0,-T/2),m2=P(w,-T/2);s+=`<line x1="${m1[0]}" y1="${m1[1]}" x2="${m2[0]}" y2="${m2[1]}" stroke="#6F9AB2" stroke-width="${px(1)}"/>`;
+      const L=P(w/2,px(34));s+=`<text x="${L[0]}" y="${L[1]}" text-anchor="middle" dominant-baseline="middle" font-size="${fs*.95}" fill="#4F7C95" style="pointer-events:none">창문 ${fmt(w)}</text>`}
+    if(isSel)s+=`<polygon points="${pl([P(-20,-T-20),P(w+20,-T-20),P(w+20,20),P(-20,20)])}" fill="none" stroke="var(--accent)" stroke-width="${px(2)}"/>`;
+    s+=`</g>`});
+  if(!S.items.length)s+=`<text x="${RW/2}" y="${RD/2}" text-anchor="middle" font-size="${fs*1.15}" fill="var(--ink2)">위쪽 목록에서 칸을 눌러 추가해 보세요</text>`;
 
   const walls=wallInfo();const off=px(16);
   walls.forEach(w=>{if(!w.used.length)return;w.gaps.forEach(([a,b])=>{const L=b-a;if(L<5)return;
@@ -574,12 +597,18 @@ function renderPlan(){
 svg.addEventListener('pointerdown',e=>{
   const h=e.target.closest('[data-h]');
   if(h){const it=get(sel);if(it){snapshot();rsz={id:it.id,k:h.dataset.h,w0:it.w,w20:it.w2};svg.setPointerCapture(e.pointerId);e.preventDefault();renderPlan();return}}
+  const og=e.target.closest('[data-op]');
+  if(og&&!e.target.closest('[data-id]')){const op=getO(+og.dataset.op);if(op){selO=op.id;sel=null;snapshot();const q=toMM(e);opDrag={id:op.id,off:(op.wall==='top'||op.wall==='bottom'?q.x:q.y)-op.pos,moved:false};svg.setPointerCapture(e.pointerId);e.preventDefault();refreshAll();return}}
   const g=e.target.closest('[data-id]');const p=toMM(e);
-  if(g){const it=get(+g.dataset.id);if(!it)return;sel=it.id;startDrag(it,p.x,p.y,'plan');svg.setPointerCapture(e.pointerId);svg.style.cursor='grabbing'}
-  else sel=null;
+  if(g){const it=get(+g.dataset.id);if(!it)return;sel=it.id;selO=null;startDrag(it,p.x,p.y,'plan');svg.setPointerCapture(e.pointerId);svg.style.cursor='grabbing'}
+  else{sel=null;selO=null}
   refreshAll();
 });
-svg.addEventListener('pointermove',e=>{if(rsz){resizeTo(toMM(e));return}if(drag&&drag.src==='plan'){const p=toMM(e);moveDrag(p.x,p.y,14*mmpp)}});
+function moveOp(p){const op=getO(opDrag.id);if(!op)return;const RW=S.room.w,RD=S.room.d;
+  const ds={top:p.y,bottom:RD-p.y,left:p.x,right:RW-p.x};let nw=op.wall;for(const k in ds)if(ds[k]<ds[nw]-150&&ds[k]<500)nw=k;
+  if(nw!==op.wall){op.wall=nw;opDrag.off=op.w/2}
+  const a=(op.wall==='top'||op.wall==='bottom'?p.x:p.y)-opDrag.off;op.pos=Math.round(Math.min(Math.max(a,0),wallLen(op.wall)-op.w)/10)*10;opDrag.moved=true;renderPlan()}
+svg.addEventListener('pointermove',e=>{if(opDrag){moveOp(toMM(e));return}if(rsz){resizeTo(toMM(e));return}if(drag&&drag.src==='plan'){const p=toMM(e);moveDrag(p.x,p.y,14*mmpp)}});
 function resizeCorner(it,p){const thr=12*mmpp,key=rsz.k==='u'?'w':'w2',c=cDims(it),O=cw(it,0,0),dd=armDir(it,rsz.k),hz=Math.abs(dd[0])>.5,sg=hz?dd[0]:dd[1];
   const ar=rsz.k==='u'?cRect(it,0,0,c.U,DEPTH):cRect(it,0,0,DEPTH,c.V),c0=hz?ar.y:ar.x,c1=c0+(hz?ar.h:ar.w),lim=hz?S.room.w:S.room.d,o0=hz?O[0]:O[1];
   let v=hz?p.x:p.y;const cand=[G,lim-G];
@@ -602,7 +631,7 @@ function resizeTo(p){const it=get(rsz.id);if(!it)return;if(TYPES[it.type].kind==
   it.w=w;renderPlan();sync3D();renderSel()}
 function resizeBy(d){const it=get(sel);if(!it||TYPES[it.type].kind!=='bay')return;if(FIXW[it.type]){toast(`${TYPES[it.type].name}은 선반 ${FIXW[it.type]/10}cm로 고정이에요.`);return}const w=Math.min(WMAX,Math.max(WMIN,it.w+d));
   if(w===it.w){toast(`선반 폭은 ${WMIN/10}~${WMAX/10}cm 사이예요.`);return}snapshot();it.w=w;refreshAll()}
-const endPlan=()=>{svg.style.cursor='';if(rsz){const it=get(rsz.id);if(!it||(it.w===rsz.w0&&it.w2===rsz.w20))hist.pop();rsz=null;guides=null;refreshAll();return}if(drag&&drag.src==='plan')endDrag()};
+const endPlan=()=>{svg.style.cursor='';if(opDrag){if(!opDrag.moved)hist.pop();opDrag=null;refreshAll();return}if(rsz){const it=get(rsz.id);if(!it||(it.w===rsz.w0&&it.w2===rsz.w20))hist.pop();rsz=null;guides=null;refreshAll();return}if(drag&&drag.src==='plan')endDrag()};
 svg.addEventListener('pointerup',endPlan);svg.addEventListener('pointercancel',endPlan);
 
 /* ---------- 3D ---------- */
@@ -703,6 +732,8 @@ function buildDims(){
   const xl=-o;seg([xl,y,0],[xl,y,RD]);seg([xl-tk,y,0],[xl+tk,y,0]);seg([xl-tk,y,RD],[xl+tk,y,RD]);seg([0,y,0],[xl-tk,y,0]);seg([0,y,RD],[xl-tk,y,RD]);
   const a=textSprite(`가로 ${fmt(S.room.w)} cm`,k);a.position.set(RW/2,0.12*k,zf);dimGroup.add(a);
   const b=textSprite(`세로 ${fmt(S.room.d)} cm`,k);b.position.set(xl,0.12*k,RD/2);dimGroup.add(b);
+  {const WH=S.room.h/1000,xh=RW+o*.22,zh=0;seg([xh,0,zh],[xh,WH,zh]);seg([xh-tk,0,zh],[xh+tk,0,zh]);seg([xh-tk,WH,zh],[xh+tk,WH,zh]);seg([RW,WH,0],[xh+tk,WH,zh]);seg([RW,0,0],[xh+tk,0,zh]);
+   const c=textSprite(`천고 ${fmt(S.room.h)} cm`,k);c.position.set(xh,WH*.55,zh);dimGroup.add(c)}
   scene.add(dimGroup);
 }
 function buildRoom(){
@@ -712,6 +743,22 @@ function buildRoom(){
   roomMesh=new THREE.Mesh(new THREE.BoxGeometry(RW,WH,RD),new THREE.MeshLambertMaterial({color:0xE6E4DF,side:THREE.BackSide}));roomMesh.position.set(RW/2,WH/2,RD/2);scene.add(roomMesh);
   floorMesh=new THREE.Mesh(new THREE.PlaneGeometry(RW,RD),new THREE.MeshLambertMaterial({color:0xD3CFC6}));floorMesh.rotation.x=-Math.PI/2;floorMesh.position.set(RW/2,0.001,RD/2);scene.add(floorMesh);
 }
+let opGroup=null;
+function syncOps(){if(opGroup)scene.remove(opGroup);opGroup=new THREE.Group();const RW=S.room.w/1000,RD=S.room.d/1000;
+  const plane=(w,h,mat)=>new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);
+  const mDoor=new THREE.MeshLambertMaterial({color:0x9A7B5F}),mFrame=new THREE.MeshLambertMaterial({color:0xF4F2EE}),mGlass=new THREE.MeshPhongMaterial({color:0xBFD9E6,shininess:90,specular:0xffffff,transparent:true,opacity:.85}),mKnob=new THREE.MeshLambertMaterial({color:0x6B6E72});
+  (S.openings||[]).forEach(op=>{const g=new THREE.Group(),w=op.w/1000;
+    if(op.kind==='door'){const h=Math.min(2.1,S.room.h/1000-.05),f=plane(w+.08,h+.04,mFrame);f.position.set(0,(h+.04)/2,.002);g.add(f);const d=plane(w-.02,h-.01,mDoor);d.position.set(0,h/2,.004);g.add(d);
+      const k=plane(.03,.12,mKnob);k.position.set((op.hinge==='e'?-1:1)*(w/2-.08),1.0,.006);g.add(k)}
+    else{const sill=(op.sill??900)/1000,h=Math.min((op.h??1200)/1000,S.room.h/1000-sill-.02),f=plane(w+.08,h+.08,mFrame);f.position.set(0,sill+h/2,.002);g.add(f);
+      const gl=plane(w-.04,h-.04,mGlass);gl.position.set(0,sill+h/2,.004);g.add(gl);const bar=plane(.03,h-.04,mFrame);bar.position.set(0,sill+h/2,.005);g.add(bar)}
+    const c=(op.pos+op.w/2)/1000;
+    if(op.wall==='top')g.position.set(c,0,0);
+    else if(op.wall==='bottom'){g.position.set(c,0,RD);g.rotation.y=Math.PI}
+    else if(op.wall==='left'){g.position.set(0,0,c);g.rotation.y=Math.PI/2}
+    else{g.position.set(RW,0,c);g.rotation.y=-Math.PI/2}
+    opGroup.add(g)});
+  scene.add(opGroup)}
 function sync3D(){
   const ids=new Set();
   S.items.forEach(it=>{
@@ -757,14 +804,14 @@ box3.addEventListener('pointerdown',e=>{
   setNdc(e);box3.setPointerCapture(e.pointerId);
   const hit=ray.intersectObjects(itemsRoot.children,true).find(h=>h.object.type==='Mesh');
   if(hit){let o=hit.object;while(o&&o.userData.id==null)o=o.parent;const it=o&&get(o.userData.id);const p=floorPt();
-    if(it&&p){sel=it.id;startDrag(it,p.x,p.y,'3d');box3.style.cursor='grabbing';refreshAll();return}}
+    if(it&&p){sel=it.id;selO=null;startDrag(it,p.x,p.y,'3d');box3.style.cursor='grabbing';refreshAll();return}}
   orbit={x:e.clientX,y:e.clientY,moved:false};
 });
 box3.addEventListener('pointermove',e=>{
   if(drag&&drag.src==='3d'){setNdc(e);const p=floorPt();if(p)moveDrag(p.x,p.y,110);return}
   if(orbit){const dx=e.clientX-orbit.x,dy=e.clientY-orbit.y;if(Math.abs(dx)+Math.abs(dy)>2)orbit.moved=true;orb.th-=dx*0.008;orb.ph=Math.min(1.45,Math.max(0.08,orb.ph+dy*0.008));orbit.x=e.clientX;orbit.y=e.clientY}
 });
-const end3=()=>{box3.style.cursor='';if(drag&&drag.src==='3d'){endDrag();return}if(orbit&&!orbit.moved&&sel!==null){sel=null;refreshAll()}orbit=null};
+const end3=()=>{box3.style.cursor='';if(drag&&drag.src==='3d'){endDrag();return}if(orbit&&!orbit.moved&&(sel!==null||selO!==null)){sel=null;selO=null;refreshAll()}orbit=null};
 box3.addEventListener('pointerup',end3);box3.addEventListener('pointercancel',end3);
 box3.addEventListener('wheel',e=>{e.preventDefault();orb.r=Math.min(30,Math.max(1.5,orb.r*(1+e.deltaY*0.0012)))},{passive:false});
 function size3(){const w=box3.clientWidth,h=box3.clientHeight;if(!w||!h)return;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
@@ -775,12 +822,39 @@ new ResizeObserver(()=>renderPlan()).observe(svg);
 /* ---------- 패널 ---------- */
 const DIR={0:'위쪽 벽을 등지고 있어요',90:'오른쪽 벽을 등지고 있어요',180:'아래쪽 벽을 등지고 있어요',270:'왼쪽 벽을 등지고 있어요'};
 const CDIR={0:'왼쪽 위 모서리용',90:'오른쪽 위 모서리용',180:'오른쪽 아래 모서리용',270:'왼쪽 아래 모서리용'};
-function renderSelBar(){const it=get(sel);document.querySelectorAll('[data-selbar]').forEach(b=>{
+function renderSelBar(){const it=get(sel),op=getO(selO);document.querySelectorAll('[data-selbar]').forEach(b=>{
+  if(op&&!opDrag){b.hidden=false;b.innerHTML=`<span>${esc(opName(op))}</span>${op.kind==='door'?'<button data-sb="flip">반대로 열기</button>':''}<button data-sb="odel" class="del">삭제</button>`;return}
   if(!it||drag||rsz){b.hidden=true;return}b.hidden=false;
   b.innerHTML=`<span>${esc(nameOf(it))}</span><button data-sb="rot">회전</button><button data-sb="dup">복제</button><button data-sb="del" class="del">삭제</button>`})}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-sb]');if(!b)return;e.stopPropagation();({rot:rotateSel,dup:dupSel,del:deleteSel})[b.dataset.sb]()});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-sb]');if(!b)return;e.stopPropagation();({rot:rotateSel,dup:dupSel,del:deleteSel,flip:flipDoor,odel:deleteOp})[b.dataset.sb]()});
 ['pointerdown','touchstart'].forEach(ev=>document.querySelectorAll('[data-selbar]').forEach(b=>b.addEventListener(ev,e=>e.stopPropagation(),{passive:true})));
+function addOpening(kind){
+  const w=kind==='door'?900:1200;snapshot();const op={id:Date.now()%1e9+Math.floor(Math.random()*1000),kind,wall:'bottom',pos:0,w,hinge:'s'};if(kind==='window'){op.sill=900;op.h=1200}
+  let placed=false;
+  for(const wall of kind==='door'?['bottom','left','right','top']:['top','right','left','bottom']){op.wall=wall;const L=wallLen(wall);
+    for(let a=Math.min(300,L-w);a<=L-w;a+=100){op.pos=Math.max(0,a);const z=opZone(op,kind==='door'?w:450);
+      if(!S.items.some(it=>hitZ(it,z))&&!S.openings.some(o=>o.wall===wall&&o.pos<op.pos+w&&o.pos+o.w>op.pos)){placed=true;break}}
+    if(placed)break}
+  if(!placed){op.wall='bottom';op.pos=Math.max(0,Math.round((S.room.w-w)/2))}
+  S.openings.push(op);selO=op.id;sel=null;refreshAll();toast(`${opName(op)}을 ${WALLS[op.wall]} 벽에 달았어요. 끌어서 옮기거나 아래에서 위치를 맞춰 주세요.`)}
+function deleteOp(){const op=getO(selO);if(!op)return;snapshot();S.openings=S.openings.filter(o=>o!==op);selO=null;refreshAll();toast(`삭제했어요: ${opName(op)}`)}
+function flipDoor(){const op=getO(selO);if(!op||op.kind!=='door')return;snapshot();op.hinge=op.hinge==='e'?'s':'e';refreshAll()}
+function renderOpPanel(op){const el=$('selPanel'),L=wallLen(op.wall),from=op.wall==='top'||op.wall==='bottom'?'왼쪽 벽':'위쪽 벽';
+  const blocked=S.items.filter(it=>hitZ(it,opZone(op,op.kind==='door'?op.w:450))).length,ov=S.openings.some(o=>o!==op&&o.wall===op.wall&&o.pos<op.pos+op.w&&o.pos+o.w>op.pos);
+  el.innerHTML=`<h3>${opName(op)}</h3><p class="muted" style="margin:0">${WALLS[op.wall]} 벽, ${from}에서 ${fmt(op.pos)}cm</p>
+  <div class="pos"><label class="field">달린 벽<select id="opWall">${Object.entries(WALLS).map(([k,v])=>`<option value="${k}" ${op.wall===k?'selected':''}>${v} 벽</option>`).join('')}</select></label>
+  <label class="field">폭 (cm)<input id="opW" type="number" step="1" min="30" max="400" value="${op.w/10}"></label>
+  <label class="field">${from}에서 (cm)<input id="opPos" type="number" step="0.1" value="${op.pos/10}"></label>
+  ${op.kind==='window'?`<label class="field">바닥에서 창 아래까지 (cm)<input id="opSill" type="number" step="1" min="0" max="250" value="${(op.sill??900)/10}"></label><label class="field">창 높이 (cm)<input id="opH" type="number" step="1" min="20" max="250" value="${(op.h??1200)/10}"></label>`:`<div class="field">&nbsp;<button class="btn" id="opFlip">반대로 열기</button></div>`}</div>
+  <div class="acts"><button class="btn danger" id="opDel">삭제</button></div>
+  <div class="status ${blocked&&op.kind==='door'?'bad':'ok'}">${blocked?(op.kind==='door'?`문이 열리는 자리에 칸 ${blocked}개가 있어요. 칸을 옆으로 옮겨 주세요.`:`창문 앞을 칸 ${blocked}개가 가려요.`):(op.kind==='door'?'문이 열리는 자리가 비어 있어요.':'창문 앞이 비어 있어요.')}${ov?' 다른 문이나 창문과 겹쳐 있어요.':''}</div>`;
+  const num=(id,f)=>{const n=parseFloat($(id).value);if(!isFinite(n)){renderSel();return}snapshot();f(Math.round(n*10));op.w=Math.min(Math.max(op.w,300),wallLen(op.wall));op.pos=Math.min(Math.max(op.pos,0),wallLen(op.wall)-op.w);refreshAll()};
+  $('opWall').onchange=e=>{snapshot();op.wall=e.target.value;op.pos=Math.min(op.pos,Math.max(0,wallLen(op.wall)-op.w));refreshAll()};
+  $('opW').onchange=()=>num('opW',v=>op.w=v);$('opPos').onchange=()=>num('opPos',v=>op.pos=v);
+  if($('opSill')){$('opSill').onchange=()=>num('opSill',v=>op.sill=Math.max(0,v));$('opH').onchange=()=>num('opH',v=>op.h=Math.max(200,v))}
+  if($('opFlip'))$('opFlip').onclick=flipDoor;$('opDel').onclick=deleteOp}
 function renderSel(){renderSelBar();
+  if(selO!=null){const op=getO(selO);if(op){renderOpPanel(op);return}selO=null}
   const el=$('selPanel'),it=get(sel);
   if(!it){el.innerHTML=`<h3>선택한 칸</h3><p class="muted" style="margin:0">평면도나 3D에서 칸을 누르면 폭과 위치를 cm 단위로 맞추고, 서랍장 같은 옵션을 넣을 수 있어요.</p>`;return}
   const T=TYPES[it.type],f=fp(it),b=bad(it),A=ALLOW[it.type];
@@ -803,6 +877,7 @@ function renderSel(){renderSelBar();
   if(it.type==='drawer3')opt=`<p class="muted" style="margin:10px 0 0">3단 서랍장(${OPTS.drawer3.size})이 들어가는 칸이라 선반 폭이 80cm로 고정돼요.</p>`;
   let st;
   if(outside(it))st='벽에서 2cm 이상 떨어져야 해요. 안쪽으로 옮겨 주세요.';
+  else if(doorBlock(it))st='방문이 열리는 자리에 있어요. 옆으로 옮겨 주세요.';
   else if(optClash(it))st=`${OPTS[it.o.low].name} 위에 ${OPTS[it.o.up].name}을(를) 넣을 높이가 모자라요. 둘 중 하나를 빼 주세요.`;
   else if(optBad(it)){const q=needW(it);st=`${q.by}(W${q.n/10}cm)를 넣으려면 선반 폭이 ${q.n/10}cm 이상이어야 해요.`}
   else if(b)st='다른 칸과 겹쳐 있어요. 옆으로 옮겨 주세요.';
@@ -812,7 +887,7 @@ function renderSel(){renderSelBar();
   <label class="field">위쪽 벽에서 (cm)<input id="posY" type="number" step="0.1" value="${fmt(it.y).replace(/,/g,'')}"></label></div>
   <div class="acts"><button class="btn" id="rotB">회전 <kbd>R</kbd></button><button class="btn" id="dupB">복제 <kbd>D</kbd></button><button class="btn danger" id="delB">삭제</button></div>
   ${opt}
-  <div class="status ${b?'bad':'ok'}">${b?st:`오른쪽 벽까지 ${fmt(S.room.w-it.x-f.w)}cm, 아래쪽 벽까지 ${fmt(S.room.d-it.y-f.h)}cm`}</div>`;
+  <div class="status ${b?'bad':'ok'}">${b?st:`${winBlock(it)?'창문 앞을 가리고 있어요. ':''}오른쪽 벽까지 ${fmt(S.room.w-it.x-f.w)}cm, 아래쪽 벽까지 ${fmt(S.room.d-it.y-f.h)}cm`}</div>`;
   $('rotB').onclick=rotateSel;$('dupB').onclick=dupSel;$('delB').onclick=deleteSel;
   if($('fillB'))$('fillB').onclick=fillGap;if($('wMinus')){$('wMinus').onclick=()=>resizeBy(-10);$('wPlus').onclick=()=>resizeBy(10)}
   const onPos=(k,v)=>{const n=parseFloat(v);if(!isFinite(n))return;snapshot();it[k]=Math.round(n*10);refreshAll()};
@@ -856,18 +931,20 @@ function renderParts(){
   `<div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid var(--ink);margin-top:6px;padding-top:9px">
     <span style="font-weight:600">예상 금액</span><span style="font-weight:600;font-size:17px">${won(total)}</span></div>
   ${missing?`<p class="status bad" style="margin:4px 0 0">가격이 정해지지 않은 옵션은 금액에서 빠졌어요.</p>`:''}
-  ${nb?`<p class="status bad" style="margin:4px 0 0">겹치거나, 벽 간격 2cm가 안 되거나, 옵션이 맞지 않는 칸이 ${nb}개 있어요.</p>`:''}
-  ${S.room.h>=2700?`<p class="status bad" style="margin:4px 0 0">층고 270cm 이상은 시공할 수 없어요.</p>`:S.room.h>=2500?`<p class="status bad" style="margin:4px 0 0">층고 250cm 이상은 추가요금이 생길 수 있어요.</p>`:''}
+  ${nb?`<p class="status bad" style="margin:4px 0 0">겹치거나, 벽 간격 2cm가 안 되거나, 문이 열리는 자리에 있거나, 옵션이 맞지 않는 칸이 ${nb}개 있어요.</p>`:''}
+  ${S.items.some(winBlock)?`<p class="muted" style="font-size:12.5px;margin:4px 0 0">창문 앞을 가리는 칸이 ${S.items.filter(winBlock).length}개 있어요. 그대로 설치할지 확인해 주세요.</p>`:''}
+  ${S.room.h>=2700?`<p class="status bad" style="margin:4px 0 0">천고 270cm 이상은 시공할 수 없어요.</p>`:S.room.h>=2500?`<p class="status bad" style="margin:4px 0 0">천고 250cm 이상은 추가요금이 생길 수 있어요.</p>`:''}
   ${EMBED?`<button class="btn primary" id="orderBtn" style="width:100%;margin-top:12px;padding:10px">이 배치로 주문 담기</button>`:''}${STORE?`<button class="btn primary" id="orderBtn" style="width:100%;margin-top:12px;padding:12px;font-size:15px">이 배치 그대로 장바구니 담기</button>${storeAdded?`<a class="btn" href="cart.html" style="display:block;text-align:center;margin-top:6px;padding:10px;text-decoration:none">장바구니 보기 (${storeCart().length})</a>`:''}`:''}
   <p class="muted" style="font-size:12px;margin:8px 0 0">치수 오차 ±5%. 실제 설치 시 기둥은 천장에 고정해요.</p>`;
 }
-function refreshAll(){renderPlan();sync3D();renderSel();renderParts();save()}
+function refreshAll(){renderPlan();sync3D();syncOps();renderSel();renderParts();save()}
 function sendOrder(){
   if(!S.items.length){toast('먼저 칸을 배치해 주세요.');return}
   const nb=S.items.filter(bad).length;if(nb){toast(`빨갛게 표시된 칸 ${nb}개를 먼저 정리해 주세요.`);return}
-  if(S.room.h>=2700){toast('층고 270cm 이상은 시공할 수 없어요. 층고를 확인해 주세요.');return}
+  if(S.room.h>=2700){toast('천고 270cm 이상은 시공할 수 없어요. 천고를 확인해 주세요.');return}
   const c=calc();if(!c.qty){toast('벽면 시스템 칸을 하나 이상 배치해 주세요.');return}
   const data={qty:c.qty,lengthCm:Math.round(c.L)/10,pillar:S.pillar,shelf:S.shelf,room:{w:S.room.w/10,d:S.room.d/10,h:S.room.h/10},
+    openings:(S.openings||[]).map(op=>`${op.kind==='door'?'방문':'창문'}: ${WALLS[op.wall]} 벽, ${op.wall==='top'||op.wall==='bottom'?'왼쪽':'위쪽'}에서 ${fmt(op.pos)}cm, 폭 ${fmt(op.w)}cm${op.kind==='window'?`, 바닥에서 ${fmt(op.sill??900)}cm, 높이 ${fmt(op.h??1200)}cm`:''}`),
     bays:[...c.bays],opts:[...c.opts].sort((a,b)=>OPT_KEYS.indexOf(a[0])-OPT_KEYS.indexOf(b[0]))};
   if(STORE){const a=storeCart();a.push(Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),kind:'design',title:'내가 배치한 드레스룸',at:Date.now()},data));
     try{localStorage.setItem(CART_KEY,JSON.stringify(a))}catch(e){toast('이 브라우저에서는 장바구니를 저장할 수 없어요.');return}
@@ -902,11 +979,11 @@ if(EMBED){const rh=()=>toShop({type:'height',h:Math.ceil(document.body.offsetHei
 function syncInputs(){$('roomW').value=S.room.w/10;$('roomD').value=S.room.d/10;$('roomH').value=S.room.h/10;$('autoRot').checked=S.autoRot;renderSwatches()}
 function applyRoom(){
   const w=parseFloat($('roomW').value),d=parseFloat($('roomD').value),h=parseFloat($('roomH').value),err=$('roomErr');
-  if(!isFinite(w)||!isFinite(d)||!isFinite(h)){err.textContent='가로, 세로, 층고를 모두 cm 단위 숫자로 입력해 주세요.';return}
+  if(!isFinite(w)||!isFinite(d)||!isFinite(h)){err.textContent='가로, 세로, 천고를 모두 cm 단위 숫자로 입력해 주세요.';return}
   if(w<50||d<50||w>2000||d>2000){err.textContent='가로와 세로는 50cm에서 2,000cm 사이로 입력해 주세요.';return}
-  if(h<200||h>300){err.textContent='층고는 200cm에서 300cm 사이로 입력해 주세요.';return}
+  if(h<200||h>300){err.textContent='천고는 200cm에서 300cm 사이로 입력해 주세요.';return}
   err.textContent='';snapshot();S.room={w:Math.round(w*10),d:Math.round(d*10),h:Math.round(h*10)};buildRoom();resetCam();refreshAll();
-  const nb=S.items.filter(outside).length;toast(nb?`방 크기를 바꿨어요. 벽 간격 2cm 밖으로 나간 칸이 ${nb}개 있어요.`:`방 크기를 ${fmt(S.room.w)} × ${fmt(S.room.d)}cm, 층고 ${fmt(S.room.h)}cm로 맞췄어요`);
+  const nb=S.items.filter(outside).length;toast(nb?`방 크기를 바꿨어요. 벽 간격 2cm 밖으로 나간 칸이 ${nb}개 있어요.`:`방 크기를 ${fmt(S.room.w)} × ${fmt(S.room.d)}cm, 천고 ${fmt(S.room.h)}cm로 맞췄어요`);
 }
 $('roomApply').onclick=applyRoom;['roomW','roomD','roomH'].forEach(id=>{$(id).addEventListener('keydown',e=>{if(e.key==='Enter')applyRoom()});$(id).addEventListener('input',()=>$('roomErr').textContent='')});
 function renderSwatches(){if(typeof renderCatalog==='function')renderCatalog();
@@ -982,10 +1059,12 @@ $('setBtn').onclick=()=>placeSet(+$('setSel').value);
 $('undoBtn').onclick=undo;
 $('clearBtn').onclick=()=>{if(!S.items.length)return;snapshot();S.items=[];sel=null;refreshAll();toast('모두 지웠어요. 되돌리기로 복구할 수 있어요.')};
 $('camReset').onclick=resetCam;
+$('addDoor').onclick=()=>addOpening('door');$('addWin').onclick=()=>addOpening('window');
 document.addEventListener('keydown',e=>{
   if(e.target.matches&&e.target.matches('input,select,textarea'))return;
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return}
-  if(e.key==='Escape'){sel=null;refreshAll();return}
+  if(e.key==='Escape'){sel=null;selO=null;refreshAll();return}
+  if(selO!=null&&(e.key==='Delete'||e.key==='Backspace')){e.preventDefault();deleteOp();return}
   const it=get(sel);if(!it)return;
   if(e.key==='r'||e.key==='R'){rotateSel();return}
   if(e.key==='d'||e.key==='D'){dupSel();return}

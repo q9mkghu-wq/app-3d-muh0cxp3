@@ -80,10 +80,10 @@ function render(){
   if(!items.length){$('body').innerHTML=`<div class="empty"><p>장바구니가 비어 있어요. 추천 세트를 담거나 플래너에서 직접 배치해 보세요.</p><div><a class="btn" href="index.html#sets">추천 세트 보기</a><a class="btn dark" href="planner.html">배치 플래너 시작하기</a></div></div>`;return}
   let sum=0;const reg=S.REGIONS.find(r=>r[0]===region)||S.REGIONS[0];
   const html=items.map(x=>{const{p,L}=lines(x);sum+=p.total;
-    const room=x.room?`방 ${cm(x.room.w)}×${cm(x.room.d)}cm, 층고 ${cm(x.room.h)}cm. `:'';
+    const room=x.room?`방 ${cm(x.room.w)}×${cm(x.room.d)}cm, 천고 ${cm(x.room.h)}cm. `:'';
     const bays=(x.bays||[]).map(([n,c])=>`${n} ${c}칸`).join(', ');
     return `<article class="item" data-id="${esc(x.id)}"><header><h2>${esc(x.title||'드레스룸')}<small>${x.kind==='set'?esc(x.group||'추천 세트'):'직접 배치'}</small></h2><span class="tot">${won(p.total)}</span></header>
-      <p class="meta">${room}${esc(bays)}</p>
+      <p class="meta">${room}${esc(bays)}${Array.isArray(x.openings)&&x.openings.length?`<br>${esc(x.openings.join(' / '))}`:''}</p>
       <div class="colors"><label>기둥 색상<select data-f="pillar">${Object.entries(S.PILLAR).map(([k,v])=>`<option value="${k}" ${x.pillar===k?'selected':''}>${v.name}</option>`).join('')}</select></label>
       <label>선반 색상<select data-f="shelf">${Object.entries(S.SHELF).map(([k,v])=>`<option value="${k}" ${x.shelf===k?'selected':''}>${v.name}</option>`).join('')}</select></label></div>
       <ul class="lines">${L.map(([a,b])=>`<li><span>${esc(a)}</span><span>${b}</span></li>`).join('')}</ul>
@@ -95,7 +95,7 @@ function render(){
     <ul><li><span>상품 금액</span><span>${won(sum)}</span></li><li><span>배송비</span><span>${reg[2]?won(reg[2]):'무료'}</span></li></ul>
     <div class="sum"><b>예상 합계</b><strong>${won(sum+reg[2])}</strong></div>
     ${unknown.length?`<p class="note">${esc(unknown.join(', '))}은(는) 가격 문의 상품이라 합계에서 빠졌어요.</p>`:''}
-    <p class="note">층고 250cm 이상, 분리 설치는 추가비용이 생길 수 있어요.</p>
+    <p class="note">천고 250cm 이상, 분리 설치는 추가비용이 생길 수 있어요.</p>
     <button class="btn dark" id="reqBtn">주문 요청서 만들기</button><a class="btn" href="tel:16617131" style="margin-top:8px;width:100%">전화 상담 1661-7131</a></aside></div>`;
 }
 $('body').addEventListener('change',e=>{
@@ -108,7 +108,7 @@ $('body').addEventListener('click',e=>{
 function openReq(){
   const items=S.cart();let sum=0;const reg=S.REGIONS.find(r=>r[0]===region)||S.REGIONS[0];
   const parts=items.map((x,i)=>{const{p,L}=lines(x);sum+=p.total;const head=[`[${i+1}] ${x.title||'드레스룸'} (${x.kind==='set'?'추천 세트':'직접 배치'}) : ${won(p.total)}`,`- 기둥 ${S.PILLAR[x.pillar].name} / 선반 ${S.SHELF[x.shelf].name}`];
-    if(x.room)head.push(`- 방 ${cm(x.room.w)}×${cm(x.room.d)}cm, 층고 ${cm(x.room.h)}cm`);if(x.bays&&x.bays.length)head.push(`- 구성: ${x.bays.map(([n,c])=>`${n} ${c}칸`).join(', ')}`);
+    if(x.room)head.push(`- 방 ${cm(x.room.w)}×${cm(x.room.d)}cm, 천고 ${cm(x.room.h)}cm`);if(x.bays&&x.bays.length)head.push(`- 구성: ${x.bays.map(([n,c])=>`${n} ${c}칸`).join(', ')}`);if(Array.isArray(x.openings))x.openings.forEach(t=>head.push(`- ${t}`));
     return head.concat(L.map(([a,b])=>`- ${a} : ${b}`)).join('\n')});
   $('reqText').textContent=`드레스룸 스토어 주문 요청 (보르네오 브로드 시스템 드레스룸)\n\n${parts.join('\n\n')}\n\n배송 지역: ${reg[1]} (${reg[2]?won(reg[2]):'무료'})\n예상 합계: ${won(sum+reg[2])}\n\n이름:\n연락처:\n설치 주소(시·구까지):\n천장 높이:\n엘리베이터 유무:\n요청 사항:`;
   $('reqDlg').showModal()}
