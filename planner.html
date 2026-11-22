@@ -154,7 +154,7 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
       <label class="inl">천고<input id="roomH" type="number" inputmode="numeric" min="200" max="300" step="1" aria-label="천고 cm"></label>
       <span class="lbl">cm</span>
       <button class="btn primary" id="roomApply">적용</button>
-      <button class="btn" id="addDoor" title="방문을 벽에 달아요">+ 방문</button><button class="btn" id="addWin" title="창문을 벽에 달아요">+ 창문</button>
+      <button class="btn" id="addDoor" title="방문을 벽에 달아요">+ 방문</button><button class="btn" id="addWin" title="창문을 벽에 달아요">+ 창문</button><button class="btn" id="addCbox" title="천장에 파인 커튼박스를 표시해요">+ 커튼박스</button>
       <span class="err" id="roomErr" role="alert"></span>
     </div>
     <span class="sep"></span>
@@ -356,7 +356,7 @@ function nameOf(it){const T=TYPES[it.type];return T.kind==='bay'?`${varName(it.t
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.room&&Array.isArray(s.items)){
   S=Object.assign(S,s);if(!S.room.h)S.room.h=2300;
-  S.openings=(Array.isArray(S.openings)?S.openings:[]).filter(o=>o&&(o.kind==='door'||o.kind==='window')&&WALLS[o.wall]&&isFinite(o.pos)&&o.w>=300&&o.w<=4000);if(!PILLAR[S.pillar])S.pillar='white';if(!SHELF[S.shelf])S.shelf='white';
+  S.openings=(Array.isArray(S.openings)?S.openings:[]).filter(o=>o&&(o.kind==='door'||o.kind==='window'||o.kind==='cbox')&&WALLS[o.wall]&&isFinite(o.pos)&&o.w>=300&&o.w<=4000);if(!PILLAR[S.pillar])S.pillar='white';if(!SHELF[S.shelf])S.shelf='white';
   const n=S.items.length;S.items=S.items.filter(it=>validItem({t:it.type,w:FIXW[it.type]||it.w,w2:it.w2,r:it.rot,x:it.x,y:it.y}));S.items.forEach(it=>{it.o=normO(it.type,it.o);if(it.type==='corner'&&!it.w2)it.w2=it.w;if(FIXW[it.type])it.w=FIXW[it.type];if(TYPES[it.type].kind==='free')it.w=TYPES[it.type].fw});
   if(S.items.length<n)setTimeout(()=>toast(`판매하지 않는 칸 ${n-S.items.length}개를 저장된 배치에서 뺐어요`),600);
   nextId=S.items.reduce((m,i)=>Math.max(m,i.id),0)+1}}catch(e){}}
@@ -377,7 +377,15 @@ function opZone(op,d){const RW=S.room.w,RD=S.room.d,a=op.pos,b=op.w;return op.wa
 function hitZ(it,z){const f=fp(it);return it.x<z.x+z.w-1&&it.x+f.w>z.x+1&&it.y<z.y+z.h-1&&it.y+f.h>z.y+1}
 function doorBlock(it){return (S.openings||[]).some(op=>op.kind==='door'&&hitZ(it,opZone(op,op.w)))}
 function winBlock(it){return (S.openings||[]).some(op=>op.kind==='window'&&hitZ(it,opZone(op,450)))}
-function opName(op){return op.kind==='door'?`방문 ${fmt(op.w)}cm`:`창문 ${fmt(op.w)}×${fmt(op.h??1200)}cm`}
+function cboxAt(x,y){let h=0;(S.openings||[]).forEach(op=>{if(op.kind!=='cbox')return;const z=opZone(op,op.depth||200);if(x>=z.x&&x<=z.x+z.w&&y>=z.y&&y<=z.y+z.h)h=Math.max(h,op.hc||S.room.h+150)});return h}
+function postsOf(it){const T=TYPES[it.type];let r=[];
+  if(T.kind==='corner'){const c=cDims(it);r=[cRect(it,c.U-P/2,PV-P/2,P,P),cRect(it,PV-P/2,c.V-P/2,P,P)]}
+  else if(T.kind==='bay')r=[toWorld(it,-P/2,PV-P/2,P,P),toWorld(it,it.w+EXTRA-P/2,PV-P/2,P,P)];
+  else if(it.type==='mirrorCab')r=[toWorld(it,-P/2,PV-P/2,P,P),toWorld(it,T.fw+EXTRA-P/2,PV-P/2,P,P)];
+  return r.map(q=>[q.x+P/2,q.y+P/2])}
+function poleHs(it){return postsOf(it).map(([x,y])=>cboxAt(x,y)||S.room.h)}
+function cboxPosts(){const m=new Map();S.items.forEach(it=>postsOf(it).forEach(([x,y])=>{const h=cboxAt(x,y);if(h)m.set(Math.round(x/20)+','+Math.round(y/20),h)}));return [...m.values()]}
+function opName(op){return op.kind==='cbox'?`커튼박스 ${fmt(op.w)}cm`:op.kind==='door'?`방문 ${fmt(op.w)}cm`:`창문 ${fmt(op.w)}×${fmt(op.h??1200)}cm`}
 function bad(a){return outside(a)||optBad(a)||doorBlock(a)||S.items.some(o=>o!==a&&hits(a,o))}
 function clampIn(it){const f=fp(it);if(f.w<=S.room.w-2*G)it.x=Math.min(Math.max(it.x,G),S.room.w-G-f.w);if(f.h<=S.room.d-2*G)it.y=Math.min(Math.max(it.y,G),S.room.d-G-f.h)}
 function badPos(a){return outside(a)||doorBlock(a)||S.items.some(o=>o!==a&&hits(a,o))}
@@ -509,7 +517,8 @@ function renderPlan(){
   s+=`<text x="${RW/2}" y="${dy-px(6)}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" font-weight="500">가로 ${fmt(RW)} cm</text>`;
   s+=`<text x="${dx-px(6)}" y="${RD/2}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" font-weight="500" transform="rotate(-90 ${dx-px(6)} ${RD/2})">세로 ${fmt(RD)} cm</text>`;
   s+=`<rect x="${G}" y="${G}" width="${RW-2*G}" height="${RD-2*G}" fill="none" stroke="var(--warn)" stroke-width="${px(.8)}" stroke-dasharray="${px(3)} ${px(3)}" opacity=".55"/>`;
-  ['top','right','bottom','left'].forEach(wl=>{const ops=(S.openings||[]).filter(o=>o.wall===wl).sort((a,b)=>a.pos-b.pos);if(!ops.length)return;
+  const late=[];
+  ['top','right','bottom','left'].forEach(wl=>{const ops=(S.openings||[]).filter(o=>o.wall===wl&&o.kind!=='cbox').sort((a,b)=>a.pos-b.pos);if(!ops.length)return;
     const L=wallLen(wl),hz=wl==='top'||wl==='bottom',off=T+px(14),k=px(4);
     const C=a=>wl==='top'?[a,-off]:wl==='bottom'?[a,RD+off]:wl==='left'?[-off,a]:[RW+off,a];
     const segs=[];let c=0;ops.forEach(o=>{segs.push([c,o.pos]);c=Math.max(c,o.pos+o.w)});segs.push([c,L]);
@@ -520,15 +529,18 @@ function renderPlan(){
   (S.openings||[]).forEach(op=>{
     const O=op.wall==='top'?[op.pos,0]:op.wall==='bottom'?[op.pos,RD]:op.wall==='left'?[0,op.pos]:[RW,op.pos],U=op.wall==='top'||op.wall==='bottom'?[1,0]:[0,1],N={top:[0,1],bottom:[0,-1],left:[1,0],right:[-1,0]}[op.wall];
     const P=(a,d)=>[O[0]+U[0]*a+N[0]*d,O[1]+U[1]*a+N[1]*d],pl=pts=>pts.map(q=>q.join(',')).join(' '),w=op.w,isSel=op.id===selO;
-    s+=`<g data-op="${op.id}" style="cursor:grab"><polygon points="${pl([P(0,-T),P(w,-T),P(w,Math.max(260,px(26))),P(0,Math.max(260,px(26)))])}" fill="transparent"/>`;
-    if(op.kind==='door'){const hs=op.hinge!=='e',H0=P(hs?0:w,0),dir=hs?1:-1,arc=[];for(let i=0;i<=18;i++){const t=i/18*Math.PI/2;arc.push([H0[0]+(N[0]*Math.cos(t)+U[0]*dir*Math.sin(t))*w,H0[1]+(N[1]*Math.cos(t)+U[1]*dir*Math.sin(t))*w])}
+    const hd=op.kind==='cbox'?(op.depth||200):Math.max(260,px(26));
+    s+=`<g data-op="${op.id}" style="cursor:grab"><polygon points="${pl([P(0,-T),P(w,-T),P(w,hd),P(0,hd)])}" fill="transparent"/>`;
+    if(op.kind==='cbox'){const d=op.depth||200;s+=`<polygon points="${pl([P(0,0),P(w,0),P(w,d),P(0,d)])}" fill="#E7894A" fill-opacity=".14" stroke="#C0612B" stroke-width="${px(1.2)}" stroke-dasharray="${px(6)} ${px(3)}"/>`;
+      const L=P(w/2,d+px(12)),txt=`커튼박스 폭 ${fmt(d)}, 천고 ${fmt(op.hc||S.room.h+150)}`;late.push(`<text x="${L[0]}" y="${L[1]}" text-anchor="middle" dominant-baseline="middle" font-size="${fs*.9}" font-weight="600" fill="#C0612B" ${op.wall==='left'||op.wall==='right'?`transform="rotate(-90 ${L[0]} ${L[1]})"`:''} style="pointer-events:none">${txt}</text>`)}
+    else if(op.kind==='door'){const hs=op.hinge!=='e',H0=P(hs?0:w,0),dir=hs?1:-1,arc=[];for(let i=0;i<=18;i++){const t=i/18*Math.PI/2;arc.push([H0[0]+(N[0]*Math.cos(t)+U[0]*dir*Math.sin(t))*w,H0[1]+(N[1]*Math.cos(t)+U[1]*dir*Math.sin(t))*w])}
       s+=`<polygon points="${pl([P(0,0),P(w,0),P(w,-T),P(0,-T)])}" fill="var(--room)"/>`;
       s+=`<polygon points="${pl([H0,...arc])}" fill="var(--accent)" opacity=".07"/><polyline points="${pl(arc)}" fill="none" stroke="var(--ink2)" stroke-width="${px(1)}" stroke-dasharray="${px(4)} ${px(3)}"/>`;
       s+=`<line x1="${H0[0]}" y1="${H0[1]}" x2="${arc[0][0]}" y2="${arc[0][1]}" stroke="var(--ink)" stroke-width="${px(2.4)}" stroke-linecap="round"/>`;
       const L=P(w/2,w*.42);s+=`<text x="${L[0]}" y="${L[1]}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" style="pointer-events:none">방문 ${fmt(w)}</text>`}
     else{s+=`<polygon points="${pl([P(0,0),P(w,0),P(w,-T),P(0,-T)])}" fill="#CFE3EE" stroke="#6F9AB2" stroke-width="${px(1)}"/>`;const m1=P(0,-T/2),m2=P(w,-T/2);s+=`<line x1="${m1[0]}" y1="${m1[1]}" x2="${m2[0]}" y2="${m2[1]}" stroke="#6F9AB2" stroke-width="${px(1)}"/>`;
       const L=P(w/2,px(34));s+=`<text x="${L[0]}" y="${L[1]}" text-anchor="middle" dominant-baseline="middle" font-size="${fs*.95}" fill="#4F7C95" style="pointer-events:none">창문 ${fmt(w)}×${fmt(op.h??1200)}</text>`}
-    if(isSel)s+=`<polygon points="${pl([P(-20,-T-20),P(w+20,-T-20),P(w+20,20),P(-20,20)])}" fill="none" stroke="var(--accent)" stroke-width="${px(2)}"/>`;
+    if(isSel)s+=`<polygon points="${pl([P(-20,-T-20),P(w+20,-T-20),P(w+20,op.kind==='cbox'?(op.depth||200)+20:20),P(-20,op.kind==='cbox'?(op.depth||200)+20:20)])}" fill="none" stroke="var(--accent)" stroke-width="${px(2)}"/>`;
     s+=`</g>`});
   if(!S.items.length)s+=`<text x="${RW/2}" y="${RD/2}" text-anchor="middle" font-size="${fs*1.15}" fill="var(--ink2)">위쪽 목록에서 칸을 눌러 추가해 보세요</text>`;
 
@@ -573,7 +585,7 @@ function renderPlan(){
       const hd=(T.kind==='free'?T.fd:DEPTH)/2,v={0:[0,1],90:[-1,0],180:[0,-1],270:[1,0]}[it.rot],fx=cx+v[0]*hd,fy=cy+v[1]*hd,ax=fx-v[0]*10,ay=fy-v[1]*10,bx=fx-v[0]*48,by=fy-v[1]*48;
       s+=`<path d="M${ax} ${ay} L${bx-v[1]*26} ${by+v[0]*26} L${bx+v[1]*26} ${by-v[0]*26}Z" fill="${edge}" opacity=".55"/>`;
     }
-    posts.forEach(([x,y])=>s+=`<rect x="${x}" y="${y}" width="${P}" height="${P}" fill="${post}" stroke="${edge}" stroke-width="${px(.8)}"/>`);
+    posts.forEach(([x,y])=>{const inB=cboxAt(x+P/2,y+P/2);s+=`<rect x="${x}" y="${y}" width="${P}" height="${P}" fill="${post}" stroke="${inB?'#C0612B':edge}" stroke-width="${px(inB?2.2:.8)}"/>`});
     if(isBad)s+=`<rect x="${it.x}" y="${it.y}" width="${f.w}" height="${f.h}" fill="var(--warn-soft)" stroke="var(--warn)" stroke-width="${px(2)}" stroke-dasharray="${px(5)} ${px(3)}"/>`;
     if(isSel)s+=`<rect x="${it.x-px(3)}" y="${it.y-px(3)}" width="${f.w+px(6)}" height="${f.h+px(6)}" fill="none" stroke="var(--accent)" stroke-width="${px(2)}"/>`;
     let vert=T.kind!=='corner'&&f.h>f.w,long=Math.max(f.w,f.h),shortS=T.kind==='corner'?DEPTH:Math.min(f.w,f.h),lx=cx,ly=cy;
@@ -596,6 +608,7 @@ function renderPlan(){
     else if(rsz){const lx=si.x+f.w/2,ly=si.y+f.h/2-(hz?f.h/2+px(10):0),tx=hz?lx:si.x+f.w+px(8),ty=hz?ly:si.y+f.h/2;
       s+=`<text x="${tx}" y="${ty}" text-anchor="${hz?'middle':'start'}" font-size="${fs*1.1}" font-weight="600" fill="var(--accent)" stroke="var(--room)" stroke-width="${px(4)}" paint-order="stroke" style="pointer-events:none">선반 ${fmt(si.w)}cm</text>`}
   }
+  s+=late.map(t=>t.replace('<text ','<text stroke="var(--room)" stroke-width="'+px(4)+'" paint-order="stroke" ')).join('');
   if(guides){
     if(guides.x!=null)s+=`<line x1="${guides.x}" y1="${-T}" x2="${guides.x}" y2="${RD+T}" stroke="var(--accent)" stroke-width="${px(1.2)}" stroke-dasharray="${px(4)} ${px(3)}"/>`;
     if(guides.y!=null)s+=`<line x1="${-T}" y1="${guides.y}" x2="${RW+T}" y2="${guides.y}" stroke="var(--accent)" stroke-width="${px(1.2)}" stroke-dasharray="${px(4)} ${px(3)}"/>`;
@@ -685,12 +698,13 @@ function bayLayout(it){const B=100,Hc=S.room.h,top=Math.max(1500,Hc-210),o=it.o|
   return{s,r,up,low}}
 function cornerShape(Lu,Lv,Dd){const r=R_IN/1000,sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(Lu,0);sh.lineTo(Lu,Dd);sh.lineTo(Dd+r,Dd);sh.absarc(Dd+r,Dd+r,r,-Math.PI/2,-Math.PI,true);sh.lineTo(Dd,Lv);sh.lineTo(0,Lv);sh.lineTo(0,0);return new THREE.ExtrudeGeometry(sh,{depth:t,bevelEnabled:false})}
 function buildModule(it){
+  const PHs=poleHs(it).map(v=>v/1000);
   const T=TYPES[it.type],Hc=S.room.h/1000,g=new THREE.Group(),top=Math.max(1500,S.room.h-210)/1000;
   if(T.kind==='corner'){
     const Lu=it.w/1000,Lv=(it.w2||it.w)/1000,U=Lu+CAP,V=Lv+CAP,ox=-U/2,oz=-V/2,geo=cornerShape(Lu,Lv,D),pv=PV/1000;
     const ys=[0.1,1.1,top];if(it.o.cs>=1)ys.push(0.6);if(it.o.cs>=2)ys.push(1.6);
     ys.forEach(y=>{const m=new THREE.Mesh(geo,MAT.shelf);m.rotation.x=Math.PI/2;m.position.set(ox,y,oz);g.add(m);bx(g,CAP,t+0.006,D-0.004,ox+Lu+CAP/2,y-t/2,oz+D/2,MAT.frame);bx(g,D-0.004,t+0.006,CAP,ox+D/2,y-t/2,oz+Lv+CAP/2,MAT.frame)});
-    pole(g,ox+U,oz+pv,Hc);pole(g,ox+pv,oz+V,Hc);
+    pole(g,ox+U,oz+pv,PHs[0]||Hc);pole(g,ox+pv,oz+V,PHs[1]||Hc);
     const ry=top-0.06;
     if(it.rodAxis==='v')rodAB(g,new THREE.Vector3(ox+pv,ry,oz+0.03),new THREE.Vector3(ox+pv,ry,oz+Lv));
     else rodAB(g,new THREE.Vector3(ox+0.03,ry,oz+pv),new THREE.Vector3(ox+Lu,ry,oz+pv));
@@ -698,7 +712,7 @@ function buildModule(it){
   }
   if(T.kind==='free'){
     const w=T.fw/1000,d=T.fd/1000,h=T.fh/1000;
-    if(it.type==='mirrorCab'){const ch=top-t;bx(g,w,ch,d,0,ch/2,0,MAT.shelf);bx(g,w-0.02,ch-0.03,0.006,0,ch/2,d/2+0.003,MAT.mirror);bx(g,w,t,D-0.012,0,top-t/2,0.004,MAT.shelf);[-1,1].forEach(sx=>bx(g,CAP,t+0.006,D-0.008,sx*(w/2+CAP/2),top-t/2,0.004,MAT.frame));[-1,1].forEach(sx=>pole(g,sx*(w/2+CAP),-d/2+PV/1000,Hc))}
+    if(it.type==='mirrorCab'){const ch=top-t;bx(g,w,ch,d,0,ch/2,0,MAT.shelf);bx(g,w-0.02,ch-0.03,0.006,0,ch/2,d/2+0.003,MAT.mirror);bx(g,w,t,D-0.012,0,top-t/2,0.004,MAT.shelf);[-1,1].forEach(sx=>bx(g,CAP,t+0.006,D-0.008,sx*(w/2+CAP/2),top-t/2,0.004,MAT.frame));[-1,1].forEach((sx,i)=>pole(g,sx*(w/2+CAP),-d/2+PV/1000,PHs[i]||Hc))}
     else if(it.type==='islandOpen'){
       [-1,1].forEach(sx=>bx(g,0.018,h,d,sx*(w/2-0.009),h/2,0,MAT.shelf));
       bx(g,w-0.036,h,0.01,0,h/2,-d/2+0.005,MAT.inner);bx(g,w-0.036,0.14,d,0,h-0.07,0,MAT.shelf);
@@ -708,7 +722,7 @@ function buildModule(it){
     return g;
   }
   const W=it.w/1000,Wf=W+2*CAP,Lo=bayLayout(it),zP=-D/2+PV/1000,xi=Wf/2;
-  [-1,1].forEach(sx=>pole(g,sx*xi,zP,Hc));
+  [-1,1].forEach((sx,i)=>pole(g,sx*xi,zP,PHs[i]||Hc));
   Lo.s.forEach(y=>{y/=1000;bx(g,W,t,D-0.012,0,y-t/2,0.004,MAT.shelf);[-1,1].forEach(sx=>bx(g,CAP,t+0.006,D-0.008,sx*(W/2+CAP/2),y-t/2,0.004,MAT.frame));[-1,1].forEach(sx=>bx(g,0.014,0.028,D-0.03,sx*(W/2-0.007),y-t-0.014,0,MAT.frame))});
   Lo.r.forEach(y=>rodAB(g,new THREE.Vector3(-xi,y/1000,zP),new THREE.Vector3(xi,y/1000,zP)));
   if(it.type==='drawer3')chestBox(g,Math.min(0.8,W),0.64,D-0.02,0,0,0,3);
@@ -756,7 +770,11 @@ function syncOps(){if(opGroup)scene.remove(opGroup);opGroup=new THREE.Group();co
   const plane=(w,h,mat)=>new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);
   const mDoor=new THREE.MeshLambertMaterial({color:0x9A7B5F}),mFrame=new THREE.MeshLambertMaterial({color:0xF4F2EE}),mGlass=new THREE.MeshPhongMaterial({color:0xBFD9E6,shininess:90,specular:0xffffff,transparent:true,opacity:.85}),mKnob=new THREE.MeshLambertMaterial({color:0x6B6E72});
   (S.openings||[]).forEach(op=>{const g=new THREE.Group(),w=op.w/1000;
-    if(op.kind==='door'){const h=Math.min(2.1,S.room.h/1000-.05),f=plane(w+.08,h+.04,mFrame);f.position.set(0,(h+.04)/2,.002);g.add(f);const d=plane(w-.02,h-.01,mDoor);d.position.set(0,h/2,.004);g.add(d);
+    if(op.kind==='cbox'){const h0=S.room.h/1000,h1=(op.hc||S.room.h+150)/1000,d=(op.depth||200)/1000,geo=new THREE.BoxGeometry(w,Math.max(.01,h1-h0),d);
+      const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xE7894A,transparent:true,opacity:.22,depthWrite:false}));m.position.set(0,(h0+h1)/2,d/2);g.add(m);
+      const e=new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xC0612B}));e.position.copy(m.position);g.add(e);
+      const lb=textSprite(`커튼박스 천고 ${fmt(op.hc||S.room.h+150)} cm`,Math.max(1,Math.max(S.room.w,S.room.d)/3000)*.8);lb.position.set(0,h1+.12,d/2);g.add(lb)}
+    else if(op.kind==='door'){const h=Math.min(2.1,S.room.h/1000-.05),f=plane(w+.08,h+.04,mFrame);f.position.set(0,(h+.04)/2,.002);g.add(f);const d=plane(w-.02,h-.01,mDoor);d.position.set(0,h/2,.004);g.add(d);
       const k=plane(.03,.12,mKnob);k.position.set((op.hinge==='e'?-1:1)*(w/2-.08),1.0,.006);g.add(k)}
     else{const sill=(op.sill??900)/1000,h=Math.min((op.h??1200)/1000,S.room.h/1000-sill-.02),f=plane(w+.08,h+.08,mFrame);f.position.set(0,sill+h/2,.002);g.add(f);
       const gl=plane(w-.04,h-.04,mGlass);gl.position.set(0,sill+h/2,.004);g.add(gl);const bar=plane(.03,h-.04,mFrame);bar.position.set(0,sill+h/2,.005);g.add(bar)}
@@ -771,7 +789,7 @@ function sync3D(){
   const ids=new Set();
   S.items.forEach(it=>{
     ids.add(it.id);const T=TYPES[it.type];if(T.kind==='corner')it.rodAxis=cornerRodAxis(it);
-    const key=`${it.type}-${it.w}-${it.w2||''}-${it.rodAxis||''}-${JSON.stringify(it.o)}-${S.room.h}`;let e=meshes.get(it.id);
+    const key=`${it.type}-${it.w}-${it.w2||''}-${it.rodAxis||''}-${JSON.stringify(it.o)}-${S.room.h}-${poleHs(it).join('/')}`;let e=meshes.get(it.id);
     if(!e||e.key!==key){if(e)itemsRoot.remove(e.g);const g=buildModule(it);g.userData.id=it.id;
       const f0=fp(it),bw=T.kind==='free'?(T.fw+(T.inLine?EXTRA:0))/1000:T.kind==='corner'?(it.w+CAPW)/1000:(it.w+EXTRA)/1000,bd=T.kind==='corner'?((it.w2||it.w)+CAPW)/1000:T.kind==='free'?T.fd/1000:D,bh=T.kind==='free'&&!T.inLine?T.fh/1000:S.room.h/1000;
       const ed=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(bw+0.01,bh+0.01,bd+0.01)),new THREE.LineBasicMaterial({color:0x1F5FD1}));ed.position.y=bh/2;g.add(ed);
@@ -837,18 +855,37 @@ function renderSelBar(){const it=get(sel),op=getO(selO);document.querySelectorAl
 document.addEventListener('click',e=>{const b=e.target.closest('[data-sb]');if(!b)return;e.stopPropagation();({rot:rotateSel,dup:dupSel,del:deleteSel,flip:flipDoor,odel:deleteOp})[b.dataset.sb]()});
 ['pointerdown','touchstart'].forEach(ev=>document.querySelectorAll('[data-selbar]').forEach(b=>b.addEventListener(ev,e=>e.stopPropagation(),{passive:true})));
 function addOpening(kind){
+  if(kind==='cbox'){snapshot();const win=S.openings.find(o=>o.kind==='window'),wall=win?win.wall:'top';
+    const op={id:Date.now()%1e9+Math.floor(Math.random()*1000),kind:'cbox',wall,pos:0,w:wallLen(wall),depth:200,hc:S.room.h+150};
+    S.openings.push(op);selO=op.id;sel=null;refreshAll();toast(`커튼박스를 ${WALLS[wall]} 벽에 표시했어요. 아래에서 폭과 천고를 실측값으로 맞춰 주세요.`);return}
   const w=kind==='door'?900:1200;snapshot();const op={id:Date.now()%1e9+Math.floor(Math.random()*1000),kind,wall:'bottom',pos:0,w,hinge:'s'};if(kind==='window'){op.sill=900;op.h=1200}
   let placed=false;
   for(const wall of kind==='door'?['bottom','left','right','top']:['top','right','left','bottom']){op.wall=wall;const L=wallLen(wall);
     for(let a=Math.min(300,L-w);a<=L-w;a+=100){op.pos=Math.max(0,a);const z=opZone(op,kind==='door'?w:450);
-      if(!S.items.some(it=>hitZ(it,z))&&!S.openings.some(o=>o.wall===wall&&o.pos<op.pos+w&&o.pos+o.w>op.pos)){placed=true;break}}
+      if(!S.items.some(it=>hitZ(it,z))&&!S.openings.some(o=>o.kind!=='cbox'&&o.wall===wall&&o.pos<op.pos+w&&o.pos+o.w>op.pos)){placed=true;break}}
     if(placed)break}
   if(!placed){op.wall='bottom';op.pos=Math.max(0,Math.round((S.room.w-w)/2))}
   S.openings.push(op);selO=op.id;sel=null;refreshAll();toast(`${opName(op)}을 ${WALLS[op.wall]} 벽에 달았어요. 끌어서 옮기거나 아래에서 위치를 맞춰 주세요.`)}
 function deleteOp(){const op=getO(selO);if(!op)return;snapshot();S.openings=S.openings.filter(o=>o!==op);selO=null;refreshAll();toast(`삭제했어요: ${opName(op)}`)}
 function flipDoor(){const op=getO(selO);if(!op||op.kind!=='door')return;snapshot();op.hinge=op.hinge==='e'?'s':'e';refreshAll()}
 function renderOpPanel(op){const el=$('selPanel'),L=wallLen(op.wall),from=op.wall==='top'||op.wall==='bottom'?'왼쪽 벽':'위쪽 벽';
-  const blocked=S.items.filter(it=>hitZ(it,opZone(op,op.kind==='door'?op.w:450))).length,ov=S.openings.some(o=>o!==op&&o.wall===op.wall&&o.pos<op.pos+op.w&&o.pos+o.w>op.pos);
+  if(op.kind==='cbox'){const n=cboxPosts().length,hc=op.hc||S.room.h+150;
+    el.innerHTML=`<h3>${opName(op)}</h3><p class="muted" style="margin:0">${WALLS[op.wall]} 벽, ${from}에서 ${fmt(op.pos)}cm, ${op.wall==='top'||op.wall==='bottom'?'오른쪽 벽':'아래쪽 벽'}까지 ${fmt(L-op.pos-op.w)}cm</p>
+    <div class="pos"><label class="field">달린 벽<select id="opWall">${Object.entries(WALLS).map(([k,v])=>`<option value="${k}" ${op.wall===k?'selected':''}>${v} 벽</option>`).join('')}</select></label>
+    <label class="field">길이 (cm)<input id="opW" type="number" step="1" min="30" value="${op.w/10}"></label>
+    <label class="field">${from}에서 (cm)<input id="opPos" type="number" step="1" value="${op.pos/10}"></label>
+    <label class="field">폭, 벽에서 (cm)<input id="opD" type="number" step="1" min="5" max="80" value="${(op.depth||200)/10}"></label>
+    <label class="field">커튼박스 천고 (cm)<input id="opHc" type="number" step="1" min="${S.room.h/10+1}" max="350" value="${hc/10}"></label>
+    <div class="field">&nbsp;<button class="btn" id="opFull">벽 전체 길이로</button></div></div>
+    <div class="acts"><button class="btn danger" id="opDel">삭제</button></div>
+    <div class="status ok">${n?`커튼박스 안으로 들어가는 기둥 ${n}개는 천고 ${fmt(hc)}cm로 만들어요. 평면도에서 주황 테두리로 표시돼요.`:'커튼박스 안으로 들어가는 기둥이 없어요. 기둥은 벽에서 26cm 안쪽에 서요.'}</div>`;
+    const num=(id,f)=>{const v=parseFloat($(id).value);if(!isFinite(v)){renderSel();return}snapshot();f(Math.round(v)*10);op.w=Math.min(Math.max(op.w,300),wallLen(op.wall));op.pos=Math.min(Math.max(op.pos,0),wallLen(op.wall)-op.w);refreshAll()};
+    $('opWall').onchange=e=>{snapshot();op.wall=e.target.value;op.w=Math.min(op.w,wallLen(op.wall));op.pos=Math.min(op.pos,Math.max(0,wallLen(op.wall)-op.w));refreshAll()};
+    $('opW').onchange=()=>num('opW',v=>op.w=v);$('opPos').onchange=()=>num('opPos',v=>op.pos=v);
+    $('opD').onchange=()=>num('opD',v=>op.depth=Math.min(Math.max(v,50),800));
+    $('opHc').onchange=()=>num('opHc',v=>{op.hc=Math.max(v,S.room.h+10);if(v<=S.room.h)toast('커튼박스 천고는 방 천고보다 높아야 해요.')});
+    $('opFull').onclick=()=>{snapshot();op.pos=0;op.w=wallLen(op.wall);refreshAll()};$('opDel').onclick=deleteOp;return}
+  const blocked=S.items.filter(it=>hitZ(it,opZone(op,op.kind==='door'?op.w:450))).length,ov=S.openings.some(o=>o!==op&&o.kind!=='cbox'&&o.wall===op.wall&&o.pos<op.pos+op.w&&o.pos+o.w>op.pos);
   el.innerHTML=`<h3>${opName(op)}</h3><p class="muted" style="margin:0">${WALLS[op.wall]} 벽, ${from}에서 ${fmt(op.pos)}cm, ${op.wall==='top'||op.wall==='bottom'?'오른쪽 벽':'아래쪽 벽'}까지 ${fmt(L-op.pos-op.w)}cm${op.kind==='window'?`, 바닥에서 ${fmt(op.sill??900)}cm`:''}</p>
   <div class="pos"><label class="field">달린 벽<select id="opWall">${Object.entries(WALLS).map(([k,v])=>`<option value="${k}" ${op.wall===k?'selected':''}>${v} 벽</option>`).join('')}</select></label>
   <label class="field">${op.kind==='window'?'창 가로':'문 폭'} (cm)<input id="opW" type="number" step="1" min="30" max="400" value="${op.w/10}"></label>
@@ -941,6 +978,7 @@ function renderParts(){
   ${missing?`<p class="status bad" style="margin:4px 0 0">가격이 정해지지 않은 옵션은 금액에서 빠졌어요.</p>`:''}
   ${nb?`<p class="status bad" style="margin:4px 0 0">겹치거나, 벽 간격 2cm가 안 되거나, 문이 열리는 자리에 있거나, 옵션이 맞지 않는 칸이 ${nb}개 있어요.</p>`:''}
   ${S.items.some(winBlock)?`<p class="muted" style="font-size:12.5px;margin:4px 0 0">창문 앞을 가리는 칸이 ${S.items.filter(winBlock).length}개 있어요. 그대로 설치할지 확인해 주세요.</p>`:''}
+  ${cboxPosts().length?`<p class="muted" style="font-size:12.5px;margin:4px 0 0;color:#C0612B">커튼박스 안으로 들어가는 기둥 ${cboxPosts().length}개는 커튼박스 천고(${[...new Set(cboxPosts())].map(h=>fmt(h)+'cm').join(', ')})로 만들어요.</p>`:''}
   ${S.room.h>=2700?`<p class="status bad" style="margin:4px 0 0">천고 270cm 이상은 시공할 수 없어요.</p>`:S.room.h>=2500?`<p class="status bad" style="margin:4px 0 0">천고 250cm 이상은 추가요금이 생길 수 있어요.</p>`:''}
   ${EMBED?`<button class="btn primary" id="orderBtn" style="width:100%;margin-top:12px;padding:10px">이 배치로 주문 담기</button>`:''}${STORE?`<button class="btn primary" id="orderBtn" style="width:100%;margin-top:12px;padding:12px;font-size:15px">이 배치 그대로 장바구니 담기</button>${storeAdded?`<a class="btn" href="cart.html" style="display:block;text-align:center;margin-top:6px;padding:10px;text-decoration:none">장바구니 보기 (${storeCart().length})</a>`:''}`:''}
   <p class="muted" style="font-size:12px;margin:8px 0 0">치수 오차 ±5%. 실제 설치 시 기둥은 천장에 고정해요.</p>`;
@@ -952,7 +990,7 @@ function sendOrder(){
   if(S.room.h>=2700){toast('천고 270cm 이상은 시공할 수 없어요. 천고를 확인해 주세요.');return}
   const c=calc();if(!c.qty){toast('벽면 시스템 칸을 하나 이상 배치해 주세요.');return}
   const data={qty:c.qty,lengthCm:Math.round(c.L)/10,pillar:S.pillar,shelf:S.shelf,room:{w:S.room.w/10,d:S.room.d/10,h:S.room.h/10},
-    openings:(S.openings||[]).map(op=>`${op.kind==='door'?'방문':'창문'}: ${WALLS[op.wall]} 벽, ${op.wall==='top'||op.wall==='bottom'?'왼쪽':'위쪽'}에서 ${fmt(op.pos)}cm, 폭 ${fmt(op.w)}cm${op.kind==='window'?`, 바닥에서 ${fmt(op.sill??900)}cm, 높이 ${fmt(op.h??1200)}cm`:''}`),
+    openings:(S.openings||[]).map(op=>op.kind==='cbox'?`커튼박스: ${WALLS[op.wall]} 벽, ${op.wall==='top'||op.wall==='bottom'?'왼쪽':'위쪽'}에서 ${fmt(op.pos)}cm, 길이 ${fmt(op.w)}cm, 폭 ${fmt(op.depth||200)}cm, 천고 ${fmt(op.hc||S.room.h+150)}cm (들어가는 기둥 ${cboxPosts().filter(h=>h===(op.hc||S.room.h+150)).length}개)`:`${op.kind==='door'?'방문':'창문'}: ${WALLS[op.wall]} 벽, ${op.wall==='top'||op.wall==='bottom'?'왼쪽':'위쪽'}에서 ${fmt(op.pos)}cm, 폭 ${fmt(op.w)}cm${op.kind==='window'?`, 바닥에서 ${fmt(op.sill??900)}cm, 높이 ${fmt(op.h??1200)}cm`:''}`),
     bays:[...c.bays],opts:[...c.opts].sort((a,b)=>OPT_KEYS.indexOf(a[0])-OPT_KEYS.indexOf(b[0]))};
   if(STORE){const a=storeCart();a.push(Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),kind:'design',title:'내가 배치한 드레스룸',at:Date.now()},data));
     try{localStorage.setItem(CART_KEY,JSON.stringify(a))}catch(e){toast('이 브라우저에서는 장바구니를 저장할 수 없어요.');return}
@@ -1067,7 +1105,7 @@ $('setBtn').onclick=()=>placeSet(+$('setSel').value);
 $('undoBtn').onclick=undo;
 $('clearBtn').onclick=()=>{if(!S.items.length)return;snapshot();S.items=[];sel=null;refreshAll();toast('모두 지웠어요. 되돌리기로 복구할 수 있어요.')};
 $('camReset').onclick=resetCam;
-$('addDoor').onclick=()=>addOpening('door');$('addWin').onclick=()=>addOpening('window');
+$('addDoor').onclick=()=>addOpening('door');$('addCbox').onclick=()=>addOpening('cbox');$('addWin').onclick=()=>addOpening('window');
 document.addEventListener('keydown',e=>{
   if(e.target.matches&&e.target.matches('input,select,textarea'))return;
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return}
