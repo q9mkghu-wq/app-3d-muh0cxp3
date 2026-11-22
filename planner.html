@@ -149,9 +149,9 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
   <div class="bar-row">
     <div class="grp">
       <b><span class="n">1</span>방 크기</b>
-      <label class="inl">가로<input id="roomW" type="number" inputmode="decimal" min="50" max="2000" step="0.1" aria-label="방 가로 cm"></label>
-      <label class="inl">세로<input id="roomD" type="number" inputmode="decimal" min="50" max="2000" step="0.1" aria-label="방 세로 cm"></label>
-      <label class="inl">천고<input id="roomH" type="number" inputmode="decimal" min="200" max="300" step="0.1" aria-label="천고 cm"></label>
+      <label class="inl">가로<input id="roomW" type="number" inputmode="numeric" min="50" max="2000" step="1" aria-label="방 가로 cm"></label>
+      <label class="inl">세로<input id="roomD" type="number" inputmode="numeric" min="50" max="2000" step="1" aria-label="방 세로 cm"></label>
+      <label class="inl">천고<input id="roomH" type="number" inputmode="numeric" min="200" max="300" step="1" aria-label="천고 cm"></label>
       <span class="lbl">cm</span>
       <button class="btn primary" id="roomApply">적용</button>
       <button class="btn" id="addDoor" title="방문을 벽에 달아요">+ 방문</button><button class="btn" id="addWin" title="창문을 벽에 달아요">+ 창문</button>
@@ -377,7 +377,7 @@ function opZone(op,d){const RW=S.room.w,RD=S.room.d,a=op.pos,b=op.w;return op.wa
 function hitZ(it,z){const f=fp(it);return it.x<z.x+z.w-1&&it.x+f.w>z.x+1&&it.y<z.y+z.h-1&&it.y+f.h>z.y+1}
 function doorBlock(it){return (S.openings||[]).some(op=>op.kind==='door'&&hitZ(it,opZone(op,op.w)))}
 function winBlock(it){return (S.openings||[]).some(op=>op.kind==='window'&&hitZ(it,opZone(op,450)))}
-function opName(op){return `${op.kind==='door'?'방문':'창문'} ${fmt(op.w)}cm`}
+function opName(op){return op.kind==='door'?`방문 ${fmt(op.w)}cm`:`창문 ${fmt(op.w)}×${fmt(op.h??1200)}cm`}
 function bad(a){return outside(a)||optBad(a)||doorBlock(a)||S.items.some(o=>o!==a&&hits(a,o))}
 function clampIn(it){const f=fp(it);if(f.w<=S.room.w-2*G)it.x=Math.min(Math.max(it.x,G),S.room.w-G-f.w);if(f.h<=S.room.d-2*G)it.y=Math.min(Math.max(it.y,G),S.room.d-G-f.h)}
 function badPos(a){return outside(a)||doorBlock(a)||S.items.some(o=>o!==a&&hits(a,o))}
@@ -425,7 +425,7 @@ function fillGap(){
   S.items.forEach(o=>{if(o===it)return;const of=fp(o);
     const cross=hz?(o.y<it.y+f.h-1&&o.y+of.h>it.y+1):(o.x<it.x+f.w-1&&o.x+of.w>it.x+1);if(!cross)return;
     const s=hz?o.x:o.y;if(s>=a0+1&&s<end)end=s});
-  let n=Math.round(end-a0)-EXTRA;if(n<WMIN){toast('캡 3cm를 빼면 선반이 30cm보다 좁아져요.');return}
+  let n=Math.floor((end-a0-EXTRA)/10)*10;if(n<WMIN){toast('캡 3cm를 빼면 선반이 30cm보다 좁아져요.');return}
   const cap=n>WMAX;if(cap)n=WMAX;
   snapshot();it.w=n;refreshAll();toast(cap?'선반은 최대 90cm라서 90cm(캡 포함 93cm)로 맞췄어요. 남은 곳에는 칸을 더 추가해 주세요.':`선반 폭을 ${fmt(n)}cm로 맞췄어요. 양 끝 캡 3cm를 더해 ${fmt(n+EXTRA)}cm를 차지해요.`);
 }
@@ -503,12 +503,20 @@ function renderPlan(){
   const step=100/mmpp>7?100:500;
   for(let x=step;x<RW;x+=step)s+=`<line x1="${x}" y1="0" x2="${x}" y2="${RD}" stroke="var(--grid)" stroke-width="${px(x%500===0?1:.6)}"/>`;
   for(let y=step;y<RD;y+=step)s+=`<line x1="0" y1="${y}" x2="${RW}" y2="${y}" stroke="var(--grid)" stroke-width="${px(y%500===0?1:.6)}"/>`;
-  const dy=-T-px(22),dx=-T-px(22),tk=px(5);
+  const dy=-T-px(44),dx=-T-px(44),tk=px(5);
   s+=`<g stroke="var(--ink2)" stroke-width="${px(1)}"><line x1="0" y1="${dy}" x2="${RW}" y2="${dy}"/><line x1="${-tk}" y1="${dy+tk}" x2="${tk}" y2="${dy-tk}"/><line x1="${RW-tk}" y1="${dy+tk}" x2="${RW+tk}" y2="${dy-tk}"/>
   <line x1="${dx}" y1="0" x2="${dx}" y2="${RD}"/><line x1="${dx-tk}" y1="${tk}" x2="${dx+tk}" y2="${-tk}"/><line x1="${dx-tk}" y1="${RD+tk}" x2="${dx+tk}" y2="${RD-tk}"/></g>`;
   s+=`<text x="${RW/2}" y="${dy-px(6)}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" font-weight="500">가로 ${fmt(RW)} cm</text>`;
   s+=`<text x="${dx-px(6)}" y="${RD/2}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" font-weight="500" transform="rotate(-90 ${dx-px(6)} ${RD/2})">세로 ${fmt(RD)} cm</text>`;
   s+=`<rect x="${G}" y="${G}" width="${RW-2*G}" height="${RD-2*G}" fill="none" stroke="var(--warn)" stroke-width="${px(.8)}" stroke-dasharray="${px(3)} ${px(3)}" opacity=".55"/>`;
+  ['top','right','bottom','left'].forEach(wl=>{const ops=(S.openings||[]).filter(o=>o.wall===wl).sort((a,b)=>a.pos-b.pos);if(!ops.length)return;
+    const L=wallLen(wl),hz=wl==='top'||wl==='bottom',off=T+px(14),k=px(4);
+    const C=a=>wl==='top'?[a,-off]:wl==='bottom'?[a,RD+off]:wl==='left'?[-off,a]:[RW+off,a];
+    const segs=[];let c=0;ops.forEach(o=>{segs.push([c,o.pos]);c=Math.max(c,o.pos+o.w)});segs.push([c,L]);
+    segs.forEach(([a,b])=>{if(b-a<1)return;const p1=C(a),p2=C(b),m=C((a+b)/2);
+      s+=`<g stroke="#C0612B" stroke-width="${px(1)}"><line x1="${p1[0]}" y1="${p1[1]}" x2="${p2[0]}" y2="${p2[1]}"/>`+(hz?`<line x1="${p1[0]}" y1="${p1[1]-k}" x2="${p1[0]}" y2="${p1[1]+k}"/><line x1="${p2[0]}" y1="${p2[1]-k}" x2="${p2[0]}" y2="${p2[1]+k}"/>`:`<line x1="${p1[0]-k}" y1="${p1[1]}" x2="${p1[0]+k}" y2="${p1[1]}"/><line x1="${p2[0]-k}" y1="${p2[1]}" x2="${p2[0]+k}" y2="${p2[1]}"/>`)+`</g>`;
+      if((b-a)/mmpp>26){const tx=hz?m[0]:m[0]+(wl==='left'?-px(4):px(4)),ty=hz?m[1]+(wl==='top'?-px(4):px(12)):m[1];
+        s+=`<text x="${tx}" y="${ty}" text-anchor="middle" font-size="${fs*.9}" font-weight="600" fill="#C0612B" ${hz?'':`transform="rotate(-90 ${tx} ${ty})"`} style="pointer-events:none">${fmt(b-a)}</text>`}})});
   (S.openings||[]).forEach(op=>{
     const O=op.wall==='top'?[op.pos,0]:op.wall==='bottom'?[op.pos,RD]:op.wall==='left'?[0,op.pos]:[RW,op.pos],U=op.wall==='top'||op.wall==='bottom'?[1,0]:[0,1],N={top:[0,1],bottom:[0,-1],left:[1,0],right:[-1,0]}[op.wall];
     const P=(a,d)=>[O[0]+U[0]*a+N[0]*d,O[1]+U[1]*a+N[1]*d],pl=pts=>pts.map(q=>q.join(',')).join(' '),w=op.w,isSel=op.id===selO;
@@ -519,7 +527,7 @@ function renderPlan(){
       s+=`<line x1="${H0[0]}" y1="${H0[1]}" x2="${arc[0][0]}" y2="${arc[0][1]}" stroke="var(--ink)" stroke-width="${px(2.4)}" stroke-linecap="round"/>`;
       const L=P(w/2,w*.42);s+=`<text x="${L[0]}" y="${L[1]}" text-anchor="middle" font-size="${fs}" fill="var(--ink2)" style="pointer-events:none">방문 ${fmt(w)}</text>`}
     else{s+=`<polygon points="${pl([P(0,0),P(w,0),P(w,-T),P(0,-T)])}" fill="#CFE3EE" stroke="#6F9AB2" stroke-width="${px(1)}"/>`;const m1=P(0,-T/2),m2=P(w,-T/2);s+=`<line x1="${m1[0]}" y1="${m1[1]}" x2="${m2[0]}" y2="${m2[1]}" stroke="#6F9AB2" stroke-width="${px(1)}"/>`;
-      const L=P(w/2,px(34));s+=`<text x="${L[0]}" y="${L[1]}" text-anchor="middle" dominant-baseline="middle" font-size="${fs*.95}" fill="#4F7C95" style="pointer-events:none">창문 ${fmt(w)}</text>`}
+      const L=P(w/2,px(34));s+=`<text x="${L[0]}" y="${L[1]}" text-anchor="middle" dominant-baseline="middle" font-size="${fs*.95}" fill="#4F7C95" style="pointer-events:none">창문 ${fmt(w)}×${fmt(op.h??1200)}</text>`}
     if(isSel)s+=`<polygon points="${pl([P(-20,-T-20),P(w+20,-T-20),P(w+20,20),P(-20,20)])}" fill="none" stroke="var(--accent)" stroke-width="${px(2)}"/>`;
     s+=`</g>`});
   if(!S.items.length)s+=`<text x="${RW/2}" y="${RD/2}" text-anchor="middle" font-size="${fs*1.15}" fill="var(--ink2)">위쪽 목록에서 칸을 눌러 추가해 보세요</text>`;
@@ -614,7 +622,7 @@ function resizeCorner(it,p){const thr=12*mmpp,key=rsz.k==='u'?'w':'w2',c=cDims(i
   let v=hz?p.x:p.y;const cand=[G,lim-G];
   S.items.forEach(o=>{if(o===it)return;const of=fp(o),oc0=hz?o.y:o.x,oc1=oc0+(hz?of.h:of.w);if(oc0<c1+thr&&oc1>c0-thr){const e0=hz?o.x:o.y;cand.push(e0,e0+(hz?of.w:of.h))}});
   let best=null,bd=thr;cand.forEach(q=>{const d=Math.abs(q-v);if(d<bd){bd=d;best=q}});
-  let L=sg*((best!=null?best:v)-o0)-CAPW;L=best!=null?Math.round(L):Math.round(L/10)*10;L=Math.min(CMAX,Math.max(CMIN,L));
+  let L=sg*((best!=null?best:v)-o0)-CAPW;L=best!=null?Math.floor(L/10)*10:Math.round(L/10)*10;L=Math.min(CMAX,Math.max(CMIN,L));
   guides=best!=null&&Math.abs(sg*(best-o0)-CAPW-L)<1?(hz?{x:best,y:null}:{x:null,y:best}):null;
   if(L===(key==='w'?c.Lu:c.Lv)){renderPlan();return}
   setArm(it,key,L);renderPlan();sync3D();renderSel()}
@@ -624,7 +632,7 @@ function resizeTo(p){const it=get(rsz.id);if(!it)return;if(TYPES[it.type].kind==
   S.items.forEach(o=>{if(o===it)return;const of=fp(o),oc0=hz?o.y:o.x,oc1=oc0+(hz?of.h:of.w);if(oc0<c1+thr&&oc1>c0-thr){const e0=hz?o.x:o.y;cand.push(e0,e0+(hz?of.w:of.h))}});
   let best=null,bd=thr;cand.forEach(c=>{const d=Math.abs(c-v);if(d<bd){bd=d;best=c}});
   let L=rsz.k==='e'?(best!=null?best:v)-a0:a1-(best!=null?best:v),w=L-EXTRA;
-  w=best!=null?Math.round(w):Math.round(w/10)*10;w=Math.min(WMAX,Math.max(WMIN,w));
+  w=best!=null?Math.floor(w/10)*10:Math.round(w/10)*10;w=Math.min(WMAX,Math.max(WMIN,w));
   guides=best!=null&&Math.abs(w+EXTRA-L)<1?(hz?{x:best,y:null}:{x:null,y:best}):null;
   if(w===it.w){renderPlan();return}
   if(rsz.k==='s'){if(hz)it.x=a1-(w+EXTRA);else it.y=a1-(w+EXTRA)}
@@ -841,14 +849,14 @@ function deleteOp(){const op=getO(selO);if(!op)return;snapshot();S.openings=S.op
 function flipDoor(){const op=getO(selO);if(!op||op.kind!=='door')return;snapshot();op.hinge=op.hinge==='e'?'s':'e';refreshAll()}
 function renderOpPanel(op){const el=$('selPanel'),L=wallLen(op.wall),from=op.wall==='top'||op.wall==='bottom'?'왼쪽 벽':'위쪽 벽';
   const blocked=S.items.filter(it=>hitZ(it,opZone(op,op.kind==='door'?op.w:450))).length,ov=S.openings.some(o=>o!==op&&o.wall===op.wall&&o.pos<op.pos+op.w&&o.pos+o.w>op.pos);
-  el.innerHTML=`<h3>${opName(op)}</h3><p class="muted" style="margin:0">${WALLS[op.wall]} 벽, ${from}에서 ${fmt(op.pos)}cm</p>
+  el.innerHTML=`<h3>${opName(op)}</h3><p class="muted" style="margin:0">${WALLS[op.wall]} 벽, ${from}에서 ${fmt(op.pos)}cm, ${op.wall==='top'||op.wall==='bottom'?'오른쪽 벽':'아래쪽 벽'}까지 ${fmt(L-op.pos-op.w)}cm${op.kind==='window'?`, 바닥에서 ${fmt(op.sill??900)}cm`:''}</p>
   <div class="pos"><label class="field">달린 벽<select id="opWall">${Object.entries(WALLS).map(([k,v])=>`<option value="${k}" ${op.wall===k?'selected':''}>${v} 벽</option>`).join('')}</select></label>
-  <label class="field">폭 (cm)<input id="opW" type="number" step="1" min="30" max="400" value="${op.w/10}"></label>
-  <label class="field">${from}에서 (cm)<input id="opPos" type="number" step="0.1" value="${op.pos/10}"></label>
-  ${op.kind==='window'?`<label class="field">바닥에서 창 아래까지 (cm)<input id="opSill" type="number" step="1" min="0" max="250" value="${(op.sill??900)/10}"></label><label class="field">창 높이 (cm)<input id="opH" type="number" step="1" min="20" max="250" value="${(op.h??1200)/10}"></label>`:`<div class="field">&nbsp;<button class="btn" id="opFlip">반대로 열기</button></div>`}</div>
+  <label class="field">${op.kind==='window'?'창 가로':'문 폭'} (cm)<input id="opW" type="number" step="1" min="30" max="400" value="${op.w/10}"></label>
+  <label class="field">${from}에서 (cm)<input id="opPos" type="number" step="1" value="${op.pos/10}"></label>
+  ${op.kind==='window'?`<label class="field">창 세로 (cm)<input id="opH" type="number" step="1" min="20" max="250" value="${(op.h??1200)/10}"></label><label class="field">바닥에서 창 아래까지 (cm)<input id="opSill" type="number" step="1" min="0" max="250" value="${(op.sill??900)/10}"></label>`:`<div class="field">&nbsp;<button class="btn" id="opFlip">반대로 열기</button></div>`}</div>
   <div class="acts"><button class="btn danger" id="opDel">삭제</button></div>
   <div class="status ${blocked&&op.kind==='door'?'bad':'ok'}">${blocked?(op.kind==='door'?`문이 열리는 자리에 칸 ${blocked}개가 있어요. 칸을 옆으로 옮겨 주세요.`:`창문 앞을 칸 ${blocked}개가 가려요.`):(op.kind==='door'?'문이 열리는 자리가 비어 있어요.':'창문 앞이 비어 있어요.')}${ov?' 다른 문이나 창문과 겹쳐 있어요.':''}</div>`;
-  const num=(id,f)=>{const n=parseFloat($(id).value);if(!isFinite(n)){renderSel();return}snapshot();f(Math.round(n*10));op.w=Math.min(Math.max(op.w,300),wallLen(op.wall));op.pos=Math.min(Math.max(op.pos,0),wallLen(op.wall)-op.w);refreshAll()};
+  const num=(id,f)=>{const n=parseFloat($(id).value);if(!isFinite(n)){renderSel();return}snapshot();f(Math.round(n)*10);op.w=Math.min(Math.max(op.w,300),wallLen(op.wall));op.pos=Math.min(Math.max(op.pos,0),wallLen(op.wall)-op.w);refreshAll()};
   $('opWall').onchange=e=>{snapshot();op.wall=e.target.value;op.pos=Math.min(op.pos,Math.max(0,wallLen(op.wall)-op.w));refreshAll()};
   $('opW').onchange=()=>num('opW',v=>op.w=v);$('opPos').onchange=()=>num('opPos',v=>op.pos=v);
   if($('opSill')){$('opSill').onchange=()=>num('opSill',v=>op.sill=Math.max(0,v));$('opH').onchange=()=>num('opH',v=>op.h=Math.max(200,v))}
@@ -863,8 +871,8 @@ function renderSel(){renderSelBar();
   const hz=it.rot%180===0;
   let wField='';
   if(T.kind==='bay'&&FIXW[it.type])wField=`<div class="field">선반 폭<span style="font-size:15px;color:var(--ink);padding:7px 0">${FIXW[it.type]/10}cm 고정</span></div>`;
-  else if(T.kind==='bay')wField=`<label class="field">선반 폭 (cm, ${WMIN/10}~${WMAX/10})<input id="selW" type="number" step="0.1" min="${WMIN/10}" max="${WMAX/10}" value="${it.w/10}"></label>`;
-  if(T.kind==='corner'){const uH=Math.abs(armDir(it,'u')[0])>.5,fld=(id,lab,v)=>`<label class="field">${lab} 방향 선반 (cm, ${CMIN/10}~${CMAX/10})<input id="${id}" type="number" step="0.1" min="${CMIN/10}" max="${CMAX/10}" value="${v/10}"></label>`;
+  else if(T.kind==='bay')wField=`<label class="field">선반 폭 (cm, ${WMIN/10}~${WMAX/10})<input id="selW" type="number" step="1" min="${WMIN/10}" max="${WMAX/10}" value="${it.w/10}"></label>`;
+  if(T.kind==='corner'){const uH=Math.abs(armDir(it,'u')[0])>.5,fld=(id,lab,v)=>`<label class="field">${lab} 방향 선반 (cm, ${CMIN/10}~${CMAX/10})<input id="${id}" type="number" step="1" min="${CMIN/10}" max="${CMAX/10}" value="${v/10}"></label>`;
     wField=uH?fld('selW','가로',it.w)+fld('selW2','세로',it.w2||it.w):fld('selW2','가로',it.w2||it.w)+fld('selW','세로',it.w)}
   let opt='';
   if(A&&VARIANTS[it.type])opt=`<div class="optbox"><p class="muted" style="margin:0;grid-column:1/-1">${it.o.up||it.o.low?`${[it.o.up,it.o.low].filter(Boolean).map(k=>`${OPTS[k].name}(${OPTS[k].size})`).join(', ')}이 들어간 완성형 칸이에요.`:'옵션 없는 기본 칸이에요.'} 구성을 바꾸려면 칸 추가 목록에서 다른 칸을 넣어 주세요.</p>
@@ -883,16 +891,16 @@ function renderSel(){renderSelBar();
   else if(b)st='다른 칸과 겹쳐 있어요. 옆으로 옮겨 주세요.';
   el.innerHTML=`<h3>${nameOf(it)}</h3><p class="muted" style="margin:0">${size}${dir?', '+dir:''}</p>
   <div class="pos">${wField}${wField&&T.kind==='bay'&&!FIXW[it.type]?`<div class="field">&nbsp;<span class="acts"><button class="btn" id="wMinus" aria-label="선반 1cm 줄이기">−1cm</button><button class="btn" id="wPlus" aria-label="선반 1cm 늘리기">+1cm</button><button class="btn" id="fillB">빈 곳까지</button></span></div>`:''}
-  <label class="field">왼쪽 벽에서 (cm)<input id="posX" type="number" step="0.1" value="${fmt(it.x).replace(/,/g,'')}"></label>
-  <label class="field">위쪽 벽에서 (cm)<input id="posY" type="number" step="0.1" value="${fmt(it.y).replace(/,/g,'')}"></label></div>
+  <label class="field">왼쪽 벽에서 (cm)<input id="posX" type="number" step="1" value="${fmt(it.x).replace(/,/g,'')}"></label>
+  <label class="field">위쪽 벽에서 (cm)<input id="posY" type="number" step="1" value="${fmt(it.y).replace(/,/g,'')}"></label></div>
   <div class="acts"><button class="btn" id="rotB">회전 <kbd>R</kbd></button><button class="btn" id="dupB">복제 <kbd>D</kbd></button><button class="btn danger" id="delB">삭제</button></div>
   ${opt}
   <div class="status ${b?'bad':'ok'}">${b?st:`${winBlock(it)?'창문 앞을 가리고 있어요. ':''}오른쪽 벽까지 ${fmt(S.room.w-it.x-f.w)}cm, 아래쪽 벽까지 ${fmt(S.room.d-it.y-f.h)}cm`}</div>`;
   $('rotB').onclick=rotateSel;$('dupB').onclick=dupSel;$('delB').onclick=deleteSel;
   if($('fillB'))$('fillB').onclick=fillGap;if($('wMinus')){$('wMinus').onclick=()=>resizeBy(-10);$('wPlus').onclick=()=>resizeBy(10)}
-  const onPos=(k,v)=>{const n=parseFloat(v);if(!isFinite(n))return;snapshot();it[k]=Math.round(n*10);refreshAll()};
+  const onPos=(k,v)=>{const n=parseFloat(v);if(!isFinite(n))return;snapshot();it[k]=Math.round(n)*10;refreshAll()};
   $('posX').onchange=e=>onPos('x',e.target.value);$('posY').onchange=e=>onPos('y',e.target.value);
-  const onW=(key,e)=>{let n=Math.round(parseFloat(e.target.value)*10);if(!isFinite(n)){renderSel();return}
+  const onW=(key,e)=>{let n=Math.round(parseFloat(e.target.value))*10;if(!isFinite(n)){renderSel();return}
     const lo=T.kind==='corner'?CMIN:WMIN,hi=T.kind==='corner'?CMAX:WMAX,c=Math.min(hi,Math.max(lo,n));snapshot();if(T.kind==='corner')setArm(it,key,c);else it.w=c;clampIn(it);refreshAll();
     if(c!==n)toast(`선반은 ${lo/10}~${hi/10}cm 사이라서 ${fmt(c)}cm로 맞췄어요.`)};
   if($('selW'))$('selW').onchange=e=>onW('w',e);if($('selW2'))$('selW2').onchange=e=>onW('w2',e);
@@ -982,7 +990,7 @@ function applyRoom(){
   if(!isFinite(w)||!isFinite(d)||!isFinite(h)){err.textContent='가로, 세로, 천고를 모두 cm 단위 숫자로 입력해 주세요.';return}
   if(w<50||d<50||w>2000||d>2000){err.textContent='가로와 세로는 50cm에서 2,000cm 사이로 입력해 주세요.';return}
   if(h<200||h>300){err.textContent='천고는 200cm에서 300cm 사이로 입력해 주세요.';return}
-  err.textContent='';snapshot();S.room={w:Math.round(w*10),d:Math.round(d*10),h:Math.round(h*10)};buildRoom();resetCam();refreshAll();
+  err.textContent='';snapshot();S.room={w:Math.round(w)*10,d:Math.round(d)*10,h:Math.round(h)*10};$('roomW').value=S.room.w/10;$('roomD').value=S.room.d/10;$('roomH').value=S.room.h/10;buildRoom();resetCam();refreshAll();
   const nb=S.items.filter(outside).length;toast(nb?`방 크기를 바꿨어요. 벽 간격 2cm 밖으로 나간 칸이 ${nb}개 있어요.`:`방 크기를 ${fmt(S.room.w)} × ${fmt(S.room.d)}cm, 천고 ${fmt(S.room.h)}cm로 맞췄어요`);
 }
 $('roomApply').onclick=applyRoom;['roomW','roomD','roomH'].forEach(id=>{$(id).addEventListener('keydown',e=>{if(e.key==='Enter')applyRoom()});$(id).addEventListener('input',()=>$('roomErr').textContent='')});
