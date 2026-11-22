@@ -53,7 +53,13 @@ select{font:inherit;font-size:13px;color:var(--ink);background:var(--room);borde
 .check{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--ink2);white-space:nowrap}
 main{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px;padding:14px 20px 24px}
 .views{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;min-width:0}
-.pane{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.pane{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;min-width:0;position:relative}
+.selbar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--sheet);border-radius:28px;padding:6px 6px 6px 16px;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:calc(100% - 24px);z-index:5}
+.selbar span{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;margin-right:4px}
+.selbar button{flex:none;height:40px;min-width:52px;padding:0 14px;border-radius:20px;border:0;background:rgba(255,255,255,.14);color:inherit;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.selbar button.del{background:var(--warn);color:#fff}
+.selbar button:active{filter:brightness(.85)}
+@media (max-width:520px){.selbar span{display:none}.selbar{padding:6px}}
 .pane-h{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--rule);font-size:13px;font-weight:600;flex-wrap:wrap}
 .pane-h span{font-weight:400;color:var(--ink2);font-size:12.5px}
 #plan,#three{height:clamp(380px,calc(100vh - 330px),760px)}
@@ -125,7 +131,7 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
 <header class="top">
   <div class="top-l">
     <h1>브로드 시스템 드레스룸 플래너</h1>
-    <p>칸 폭은 선반 폭 + 양 끝 캡 3cm, 벽과는 2cm 띄워요. 설치 길이 10cm당 1개로 수량을 계산해요.</p>
+    <p>칸 폭은 선반 폭 + 양 끝 캡 3cm, 벽과는 2cm 띄워요.</p>
   </div>
   <div class="tools">
     <button class="btn" id="undoBtn" title="Ctrl+Z">되돌리기</button>
@@ -201,10 +207,12 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
     <div class="pane">
       <div class="pane-h">평면도<span>끌어서 이동, 파란 화살표로 폭 조절 (<kbd>Alt</kbd>+방향키 1cm), <kbd>R</kbd> 회전, <kbd>Del</kbd> 삭제</span></div>
       <svg id="plan" role="img" aria-label="방 평면도와 배치된 칸"><g id="planG"></g></svg>
+      <div class="selbar" data-selbar hidden role="toolbar" aria-label="선택한 칸"></div>
     </div>
     <div class="pane">
       <div class="pane-h">3D 미리보기<span style="display:flex;gap:8px;align-items:center">3D에서도 끌 수 있어요 <button class="btn" id="camReset" style="padding:3px 9px;font-size:12px">시점 초기화</button></span></div>
       <div id="three"></div>
+      <div class="selbar" data-selbar hidden role="toolbar" aria-label="선택한 칸"></div>
     </div>
   </div>
   <div class="below">
@@ -764,7 +772,12 @@ new ResizeObserver(()=>renderPlan()).observe(svg);
 /* ---------- 패널 ---------- */
 const DIR={0:'위쪽 벽을 등지고 있어요',90:'오른쪽 벽을 등지고 있어요',180:'아래쪽 벽을 등지고 있어요',270:'왼쪽 벽을 등지고 있어요'};
 const CDIR={0:'왼쪽 위 모서리용',90:'오른쪽 위 모서리용',180:'오른쪽 아래 모서리용',270:'왼쪽 아래 모서리용'};
-function renderSel(){
+function renderSelBar(){const it=get(sel);document.querySelectorAll('[data-selbar]').forEach(b=>{
+  if(!it||drag||rsz){b.hidden=true;return}b.hidden=false;
+  b.innerHTML=`<span>${esc(nameOf(it))}</span><button data-sb="rot">회전</button><button data-sb="dup">복제</button><button data-sb="del" class="del">삭제</button>`})}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-sb]');if(!b)return;e.stopPropagation();({rot:rotateSel,dup:dupSel,del:deleteSel})[b.dataset.sb]()});
+['pointerdown','touchstart'].forEach(ev=>document.querySelectorAll('[data-selbar]').forEach(b=>b.addEventListener(ev,e=>e.stopPropagation(),{passive:true})));
+function renderSel(){renderSelBar();
   const el=$('selPanel'),it=get(sel);
   if(!it){el.innerHTML=`<h3>선택한 칸</h3><p class="muted" style="margin:0">평면도나 3D에서 칸을 누르면 폭과 위치를 cm 단위로 맞추고, 서랍장 같은 옵션을 넣을 수 있어요.</p>`;return}
   const T=TYPES[it.type],f=fp(it),b=bad(it),A=ALLOW[it.type];
