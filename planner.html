@@ -87,7 +87,26 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 #plan{width:100%;display:block;touch-action:none;background:var(--paper);user-select:none}
 #three{touch-action:none;cursor:grab;background:var(--paper);position:relative}
 .pane.full{position:fixed;inset:0;z-index:200;border-radius:0;border:0;width:100vw;height:100vh;height:100dvh}
-.pane.full #three{height:auto!important;max-height:none!important;min-height:0!important;flex:1}
+.stage{position:relative}
+.pane.full .stage{flex:1;min-height:0}
+.pane.full #three,.pane.full #plan{height:100%!important;max-height:none!important;min-height:0!important}
+.zoomctl{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:6px;z-index:5}
+.zoomctl button{width:44px;height:44px;border-radius:10px;border:1px solid var(--rule);background:rgba(255,255,255,.94);color:var(--ink);font:inherit;font-size:22px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.zoomctl button.zfit{font-size:12px}
+.zoomctl button:active{background:var(--rule)}
+.nudge{position:absolute;right:10px;bottom:66px;z-index:6;display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:auto repeat(3,46px);gap:4px;background:rgba(28,26,23,.9);padding:8px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.25);touch-action:none;user-select:none;-webkit-user-select:none}
+.nudge .rd{grid-column:1/4;color:#fff;font-size:11.5px;text-align:center;line-height:1.35;padding:0 0 4px;white-space:nowrap}
+.nudge button{border:0;border-radius:10px;background:rgba(255,255,255,.16);color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;line-height:1.05;padding:0}
+.nudge button small{display:block;font-size:10px;font-weight:500;opacity:.8}
+.nudge button:disabled{opacity:.25;cursor:default}
+.nudge button.st{background:#fff;color:var(--ink);font-size:12px}
+.nudge button:active:not(:disabled){background:rgba(255,255,255,.35)}
+.readonly [data-nudge]{display:none!important}
+.nudge .rd{position:relative;padding-right:22px!important}
+.nudge .rd button{position:absolute;right:-2px;top:-3px;width:22px;height:22px;font-size:11px;border-radius:6px;background:rgba(255,255,255,.12)}
+.nudge.mini{display:block;padding:0;background:none;box-shadow:none}
+.nudge.mini button{height:40px;padding:0 14px;border-radius:20px;background:rgba(28,26,23,.9);font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+@media (max-width:520px){.nudge{grid-template-columns:repeat(3,40px);grid-template-rows:auto repeat(3,40px);bottom:62px}}
 .pane.full .pane-h{font-size:15px;padding:10px 16px}
 .pane.full .pane-h .btn{font-size:14px!important;padding:7px 14px!important}
 html.full3d,html.full3d body{overflow:hidden}
@@ -232,13 +251,17 @@ kbd{font:inherit;font-size:11.5px;border:1px solid var(--rule);border-bottom-wid
 <main>
   <div class="views">
     <div class="pane">
-      <div class="pane-h"><span style="display:flex;gap:12px;align-items:center;font-weight:600;color:var(--ink)">평면도<span class="pick" role="group" aria-label="평면도에서 누를 대상"><button data-mode="item" aria-pressed="true">칸 선택</button><button data-mode="op" aria-pressed="false">문·창 선택</button></span><label class="check" style="font-weight:400"><input type="checkbox" id="autoRot" checked> 벽에 끌면 자동 회전</label></span><span class="keyhint">끌어서 이동, 파란 화살표로 폭 조절 (<kbd>Alt</kbd>+방향키 1cm), <kbd>R</kbd> 회전, <kbd>Del</kbd> 삭제</span></div>
-      <svg id="plan" class="mode-item" role="img" aria-label="방 평면도와 배치된 칸"><g id="planG"></g></svg>
+      <div class="pane-h"><span style="display:flex;gap:12px;align-items:center;font-weight:600;color:var(--ink)">평면도<span class="pick" role="group" aria-label="평면도에서 누를 대상"><button data-mode="item" aria-pressed="true">칸 선택</button><button data-mode="op" aria-pressed="false">문·창 선택</button></span><label class="check" style="font-weight:400"><input type="checkbox" id="autoRot" checked> 벽에 끌면 자동 회전</label></span><span style="display:flex;gap:8px;align-items:center"><span class="keyhint">끌어서 이동, 두 손가락으로 확대, 파란 화살표로 폭 조절</span><button class="btn primary" id="fullPlan" aria-pressed="false" style="padding:3px 10px;font-size:12px">⛶ 전체화면</button></span></div>
+      <div class="stage"><svg id="plan" class="mode-item" role="img" aria-label="방 평면도와 배치된 칸"><g id="planG"></g></svg>
+      <div class="zoomctl" role="group" aria-label="평면도 확대"><button data-pz="in" aria-label="확대">＋</button><button data-pz="out" aria-label="축소">－</button><button data-pz="fit" class="zfit" hidden>전체</button></div>
+      <div class="nudge" data-nudge hidden role="group" aria-label="선택한 것 미세 이동"></div></div>
       <div class="selbar" data-selbar hidden role="toolbar" aria-label="선택한 칸"></div>
     </div>
     <div class="pane">
       <div class="pane-h">3D 미리보기<span style="display:flex;gap:8px;align-items:center">3D에서도 끌 수 있어요 <button class="btn" id="camReset" style="padding:3px 9px;font-size:12px">시점 초기화</button><button class="btn primary" id="fullBtn" aria-pressed="false" style="padding:3px 10px;font-size:12px">⛶ 전체화면</button></span></div>
-      <div id="three"></div>
+      <div class="stage"><div id="three"></div>
+      <div class="zoomctl" role="group" aria-label="3D 확대"><button data-cz="in" aria-label="가까이">＋</button><button data-cz="out" aria-label="멀리">－</button></div>
+      <div class="nudge" data-nudge hidden role="group" aria-label="선택한 것 미세 이동"></div></div>
       <div class="selbar" data-selbar hidden role="toolbar" aria-label="선택한 칸"></div>
     </div>
   </div>
@@ -529,6 +552,7 @@ function moveDrag(px,py,thr){
   const f=fp(it);const p=snapPos(it,px+drag.off.x-f.w/2,py+drag.off.y-f.h/2,thr);
   it.x=Math.round(p.x);it.y=Math.round(p.y);drag.moved=true;renderPlan();sync3D();
 }
+function cancelGesture(){if(!(drag||opDrag||rsz))return;if(hist.length){S=JSON.parse(hist.pop());if(!Array.isArray(S.openings))S.openings=[]}drag=null;opDrag=null;rsz=null;guides=null;svg.style.cursor='';box3.style.cursor=''}
 function endDrag(){if(!drag)return;if(!drag.moved)hist.pop();drag=null;guides=null;refreshAll()}
 
 function wallInfo(){
@@ -549,7 +573,15 @@ function wallInfo(){
 
 /* ---------- 평면도 ---------- */
 const svg=$('plan'),planG=$('planG');
-let mmpp=5;
+let mmpp=5,PB={w:1,h:1,s:5};const Z={k:1,cx:0,cy:0};
+const ptr=new Map();let pinch=null,pan=null;
+function midOf(){const a=[...ptr.values()];return{x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2,d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1}}
+function centerFor(P,cx,cy,k){const r=svg.getBoundingClientRect();return{x:P.x-(cx-r.left-r.width/2)*PB.s/k,y:P.y-(cy-r.top-r.height/2)*PB.s/k}}
+function setZoom(k,P,cx,cy){Z.k=Math.min(8,Math.max(1,k));if(P){const c=centerFor(P,cx,cy,Z.k);Z.cx=c.x;Z.cy=c.y}renderPlan()}
+function zoomBy(f){const it=get(sel),op=getO(selO);let c=null;
+  if(f>1&&it){const q=fp(it);c={x:it.x+q.w/2,y:it.y+q.h/2}}
+  else if(f>1&&op){const m=op.pos+op.w/2;c=op.wall==='top'?{x:m,y:0}:op.wall==='bottom'?{x:m,y:S.room.d}:op.wall==='left'?{x:0,y:m}:{x:S.room.w,y:m}}
+  Z.k=Math.min(8,Math.max(1,Z.k*f));if(c&&Z.k>1){Z.cx=c.x;Z.cy=c.y}renderPlan()}
 function toMM(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());return{x:q.x,y:q.y}}
 function rotPt(u,v,k,A){for(let i=0;i<k;i++){const t=u;u=A-v;v=t}return[u,v]}
 function cornerPts(Lu,Lv){const D=DEPTH,r=R_IN,pts=[[0,0],[Lu,0],[Lu,D],[D+r,D]];for(let i=1;i<=6;i++){const a=-Math.PI/2-i/6*Math.PI/2;pts.push([D+r+r*Math.cos(a),D+r+r*Math.sin(a)])}pts.push([D,Lv],[0,Lv]);return pts}
@@ -563,7 +595,11 @@ function renderPlan(){
   const RW=S.room.w,RD=S.room.d,T=100,sw0=svg.clientWidth||600,sh0=svg.clientHeight||450;
   const wf=Math.min(1,Math.max(.62,Math.min(sw0,sh0)/620)),mp=104*wf;
   mmpp=Math.max((RW+2*T)/Math.max(120,sw0-2*mp),(RD+2*T)/Math.max(120,sh0-2*mp));const M=T+mp*mmpp;
-  svg.setAttribute('viewBox',`${-M} ${-M} ${RW+2*M} ${RD+2*M}`);
+  PB={w:RW+2*M,h:RD+2*M,s:mmpp};
+  if(Z.k>1.001){Z.cx=Math.min(RW,Math.max(0,Z.cx));Z.cy=Math.min(RD,Math.max(0,Z.cy));mmpp=PB.s/Z.k;
+    svg.setAttribute('viewBox',`${Z.cx-PB.w/2/Z.k} ${Z.cy-PB.h/2/Z.k} ${PB.w/Z.k} ${PB.h/Z.k}`)}
+  else{Z.k=1;Z.cx=RW/2;Z.cy=RD/2;svg.setAttribute('viewBox',`${-M} ${-M} ${RW+2*M} ${RD+2*M}`)}
+  {const zf=document.querySelector('[data-pz="fit"]');if(zf){zf.hidden=Z.k<=1.001;zf.innerHTML=Z.k>1.001?Math.round(Z.k*100)+'%<small style="display:block;font-size:10px;font-weight:500">전체</small>':''}}
   const px=n=>n*mmpp,fs=px(12);
   let s='';
   s+=`<rect x="${-T}" y="${-T}" width="${RW+2*T}" height="${RD+2*T}" fill="var(--ink)"/>`;
@@ -678,20 +714,28 @@ function renderPlan(){
   planG.innerHTML=s;
 }
 svg.addEventListener('pointerdown',e=>{
+  ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});svg.setPointerCapture(e.pointerId);
+  if(ptr.size>=2){cancelGesture();pan=null;const m=midOf(),P=toMM({clientX:m.x,clientY:m.y});pinch={d0:m.d,k0:Z.k,P};e.preventDefault();refreshAll();return}
   const h=e.target.closest('[data-h]');
   if(h){const it=get(sel);if(it){snapshot();rsz={id:it.id,k:h.dataset.h,w0:it.w,w20:it.w2};svg.setPointerCapture(e.pointerId);e.preventDefault();renderPlan();return}}
   const og=e.target.closest('[data-op]');
   if(og&&!e.target.closest('[data-id]')){const op=getO(+og.dataset.op);if(op){selO=op.id;sel=null;snapshot();const q=toMM(e);opDrag={id:op.id,off:(op.wall==='top'||op.wall==='bottom'?q.x:q.y)-op.pos,moved:false};svg.setPointerCapture(e.pointerId);e.preventDefault();refreshAll();return}}
   const g=e.target.closest('[data-id]');const p=toMM(e);
   if(g){const it=get(+g.dataset.id);if(!it)return;sel=it.id;selO=null;startDrag(it,p.x,p.y,'plan');svg.setPointerCapture(e.pointerId);svg.style.cursor='grabbing'}
-  else{sel=null;selO=null}
+  else{pan={id:e.pointerId,P:p,x:e.clientX,y:e.clientY,moved:false};return}
   refreshAll();
 });
 function moveOp(p){const op=getO(opDrag.id);if(!op)return;const RW=S.room.w,RD=S.room.d;
   const ds={top:p.y,bottom:RD-p.y,left:p.x,right:RW-p.x};let nw=op.wall;for(const k in ds)if(ds[k]<ds[nw]-150&&ds[k]<500)nw=k;
   if(nw!==op.wall){op.wall=nw;opDrag.off=op.w/2}
   const a=(op.wall==='top'||op.wall==='bottom'?p.x:p.y)-opDrag.off;op.pos=Math.round(Math.min(Math.max(a,0),wallLen(op.wall)-op.w)/10)*10;opDrag.moved=true;renderPlan()}
-svg.addEventListener('pointermove',e=>{if(opDrag){moveOp(toMM(e));return}if(rsz){resizeTo(toMM(e));return}if(drag&&drag.src==='plan'){const p=toMM(e);moveDrag(p.x,p.y,14*mmpp)}});
+svg.addEventListener('pointermove',e=>{
+  if(ptr.has(e.pointerId))ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pinch){if(ptr.size>=2){const m=midOf();setZoom(pinch.k0*m.d/pinch.d0,pinch.P,m.x,m.y)}return}
+  if(pan){if(e.pointerId!==pan.id)return;if(Math.abs(e.clientX-pan.x)+Math.abs(e.clientY-pan.y)>6)pan.moved=true;
+    if(pan.moved&&Z.k>1.001){const c=centerFor(pan.P,e.clientX,e.clientY,Z.k);Z.cx=c.x;Z.cy=c.y;renderPlan();svg.style.cursor='move'}return}
+  if(ptr.size===0&&!(opDrag||rsz||drag))return;
+  if(opDrag){moveOp(toMM(e));return}if(rsz){resizeTo(toMM(e));return}if(drag&&drag.src==='plan'){const p=toMM(e);moveDrag(p.x,p.y,14*mmpp)}});
 function resizeCorner(it,p){const thr=12*mmpp,key=rsz.k==='u'?'w':'w2',c=cDims(it),O=cw(it,0,0),dd=armDir(it,rsz.k),hz=Math.abs(dd[0])>.5,sg=hz?dd[0]:dd[1];
   const ar=rsz.k==='u'?cRect(it,0,0,c.U,DEPTH):cRect(it,0,0,DEPTH,c.V),c0=hz?ar.y:ar.x,c1=c0+(hz?ar.h:ar.w),lim=hz?S.room.w:S.room.d,o0=hz?O[0]:O[1];
   let v=hz?p.x:p.y;const cand=[G,lim-G];
@@ -714,7 +758,10 @@ function resizeTo(p){const it=get(rsz.id);if(!it)return;if(TYPES[it.type].kind==
   it.w=w;renderPlan();sync3D();renderSel()}
 function resizeBy(d){const it=get(sel);if(!it||TYPES[it.type].kind!=='bay')return;if(FIXW[it.type]){toast(`${TYPES[it.type].name}은 선반 ${FIXW[it.type]/10}cm로 고정이에요.`);return}const w=Math.min(WMAX,Math.max(WMIN,it.w+d));
   if(w===it.w){toast(`선반 폭은 ${WMIN/10}~${WMAX/10}cm 사이예요.`);return}snapshot();it.w=w;refreshAll()}
-const endPlan=()=>{svg.style.cursor='';if(opDrag){if(!opDrag.moved)hist.pop();opDrag=null;refreshAll();return}if(rsz){const it=get(rsz.id);if(!it||(it.w===rsz.w0&&it.w2===rsz.w20))hist.pop();rsz=null;guides=null;refreshAll();return}if(drag&&drag.src==='plan')endDrag()};
+const endPlan=e=>{ptr.delete(e.pointerId);
+  if(pinch){if(ptr.size<2)pinch=null;if(!ptr.size)refreshAll();return}
+  if(pan){if(pan.id===e.pointerId){if(!pan.moved){sel=null;selO=null}pan=null;svg.style.cursor='';refreshAll()}return}
+  svg.style.cursor='';if(opDrag){if(!opDrag.moved)hist.pop();opDrag=null;refreshAll();return}if(rsz){const it=get(rsz.id);if(!it||(it.w===rsz.w0&&it.w2===rsz.w20))hist.pop();rsz=null;guides=null;refreshAll();return}if(drag&&drag.src==='plan')endDrag()};
 svg.addEventListener('pointerup',endPlan);svg.addEventListener('pointercancel',endPlan);
 
 /* ---------- 3D ---------- */
@@ -894,7 +941,11 @@ const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),floorPlane=new THREE.Pla
 function setNdc(e){const r=box3.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,cam)}
 function floorPt(){const v=new THREE.Vector3();return ray.ray.intersectPlane(floorPlane,v)?{x:v.x*1000,y:v.z*1000}:null}
 let orbit=null;
+const ptr3=new Map();let pinch3=null;
+const d3=()=>{const a=[...ptr3.values()];return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1};
 box3.addEventListener('pointerdown',e=>{
+  ptr3.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptr3.size>=2){cancelGesture();orbit=null;pinch3={d0:d3(),r0:orb.r};refreshAll();return}
   setNdc(e);box3.setPointerCapture(e.pointerId);
   const hit=ray.intersectObjects(itemsRoot.children,true).find(h=>h.object.type==='Mesh');
   if(hit){let o=hit.object;while(o&&o.userData.id==null)o=o.parent;const it=o&&get(o.userData.id);const p=floorPt();
@@ -902,11 +953,16 @@ box3.addEventListener('pointerdown',e=>{
   orbit={x:e.clientX,y:e.clientY,moved:false};
 });
 box3.addEventListener('pointermove',e=>{
+  if(ptr3.has(e.pointerId))ptr3.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pinch3){if(ptr3.size>=2)orb.r=Math.min(30,Math.max(1.5,pinch3.r0*pinch3.d0/d3()));return}
   if(drag&&drag.src==='3d'){setNdc(e);const p=floorPt();if(p)moveDrag(p.x,p.y,110);return}
   if(orbit){const dx=e.clientX-orbit.x,dy=e.clientY-orbit.y;if(Math.abs(dx)+Math.abs(dy)>2)orbit.moved=true;orb.th-=dx*0.008;orb.ph=Math.min(1.45,Math.max(0.08,orb.ph+dy*0.008));orbit.x=e.clientX;orbit.y=e.clientY}
 });
-const end3=()=>{box3.style.cursor='';if(drag&&drag.src==='3d'){endDrag();return}if(orbit&&!orbit.moved&&(sel!==null||selO!==null)){sel=null;selO=null;refreshAll()}orbit=null};
+const end3=e=>{ptr3.delete(e.pointerId);if(pinch3){if(ptr3.size<2)pinch3=null;return}box3.style.cursor='';if(drag&&drag.src==='3d'){endDrag();return}if(orbit&&!orbit.moved&&(sel!==null||selO!==null)){sel=null;selO=null;refreshAll()}orbit=null};
 box3.addEventListener('pointerup',end3);box3.addEventListener('pointercancel',end3);
+svg.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const P=toMM(e);setZoom(Z.k*Math.exp(-e.deltaY*0.01),P,e.clientX,e.clientY)},{passive:false});
+document.querySelectorAll('[data-pz]').forEach(b=>b.onclick=()=>{const k=b.dataset.pz;if(k==='fit'){Z.k=1;renderPlan()}else zoomBy(k==='in'?1.5:1/1.5)});
+document.querySelectorAll('[data-cz]').forEach(b=>b.onclick=()=>{orb.r=Math.min(30,Math.max(1.5,orb.r*(b.dataset.cz==='in'?0.8:1.25)))});
 box3.addEventListener('wheel',e=>{e.preventDefault();orb.r=Math.min(30,Math.max(1.5,orb.r*(1+e.deltaY*0.0012)))},{passive:false});
 function size3(){const w=box3.clientWidth,h=box3.clientHeight;if(!w||!h)return;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
 new ResizeObserver(size3).observe(box3);
@@ -916,7 +972,33 @@ new ResizeObserver(()=>renderPlan()).observe(svg);
 /* ---------- 패널 ---------- */
 const DIR={0:'A 벽을 등지고 있어요',90:'B 벽을 등지고 있어요',180:'C 벽을 등지고 있어요',270:'D 벽을 등지고 있어요'};
 const CDIR={0:'D·A 벽 모서리용',90:'A·B 벽 모서리용',180:'B·C 벽 모서리용',270:'C·D 벽 모서리용'};
-function renderSelBar(){const it=get(sel),op=getO(selO);document.querySelectorAll('[data-selbar]').forEach(b=>{
+let NSTEP=10,lastNudge=0,NOPEN=true;try{NOPEN=localStorage.getItem('broad-nudge')!=='0'}catch(e){}
+function renderNudge(){const it=get(sel),op=getO(selO),busy=drag||rsz||opDrag;
+  document.querySelectorAll('[data-nudge]').forEach(n=>{
+    if(READONLY||busy||!(it||op)){n.hidden=true;return}n.hidden=false;n.classList.toggle('mini',!NOPEN);
+    if(!NOPEN){n.innerHTML='<button data-ndtg aria-label="미세 이동 열기">✥ 미세 이동</button>';return}
+    let rd,can={u:1,d:1,l:1,r:1};
+    if(it){const f=fp(it);rd=`D벽 ${fmt(it.x)} · A벽 ${fmt(it.y)}<br>B벽 ${fmt(S.room.w-it.x-f.w)} · C벽 ${fmt(S.room.d-it.y-f.h)}`}
+    else{const hz=op.wall==='top'||op.wall==='bottom';can=hz?{u:0,d:0,l:1,r:1}:{u:1,d:1,l:0,r:0};rd=`${hz?'D':'A'}벽에서 ${fmt(op.pos)}<br>${hz?'B':'C'}벽까지 ${fmt(wallLen(op.wall)-op.pos-op.w)}`}
+    const B=(k,dx,dy,t,sub)=>`<button data-nd="${dx},${dy}" ${can[k]?'':'disabled'} aria-label="${sub} 쪽으로 ${NSTEP/10}cm">${t}<small>${sub}</small></button>`;
+    n.innerHTML=`<div class="rd">${rd} cm<button data-ndtg aria-label="미세 이동 접기">✕</button></div><span></span>${B('u',0,-1,'▲','A')}<span></span>${B('l',-1,0,'◀','D')}<button class="st" data-ndst aria-label="한 번에 움직이는 거리 바꾸기">${NSTEP/10}cm</button>${B('r',1,0,'▶','B')}<span></span>${B('d',0,1,'▼','C')}<span></span>`})}
+function nudge(dx,dy){const it=get(sel),op=getO(selO);if(READONLY||!(it||op))return;
+  const now=Date.now();if(now-lastNudge>1200)snapshot();lastNudge=now;
+  if(it){const f=fp(it),RW=S.room.w,RD=S.room.d;let x=it.x+dx*NSTEP,y=it.y+dy*NSTEP;
+    if(f.w<=RW-2*G)x=Math.min(Math.max(x,G),RW-G-f.w);if(f.h<=RD-2*G)y=Math.min(Math.max(y,G),RD-G-f.h);it.x=Math.round(x);it.y=Math.round(y)}
+  else{const hz=op.wall==='top'||op.wall==='bottom',d=hz?dx:dy;op.pos=Math.min(Math.max(op.pos+d*NSTEP,0),wallLen(op.wall)-op.w)}
+  renderPlan();sync3D();renderNudge();clearTimeout(nudge.t);nudge.t=setTimeout(()=>{renderSel();renderParts();syncOps();save()},350)}
+{let rep=null;const stop=()=>{clearTimeout(rep);clearInterval(rep);rep=null};
+  document.querySelectorAll('[data-nudge]').forEach(n=>{
+    n.addEventListener('pointerdown',e=>{e.stopPropagation();const b=e.target.closest('button');if(!b||b.disabled)return;e.preventDefault();
+      if(b.hasAttribute('data-ndst')){NSTEP=NSTEP===10?100:10;renderNudge();return}
+      if(b.hasAttribute('data-ndtg')){NOPEN=!NOPEN;try{localStorage.setItem('broad-nudge',NOPEN?'1':'0')}catch(e){}renderNudge();return}
+      const [dx,dy]=b.dataset.nd.split(',').map(Number);nudge(dx,dy);stop();rep=setTimeout(()=>{rep=setInterval(()=>nudge(dx,dy),90)},450)});
+    n.addEventListener('click',e=>{e.stopPropagation();if(e.detail!==0)return;const b=e.target.closest('button');if(!b||b.disabled)return;
+      if(b.hasAttribute('data-ndst')){NSTEP=NSTEP===10?100:10;renderNudge();return}if(b.hasAttribute('data-ndtg')){NOPEN=!NOPEN;try{localStorage.setItem('broad-nudge',NOPEN?'1':'0')}catch(e){}renderNudge();return}const [dx,dy]=b.dataset.nd.split(',').map(Number);nudge(dx,dy)});
+    ['pointerup','pointercancel','pointerleave'].forEach(ev=>n.addEventListener(ev,stop))});
+  window.addEventListener('pointerup',stop);window.addEventListener('blur',stop)}
+function renderSelBar(){renderNudge();const it=get(sel),op=getO(selO);document.querySelectorAll('[data-selbar]').forEach(b=>{
   if(op&&!opDrag){b.hidden=false;b.innerHTML=`<span>${esc(opName(op))}</span>${op.kind==='door'?'<button data-sb="flip">반대로 열기</button>':''}<button data-sb="odel" class="del">삭제</button>`;return}
   if(!it||drag||rsz){b.hidden=true;return}b.hidden=false;
   b.innerHTML=`<span>${esc(nameOf(it))}</span><button data-sb="rot">회전</button><button data-sb="dup">복제</button><button data-sb="del" class="del">삭제</button>`})}
@@ -1179,13 +1261,14 @@ $('setBtn').onclick=()=>placeSet(+$('setSel').value);
 $('undoBtn').onclick=undo;
 $('clearBtn').onclick=()=>{if(!S.items.length)return;snapshot();S.items=[];sel=null;refreshAll();toast('모두 지웠어요. 되돌리기로 복구할 수 있어요.')};
 $('camReset').onclick=resetCam;
-{const pane=$('three').closest('.pane'),fb=$('fullBtn');let on=false;
+function bindFull(fb,pane,after){let on=false;
   const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
-  const set=v=>{on=v;pane.classList.toggle('full',v);document.documentElement.classList.toggle('full3d',v);fb.setAttribute('aria-pressed',v);fb.textContent=v?'✕ 전체화면 닫기':'⛶ 전체화면';requestAnimationFrame(size3)};
+  const set=v=>{on=v;pane.classList.toggle('full',v);document.documentElement.classList.toggle('full3d',v);fb.setAttribute('aria-pressed',v);fb.textContent=v?'✕ 전체화면 닫기':'⛶ 전체화면';requestAnimationFrame(after)};
   fb.onclick=()=>{if(!on){set(true);const rq=pane.requestFullscreen||pane.webkitRequestFullscreen;if(rq)try{const r=rq.call(pane);if(r&&r.catch)r.catch(()=>{})}catch(e){}}
     else{if(fsEl()){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}set(false)}};
   const fc=()=>{if(!fsEl()&&on)set(false)};document.addEventListener('fullscreenchange',fc);document.addEventListener('webkitfullscreenchange',fc);
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&on&&!fsEl())set(false)})}
+bindFull($('fullBtn'),$('three').closest('.pane'),size3);window.__pq=k=>({Z,orb,sel,S})[k];bindFull($('fullPlan'),$('plan').closest('.pane'),()=>renderPlan());
 $('addDoor').onclick=()=>addOpening('door');$('addCbox').onclick=()=>addOpening('cbox');$('addWin').onclick=()=>addOpening('window');
 document.addEventListener('keydown',e=>{
   if(e.target.matches&&e.target.matches('input,select,textarea'))return;
